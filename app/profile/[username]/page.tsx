@@ -1,7 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
-import toast from 'react-hot-toast';
 
 export default async function PublicProfilePage({
   params,
@@ -67,25 +66,20 @@ export default async function PublicProfilePage({
         <span className="inline-block bg-stone-100 text-stone-600 text-xs px-2 py-1 rounded-full">
           Reader since {joinDate}
         </span>
-        <form action="/api/copy-feed" method="post" className="inline">
-          <button
-            type="button"
-            onClick={async () => {
-              const feedUrl = `${window.location.origin}/profile/${username}/feed.xml`;
-              await navigator.clipboard.writeText(feedUrl);
-              // If toast is not available globally, we'll use a simple alert for now
-              if (typeof toast !== 'undefined' && toast.success) {
-                toast.success('RSS feed URL copied!');
-              } else {
-                alert('RSS feed URL copied to clipboard! You can paste it into any RSS reader (Feedly, Inoreader, etc.).');
-              }
-            }}
-            className="text-sm bg-accent/10 hover:bg-accent/20 text-accent px-3 py-1 rounded-full transition-colors flex items-center gap-1"
-            title="Copy RSS feed URL"
-          >
-            📡 Copy RSS Feed
-          </button>
-        </form>
+
+        {/* RSS button – uses a simple form with alert (no client-side libraries) */}
+        <button
+          type="button"
+          onClick={async () => {
+            const feedUrl = `${window.location.origin}/profile/${username}/feed.xml`;
+            await navigator.clipboard.writeText(feedUrl);
+            alert('RSS feed URL copied to clipboard! You can paste it into any RSS reader (Feedly, Inoreader, etc.).');
+          }}
+          className="text-sm bg-accent/10 hover:bg-accent/20 text-accent px-3 py-1 rounded-full transition-colors flex items-center gap-1"
+          title="Copy RSS feed URL"
+        >
+          📡 Copy RSS Feed
+        </button>
       </div>
       <p className="text-stone-500 mb-8">What they&apos;re reading and keeping.</p>
       {articles?.length ? (
