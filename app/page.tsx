@@ -29,38 +29,33 @@ export default function HomePage() {
   const [audioPlaying, setAudioPlaying] = useState(false);
 
   useEffect(() => {
-    let isMounted = true;
+    let mounted = true;
     supabase.auth.getUser().then(({ data }) => {
-      if (isMounted) setUser(data.user ?? null);
+      if (mounted) setUser(data.user ?? null);
     }).finally(() => {
-      if (isMounted) setLoadingAuth(false);
+      if (mounted) setLoadingAuth(false);
     });
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (isMounted) setUser(session?.user ?? null);
+      if (mounted) setUser(session?.user ?? null);
     });
     return () => {
-      isMounted = false;
+      mounted = false;
       subscription.unsubscribe();
     };
   }, []);
 
   if (loadingAuth) {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <Loader2 className="w-6 h-6 animate-spin text-accent" />
-      </div>
-    );
+    return <div className="flex justify-center items-center min-h-[60vh]"><Loader2 className="animate-spin text-accent w-6 h-6" /></div>;
   }
 
   if (!user) {
     return (
       <main className="flex flex-col items-center justify-center min-h-[70vh] gap-6 px-4">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center max-w-md">
-          <h1 className="text-3xl font-serif font-bold text-stone-800 mb-3">Save articles. Sift them. Keep what matters.</h1>
-          <p className="text-stone-600 mb-8">Sign in to start building your personal library of sifted articles.</p>
+          <h1 className="text-3xl font-bold text-white mb-3">Save articles. Sift them. Keep what matters.</h1>
+          <p className="text-stone-300 mb-8">Sign in to start building your personal library of sifted articles.</p>
           <Link href="/auth" className="inline-flex items-center gap-2 px-6 py-3 bg-accent text-white rounded-xl font-medium hover:bg-accent-hover transition-colors">
-            <LogIn className="w-4 h-4" />
-            Sign In to Sift
+            <LogIn className="w-4 h-4" /> Sign In to Sift
           </Link>
         </motion.div>
       </main>
@@ -132,7 +127,7 @@ export default function HomePage() {
     } catch { toast.error('Something went wrong'); } finally { setLoading(false); }
   };
 
-  const verdictDot = { 'Worth a full read': 'bg-verdict-green', 'Skim this': 'bg-verdict-amber', 'You can skip this': 'bg-verdict-grey' };
+  const verdictDot = { 'Worth a full read': 'bg-green-500', 'Skim this': 'bg-amber-500', 'You can skip this': 'bg-stone-500' };
 
   return (
     <div className="flex flex-col items-center gap-8 pt-12 md:pt-16">
@@ -140,31 +135,31 @@ export default function HomePage() {
         {!showManualFallback && (
           <>
             <div className="flex justify-end mb-1">
-              <button type="button" onClick={() => setBatchMode(!batchMode)} className={`text-sm font-medium transition-colors ${batchMode ? 'text-accent' : 'text-stone-600 hover:text-accent'}`}>
+              <button type="button" onClick={() => setBatchMode(!batchMode)} className={`text-sm font-medium transition-colors ${batchMode ? 'text-accent' : 'text-stone-300 hover:text-accent'}`}>
                 {batchMode ? 'Single URL' : 'Batch URLs'}
               </button>
             </div>
             {batchMode ? (
-              <textarea value={batchUrls} onChange={(e) => setBatchUrls(e.target.value)} placeholder="Paste URLs, one per line…" className="w-full h-32 p-3 bg-white/90 backdrop-blur-sm rounded-2xl shadow-card focus:outline-none focus:ring-2 focus:ring-accent/50 resize-y text-stone-700" disabled={loading} />
+              <textarea value={batchUrls} onChange={(e) => setBatchUrls(e.target.value)} placeholder="Paste URLs, one per line…" className="card w-full h-32 resize-y" disabled={loading} />
             ) : (
-              <div className="flex items-center gap-3 p-2 pl-6 bg-white/90 backdrop-blur-sm rounded-2xl shadow-card transition-all focus-within:ring-2 focus-within:ring-accent/50">
-                <input type="url" value={url} onChange={(e) => setUrl(e.target.value)} placeholder="Paste a link to sift it" className="flex-1 bg-transparent outline-none text-stone-700 placeholder-stone-400" disabled={loading} />
+              <div className="card flex items-center gap-3 p-2 pl-6 transition-all focus-within:ring-2 focus-within:ring-accent">
+                <input type="url" value={url} onChange={(e) => setUrl(e.target.value)} placeholder="Paste a link to sift it" className="flex-1 bg-transparent outline-none text-white placeholder-stone-400" disabled={loading} />
                 <button type="button" onClick={() => setShowManualFallback(true)} className="text-stone-400 hover:text-accent transition-colors" title="Paste text manually"><ClipboardList className="w-5 h-5" /></button>
               </div>
             )}
-            <button type="submit" disabled={loading} className="flex items-center justify-center gap-2 px-5 py-2.5 bg-accent text-white rounded-xl font-medium hover:bg-accent-hover disabled:opacity-50 transition-colors self-start mt-2">
-              {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Sifting…</> : <><ArrowRight className="w-4 h-4" /> Sift</>}
+            <button type="submit" disabled={loading} className="self-start mt-2 px-5 py-2.5 bg-accent text-white rounded-xl font-medium hover:bg-accent-hover disabled:opacity-50 transition-colors flex items-center gap-2">
+              {loading ? <><Loader2 className="animate-spin w-4 h-4" /> Sifting…</> : <>Sift <ArrowRight className="w-4 h-4" /></>}
             </button>
           </>
         )}
         {showManualFallback && (
-          <div className="flex flex-col gap-3 p-4 bg-white/90 backdrop-blur-sm rounded-2xl shadow-card">
-            <p className="text-sm text-stone-500">This article couldn&apos;t be fetched automatically. Paste the full text below.</p>
-            <textarea value={manualText} onChange={(e) => setManualText(e.target.value)} placeholder="Paste the article text here…" className="w-full h-40 p-3 border border-stone-200 rounded-xl resize-y focus:outline-none focus:ring-2 focus:ring-accent/50 text-stone-700" disabled={loading} />
+          <div className="card flex flex-col gap-3">
+            <p className="text-sm text-stone-400">This article couldn&apos;t be fetched automatically. Paste the full text below.</p>
+            <textarea value={manualText} onChange={(e) => setManualText(e.target.value)} placeholder="Paste the article text here…" className="w-full h-40 bg-stone-800 border border-stone-700 rounded-xl p-3 resize-y focus:ring-accent" disabled={loading} />
             <div className="flex justify-end gap-2">
-              <button type="button" onClick={() => setShowManualFallback(false)} className="px-4 py-2 text-sm text-stone-500 hover:text-stone-700">Cancel</button>
-              <button type="submit" disabled={loading || !manualText.trim()} className="flex items-center gap-2 px-5 py-2.5 bg-accent text-white rounded-xl font-medium hover:bg-accent-hover disabled:opacity-50 transition-colors">
-                {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Sifting…</> : <>Sift Text <ArrowRight className="w-4 h-4" /></>}
+              <button type="button" onClick={() => setShowManualFallback(false)} className="px-4 py-2 text-sm text-stone-300 hover:text-white">Cancel</button>
+              <button type="submit" disabled={loading || !manualText.trim()} className="px-5 py-2.5 bg-accent text-white rounded-xl font-medium hover:bg-accent-hover disabled:opacity-50 flex items-center gap-2">
+                {loading ? <><Loader2 className="animate-spin w-4 h-4" /> Sifting…</> : <>Sift Text <ArrowRight className="w-4 h-4" /></>}
               </button>
             </div>
           </div>
@@ -172,46 +167,45 @@ export default function HomePage() {
       </motion.form>
 
       {!result && !loading && !batchResults.length && (
-        <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.1 }} className="bg-white/70 backdrop-blur-md rounded-2xl shadow-lg px-6 py-3">
-          <p className="text-stone-600 text-sm font-medium">Paste a link to start sifting.</p>
-        </motion.div>
+        <div className="card px-6 py-3 text-center">
+          <p className="text-stone-400 text-sm">Paste a link to start sifting.</p>
+        </div>
       )}
 
       {loading && (
-        <div className="w-full max-w-2xl bg-white/90 backdrop-blur-sm rounded-2xl shadow-card p-6 animate-pulse">
-          <div className="h-3 w-3 rounded-full bg-stone-200 mb-4" />
-          <div className="h-4 w-32 bg-stone-200 rounded mb-3" />
-          <div className="h-4 w-full bg-stone-200 rounded mb-2" />
-          <div className="h-4 w-3/4 bg-stone-200 rounded mb-6" />
-          <div className="h-4 w-24 bg-stone-200 rounded" />
+        <div className="card w-full max-w-2xl animate-pulse">
+          <div className="h-3 w-3 rounded-full bg-stone-600 mb-4" />
+          <div className="h-4 w-32 bg-stone-700 rounded mb-3" />
+          <div className="h-4 w-full bg-stone-700 rounded mb-2" />
+          <div className="h-4 w-3/4 bg-stone-700 rounded mb-6" />
+          <div className="h-4 w-24 bg-stone-700 rounded" />
         </div>
       )}
 
       <AnimatePresence mode="wait">
         {result && (
-          <motion.div key={result.sourceUrl} initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: -20 }} transition={{ type: 'spring', stiffness: 200, damping: 20 }}
-            className="w-full max-w-2xl bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-card hover:shadow-card-hover transition-shadow duration-300">
-            <div className="flex items-center gap-3 mb-5 pb-4 border-b border-stone-100">
-              <span className={`w-3.5 h-3.5 rounded-full ${verdictDot[result.verdict]} ring-2 ring-offset-2`} />
-              <span className="text-sm font-semibold text-stone-700">{result.verdict}</span>
+          <motion.div key={result.sourceUrl} initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: -20 }} className="card w-full max-w-2xl transition-shadow">
+            <div className="flex items-center gap-3 mb-5 pb-4 border-b border-stone-700">
+              <span className={`w-3.5 h-3.5 rounded-full ${verdictDot[result.verdict]} ring-2 ring-offset-2 ring-offset-stone-800`} />
+              <span className="text-sm font-semibold text-stone-200">{result.verdict}</span>
               <Sparkles className="w-4 h-4 text-accent ml-auto" />
             </div>
-            <div className="mb-5"><h3 className="text-xs font-semibold uppercase tracking-wider text-stone-400 mb-2">TL;DR</h3><p className="text-stone-800 leading-relaxed">{result.summary}</p></div>
-            {result.insight && (<div className="bg-warm-hover/60 rounded-xl p-4 border-l-4 border-accent mb-5"><h3 className="text-xs font-semibold uppercase tracking-wider text-stone-400 mb-2">Key Insight</h3><p className="text-stone-800 italic leading-relaxed">{result.insight}</p></div>)}
+            <div className="mb-5"><h3 className="text-xs font-semibold uppercase tracking-wider text-stone-400 mb-2">TL;DR</h3><p className="text-stone-200 leading-relaxed">{result.summary}</p></div>
+            {result.insight && (<div className="bg-stone-800/60 rounded-xl p-4 border-l-4 border-accent mb-5"><h3 className="text-xs font-semibold uppercase tracking-wider text-stone-400 mb-2">Key Insight</h3><p className="text-stone-300 italic leading-relaxed">{result.insight}</p></div>)}
             <div className="flex items-center gap-4 mt-4">
-              <a href={result.sourceUrl || url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-accent hover:underline text-sm font-medium">Read full article <ArrowRight className="w-3.5 h-3.5" /></a>
-              <button onClick={handleListen} disabled={audioPlaying} className={`inline-flex items-center gap-1.5 text-sm font-medium transition-colors ${audioPlaying ? 'text-stone-400 cursor-not-allowed' : 'text-accent hover:underline'}`}>{audioPlaying ? '🔊 Playing…' : '🎧 Listen'}</button>
+              <a href={result.sourceUrl || url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-accent hover:underline text-sm">Read full article <ArrowRight className="w-3.5 h-3.5" /></a>
+              <button onClick={handleListen} disabled={audioPlaying} className={`inline-flex items-center gap-1.5 text-sm font-medium transition-colors ${audioPlaying ? 'text-stone-500 cursor-not-allowed' : 'text-accent hover:underline'}`}>{audioPlaying ? '🔊 Playing…' : '🎧 Listen'}</button>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
 
       {batchMode && batchResults.length > 1 && (
-        <div className="w-full max-w-2xl mt-4 p-4 bg-white/90 backdrop-blur-sm rounded-2xl shadow-card">
-          <h3 className="font-medium text-stone-700 mb-2">All sifted articles ({batchResults.length})</h3>
+        <div className="card w-full max-w-2xl mt-4">
+          <h3 className="font-medium text-stone-200 mb-2">All sifted articles ({batchResults.length})</h3>
           <div className="space-y-2">
             {batchResults.map((item, idx) => (
-              <div key={idx} className="text-sm text-stone-600 pb-2 last:border-0">
+              <div key={idx} className="text-sm text-stone-300 pb-2 last:border-0 border-b border-stone-700">
                 <a href={item.sourceUrl} target="_blank" rel="noopener noreferrer" className="hover:underline">{item.summary.substring(0, 80)}…</a>
                 <span className="text-xs text-stone-400 ml-2">({item.verdict})</span>
               </div>

@@ -2,119 +2,66 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer base {
-  body {
-    background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 50%, #16213e 100%);
-    position: relative;
-    min-height: 100vh;
-  }
-
-  body::before {
-    content: '';
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-image: url('/reading-bg.png');
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    opacity: 0.05;
-    pointer-events: none;
-    z-index: 0;
-  }
-
-  main, nav, footer, .noise-overlay {
-    position: relative;
-    z-index: 1;
-  }
-
-  html {
-    scroll-behavior: smooth;
-  }
+/* Base */
+body {
+  background: linear-gradient(135deg, #0a0a12 0%, #14142a 100%);
+  color: #e5e5e5;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
 }
 
-@layer components {
-  .card {
-    background-color: rgba(30, 30, 40, 0.85);
-    backdrop-filter: blur(8px);
-    border-radius: 1rem;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-    transition: box-shadow 300ms;
-  }
-  .card:hover {
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
-  }
+/* Cards, modals, inputs */
+.card {
+  background-color: #1e1e2a;
+  border-radius: 1rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  padding: 1.25rem;
 }
 
-@layer utilities {
-  *:focus {
-    outline: none;
-    --tw-ring-color: #8b5cf6;
-    --tw-ring-offset-width: 2px;
-    --tw-ring-offset-color: #2a2a35;
-    border-radius: 0.25rem;
-  }
-}
-
-/* Global dark styles (no .dark prefix) */
-.bg-white\/90,
-.bg-white\/70,
-.bg-white\/80,
-.bg-white {
-  background-color: rgba(30, 30, 40, 0.85) !important;
-  backdrop-filter: blur(4px);
-}
-
-.text-stone-800,
-.text-stone-700 {
+input, textarea, select {
+  background-color: #2a2a35 !important;
+  border: 1px solid #3a3a45;
+  border-radius: 0.75rem;
+  padding: 0.5rem 0.75rem;
   color: #f0f0f0;
 }
 
-.text-stone-600,
-.text-stone-500,
-.text-stone-400,
-.text-stone-300 {
+button, a.button {
+  background-color: #8b5cf6;
+  color: white;
+  border-radius: 0.75rem;
+  padding: 0.5rem 1rem;
+  transition: background 0.2s;
+}
+button:hover, a.button:hover {
+  background-color: #7c3aed;
+}
+
+/* Nav & footer */
+nav, footer {
+  background-color: #14141ecc;
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid #2a2a35;
+}
+nav a, footer a {
   color: #c0c0c0;
 }
-
-.text-stone-200 {
-  color: #a0a0a0;
-}
-
-.bg-stone-100,
-.bg-stone-50 {
-  background-color: #2a2a35;
-}
-
-.border-stone-200,
-.border-stone-100 {
-  border-color: #3a3a45;
-}
-
-/* Navbar and footer */
-nav, footer {
-  background-color: rgba(20, 20, 30, 0.9) !important;
-  backdrop-filter: blur(8px);
-  border-bottom-color: rgba(255, 255, 255, 0.1);
-}
-
-nav a, footer a, nav button, footer button {
-  color: #d1d5db;
-}
-
 nav a:hover, footer a:hover {
+  color: #a78bfa;
+}
+
+/* Accent text / borders */
+.text-accent {
   color: #8b5cf6;
 }
-
-/* All cards, modals, inputs */
-input, textarea, select, pre {
-  background-color: #2a2a35 !important;
-  border-color: #3a3a45 !important;
-  color: #f0f0f0 !important;
+.border-accent {
+  border-color: #8b5cf6;
 }
 
-button:not(.no-style) {
-  transition: all 0.2s;
+/* Focus rings */
+*:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px #8b5cf6;
+  border-radius: 0.25rem;
 }
+
+/* No more .dark prefixes anywhere */
