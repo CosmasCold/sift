@@ -4,6 +4,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import CopyRssButton from './CopyRssButton';
 import ShareButton from './ShareButton';
+import { BookOpen } from 'lucide-react';
 
 // Helper to calculate reading streak
 function calculateStreak(dates: Date[]): number {
@@ -193,7 +194,10 @@ export default async function PublicProfilePage({
           </div>
         )}
 
-        <h2 className="text-xl font-serif font-bold text-stone-800 mb-4">📖 Reading list</h2>
+        <div className="flex items-center gap-2 mb-4">
+  <BookOpen className="w-5 h-5 text-accent" />
+  <h2 className="text-xl font-sans font-semibold text-stone-800 dark:text-stone-200">Reading list</h2>
+</div>
 
         {articles?.length ? (
           <div className="grid gap-5">
