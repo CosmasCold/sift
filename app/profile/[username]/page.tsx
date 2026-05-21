@@ -57,7 +57,7 @@ export default async function PublicProfilePage({
   if (!profile.public_profile) {
     return (
       <main className="flex-1 pt-12 pb-16 px-4 max-w-3xl mx-auto text-center">
-        <h1 className="text-3xl font-serif font-bold text-stone-800 mb-2">@{profile.username}</h1>
+        <h1 className="text-3xl font-sans font-bold text-stone-800 mb-2">@{profile.username}</h1>
         <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-card p-8">
           <p className="text-stone-600">This profile is private.</p>
           <Link href="/" className="inline-block mt-4 text-accent underline">Back to Sift</Link>

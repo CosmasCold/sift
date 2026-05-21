@@ -169,7 +169,7 @@ export default function LibraryPage() {
         animate={{ opacity: 1, y: 0 }}
         className="bg-white/70 backdrop-blur-md rounded-2xl border border-stone-200/60 shadow-lg px-6 py-4 mb-6 flex flex-wrap items-center justify-between gap-4"
       >
-        <h1 className="text-2xl font-serif font-bold text-stone-800">Your Library</h1>
+        <h1 className="text-2xl font-sans font-bold text-stone-800">Your Library</h1>
         <div className="flex items-center gap-3">
           <span className="text-sm text-stone-500 bg-white/80 rounded-full px-3 py-1">
             {articles.length} sifted

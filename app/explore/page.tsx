@@ -45,12 +45,12 @@ export default function ExplorePage() {
 
   return (
     <main className="flex-1 pt-12 pb-16 px-4 max-w-3xl mx-auto">
-      <h1 className="text-3xl font-serif font-bold text-stone-800 mb-2">Explore public profiles</h1>
+      <h1 className="text-3xl font-sans font-bold text-stone-800 mb-2">Explore public profiles</h1>
       <p className="text-stone-500 mb-6">Find readers by username or by tag (e.g., AI, design).</p>
 
       {/* Search mode toggle */}
       <div className="flex gap-4 mb-4">
-        <label className="flex items-center gap-2 text-sm">
+        <label className="flex items-center gap-2 text-sm text-stone-700 dark:text-stone-200">
           <input
             type="radio"
             checked={searchMode === 'username'}
@@ -59,7 +59,7 @@ export default function ExplorePage() {
           />
           Search by username
         </label>
-        <label className="flex items-center gap-2 text-sm">
+        <label className="flex items-center gap-2 text-sm text-stone-700 dark:text-stone-200">
           <input
             type="radio"
             checked={searchMode === 'tag'}

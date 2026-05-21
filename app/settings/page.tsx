@@ -155,7 +155,7 @@ export default function SettingsPage() {
         Back
       </Link>
 
-      <h1 className="text-2xl font-serif font-bold text-stone-800 dark:text-stone-100 mb-6">Settings</h1>
+      <h1 className="text-2xl font-sans font-bold text-stone-800 dark:text-stone-100 mb-6">Settings</h1>
 
       <div className="space-y-6 bg-white/90 backdrop-blur-sm rounded-2xl shadow-card p-6 dark:bg-stone-800/90">
         {/* Avatar upload */}
