@@ -50,7 +50,7 @@ export default function ExplorePage() {
 
       {/* Search mode toggle */}
       <div className="flex gap-4 mb-4">
-  <label className="flex items-center gap-2 text-sm text-stone-800 dark:text-stone-200">
+  <label className="flex items-center gap-2 text-sm text-stone-800 text-stone-200">
     <input
       type="radio"
       checked={searchMode === 'username'}
@@ -59,7 +59,7 @@ export default function ExplorePage() {
     />
     Search by username
   </label>
-  <label className="flex items-center gap-2 text-sm text-stone-800 dark:text-stone-200">
+  <label className="flex items-center gap-2 text-sm text-stone-800 text-stone-200">
     <input
       type="radio"
       checked={searchMode === 'tag'}

@@ -4,7 +4,7 @@
 
 @layer base {
   body {
-  background: linear-gradient(135deg, #faf7f2 0%, #e8dfed 50%, #d9cee8 100%);
+    background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 50%, #16213e 100%);
     position: relative;
     min-height: 100vh;
   }
@@ -20,7 +20,7 @@
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-    opacity: 0.06;
+    opacity: 0.05;
     pointer-events: none;
     z-index: 0;
   }
@@ -37,99 +37,83 @@
 
 @layer components {
   .card {
-    @apply bg-white/90 backdrop-blur-sm rounded-2xl shadow-card hover:shadow-card-hover transition-shadow duration-300;
+    background-color: rgba(30, 30, 40, 0.85);
+    backdrop-filter: blur(8px);
+    border-radius: 1rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    transition: box-shadow 300ms;
+  }
+  .card:hover {
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
   }
 }
 
 @layer utilities {
   *:focus {
-    outline: none;
-    @apply ring-2 ring-accent/50;
-  }
+  outline: none;
+  --tw-ring-color: #8b5cf6;
+  --tw-ring-offset-width: 2px;
+  --tw-ring-offset-color: #2a2a35;
+  border-radius: 0.25rem;
 }
 
-/* Dark mode overrides */
-/* Dark mode overrides */
-.dark body {
-  background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 50%, #16213e 100%);
-}
-
-.dark body::before {
-  opacity: 0.05;
-}
-
-/* Navbar & Footer - darker */
-.dark nav,
-.dark footer {
-  background-color: rgba(30, 30, 42, 0.85) !important;
-  backdrop-filter: blur(8px);
-  border-bottom-color: rgba(255, 255, 255, 0.1);
-}
-
-.dark nav a,
-.dark footer a,
-.dark nav button,
-.dark footer button {
-  color: #d1d5db !important;
-}
-
-.dark nav a:hover,
-.dark footer a:hover {
-  color: #a78bfa !important;
-}
-
-.dark .bg-white\/90,
-.dark .bg-white\/70,
-.dark .bg-white\/80,
-.dark .bg-white {
+/* Global dark styles (no .dark prefix) */
+.bg-white\/90,
+.bg-white\/70,
+.bg-white\/80,
+.bg-white {
   background-color: rgba(30, 30, 40, 0.85) !important;
   backdrop-filter: blur(4px);
 }
 
-.dark .card,
-.dark .bg-white\/90,
-.dark .bg-white\/70 {
-  background-color: rgba(30, 30, 40, 0.9) !important;
-}
-
-/* Article cards in library and profile */
-.dark .bg-white\/90 {
-  background-color: rgba(40, 40, 55, 0.9) !important;
-}
-
-/* Text colors */
-.dark .text-stone-800,
-.dark .text-stone-700 {
+.text-stone-800,
+.text-stone-700 {
   color: #f0f0f0;
 }
 
-.dark .text-stone-600,
-.dark .text-stone-500,
-.dark .text-stone-400,
-.dark .text-stone-300 {
+.text-stone-600,
+.text-stone-500,
+.text-stone-400,
+.text-stone-300 {
   color: #c0c0c0;
 }
 
-.dark .text-stone-200 {
+.text-stone-200 {
   color: #a0a0a0;
 }
 
-.dark .bg-stone-100,
-.dark .bg-stone-50 {
+.bg-stone-100,
+.bg-stone-50 {
   background-color: #2a2a35;
 }
 
-.dark .border-stone-200,
-.dark .border-stone-100 {
+.border-stone-200,
+.border-stone-100 {
   border-color: #3a3a45;
 }
 
-.dark .shadow-card,
-.dark .shadow-card-hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+/* Navbar and footer */
+nav, footer {
+  background-color: rgba(20, 20, 30, 0.9) !important;
+  backdrop-filter: blur(8px);
+  border-bottom-color: rgba(255, 255, 255, 0.1);
 }
 
-/* Focus ring in dark mode */
-.dark *:focus-visible {
-  --tw-ring-color: #8b7bb0;
+nav a, footer a, nav button, footer button {
+  color: #d1d5db;
+}
+
+nav a:hover, footer a:hover {
+  color: #8b5cf6;
+}
+
+/* All cards, modals, inputs */
+input, textarea, select, pre {
+  background-color: #2a2a35 !important;
+  border-color: #3a3a45 !important;
+  color: #f0f0f0 !important;
+}
+
+button:not(.no-style) {
+  transition: all 0.2s;
 }
