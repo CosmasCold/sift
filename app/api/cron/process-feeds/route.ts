@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { createClient } from '@supabase/supabase-js';
 import Parser from 'rss-parser';
 
 export async function GET(request: NextRequest) {
@@ -11,31 +11,57 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const supabase = await createClient();
-  const baseUrl = process.env.NEXT_PUBLIC_URL || 'https://sift-lac.vercel.app';
-  const { data: feeds } = await supabase.from('sift_feeds').select('*');
+  // Use service role client to bypass RLS
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false,
+      },
+    }
+  );
 
-  if (!feeds?.length) return NextResponse.json({ message: 'No feeds' });
+  const baseUrl = process.env.NEXT_PUBLIC_URL || 'https://sift-lac.vercel.app';
+
+  // Fetch all feeds (service role bypasses RLS)
+  const { data: feeds, error } = await supabase.from('sift_feeds').select('*');
+  if (error) {
+    console.error('Error fetching feeds:', error);
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  if (!feeds || feeds.length === 0) {
+    return NextResponse.json({ message: 'No feeds' });
+  }
 
   let newCount = 0;
+
   for (const feed of feeds) {
     try {
       const parser = new Parser();
       const parsed = await parser.parseURL(feed.feed_url);
-      const items = parsed.items.slice(0, 1); // adjust batch size later
+      const items = parsed.items.slice(0, 3); // process up to 3 per feed
 
       for (const item of items) {
         const url = item.link;
         if (!url) continue;
 
-        const { count } = await supabase
+        // Check if already sifted (use service role)
+        const { count, error: countError } = await supabase
           .from('sifted_articles')
           .select('*', { count: 'exact', head: true })
           .eq('source_url', url)
           .eq('user_id', feed.user_id);
-        if (count) continue;
 
-        // Use the existing retry function or call /api/sift directly
+        if (countError) {
+          console.error('Count error:', countError);
+          continue;
+        }
+        if (count && count > 0) continue;
+
+        // Call sift API
         const siftRes = await fetch(`${baseUrl}/api/sift`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -43,7 +69,7 @@ export async function GET(request: NextRequest) {
         });
         const siftData = await siftRes.json();
         if (siftData.summary) {
-          const { error } = await supabase.from('sifted_articles').insert({
+          const { error: insertError } = await supabase.from('sifted_articles').insert({
             user_id: feed.user_id,
             source_url: url,
             summary: siftData.summary,
@@ -52,12 +78,17 @@ export async function GET(request: NextRequest) {
             kept: siftData.verdict !== 'You can skip this',
             feed_id: feed.id,
           });
-          if (!error) newCount++;
+          if (insertError) {
+            console.error('Insert error:', insertError);
+          } else {
+            newCount++;
+          }
         }
       }
     } catch (err) {
       console.error('Feed error:', feed.feed_url, err);
     }
   }
+
   return NextResponse.json({ message: `Processed. New articles: ${newCount}` });
 }
