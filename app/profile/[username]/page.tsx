@@ -2,24 +2,30 @@ import { createClient } from '@/lib/supabase/server';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 
-interface Article {
-  id: string;
-  summary: string;
-  verdict: string;
-  created_at: string;
-}
-
 export default async function PublicProfilePage({ params }: { params: { username: string } }) {
   const supabase = await createClient();
-  const { data: profile } = await supabase
+  
+  // Try to find profile by username
+  const { data: profile, error } = await supabase
     .from('user_profiles')
     .select('id, username, public_profile, is_pro')
     .eq('username', params.username)
-    .single();
+    .maybeSingle();
 
-  if (!profile || !profile.public_profile) return notFound();
+  if (error) {
+    console.error('Profile query error:', error);
+    return <div>Error: {error.message}</div>;
+  }
 
-  // Pro gate: if not pro, show upgrade message instead of articles
+  if (!profile) {
+    return <div>Profile not found for username: {params.username}</div>;
+  }
+
+  if (!profile.public_profile) {
+    return <div>This profile is private.</div>;
+  }
+
+  // Pro gate (temporary for testing, you can comment this out)
   if (!profile.is_pro) {
     return (
       <main className="flex-1 pt-12 pb-16 px-4 max-w-3xl mx-auto text-center">
@@ -34,7 +40,6 @@ export default async function PublicProfilePage({ params }: { params: { username
     );
   }
 
-  // Pro user – show their kept articles (include 'id' in select)
   const { data: articles } = await supabase
     .from('sifted_articles')
     .select('id, summary, verdict, created_at')
@@ -49,7 +54,7 @@ export default async function PublicProfilePage({ params }: { params: { username
       <p className="text-stone-500 mb-8">What they&apos;re reading and keeping.</p>
       {articles?.length ? (
         <div className="grid gap-4">
-          {articles.map((article: Article) => (
+          {articles.map((article) => (
             <div key={article.id} className="bg-white rounded-2xl border p-5">
               <p className="text-stone-700">{article.summary}</p>
               <p className="text-xs text-stone-400 mt-2">{article.verdict} · {new Date(article.created_at).toLocaleDateString()}</p>
