@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { supabase } from '@/lib/supabase/client';
 import toast from 'react-hot-toast';
-import { ArrowLeft, Upload } from 'lucide-react';
+import { ArrowLeft, Upload, User } from 'lucide-react';
 import Link from 'next/link';
 
 export default function SettingsPage() {
@@ -39,13 +39,15 @@ export default function SettingsPage() {
       toast.error('Username is required');
       return;
     }
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
     const { error } = await supabase
       .from('user_profiles')
       .update({
         username: username.trim(),
         public_profile: publicProfile,
       })
-      .eq('id', (await supabase.auth.getUser()).data.user?.id);
+      .eq('id', user.id);
 
     if (error) {
       if (error.code === '23505') toast.error('Username already taken');
@@ -69,17 +71,22 @@ export default function SettingsPage() {
 
     setUploading(true);
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+    if (!user) {
+      toast.error('Not signed in');
+      setUploading(false);
+      return;
+    }
 
     const fileExt = file.name.split('.').pop();
-    const filePath = `${user.id}-${Date.now()}.${fileExt}`;
+    const filePath = `${user.id}/${Date.now()}.${fileExt}`;
 
     const { error: uploadError } = await supabase.storage
       .from('avatars')
       .upload(filePath, file);
 
     if (uploadError) {
-      toast.error('Upload failed');
+      console.error('Upload error:', uploadError);
+      toast.error(uploadError.message);
       setUploading(false);
       return;
     }
@@ -126,11 +133,11 @@ export default function SettingsPage() {
                 alt="avatar"
                 width={64}
                 height={64}
-                className="rounded-full object-cover border"
+                className="w-16 h-16 rounded-full object-cover border"
               />
             ) : (
               <div className="w-16 h-16 rounded-full bg-stone-100 flex items-center justify-center text-stone-400">
-                No photo
+                <User className="w-8 h-8" />
               </div>
             )}
             <label className="cursor-pointer bg-stone-100 hover:bg-stone-200 px-3 py-2 rounded-xl text-sm flex items-center gap-2">

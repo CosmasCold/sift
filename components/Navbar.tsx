@@ -2,10 +2,10 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase/client';
 import { User, LogOut, Settings, Library, Rss } from 'lucide-react';
-import Image from 'next/image';
 
 export default function Navbar() {
   const router = useRouter();
@@ -52,8 +52,16 @@ export default function Navbar() {
   return (
     <nav className="relative z-20 border-b border-stone-200/30 bg-white/40 backdrop-blur-md px-4 py-3">
       <div className="max-w-6xl mx-auto flex items-center justify-between flex-wrap gap-4">
-        <Link href="/" className="text-xl font-serif font-bold text-stone-800">
-          Sift
+        {/* Logo */}
+        <Link href="/" className="flex items-center gap-2">
+          <Image
+            src="/sift-logo.png"
+            alt="Sift logo"
+            width={32}
+            height={32}
+            className="w-8 h-8 object-contain"
+          />
+          <span className="text-xl font-serif font-bold text-accent">Sift</span>
         </Link>
 
         {user ? (
@@ -70,18 +78,18 @@ export default function Navbar() {
 
             <div className="flex items-center gap-2 ml-2">
               {profile?.avatar_url ? (
-  <Image
-    src={profile.avatar_url}
-    alt="avatar"
-    width={24}
-    height={24}
-    className="rounded-full object-cover"
-  />
-) : (
-  <div className="w-6 h-6 rounded-full bg-accent/20 flex items-center justify-center">
-    <User className="w-4 h-4 text-accent" />
-  </div>
-)}
+                <Image
+                  src={profile.avatar_url}
+                  alt="avatar"
+                  width={24}
+                  height={24}
+                  className="w-6 h-6 rounded-full object-cover"
+                />
+              ) : (
+                <div className="w-6 h-6 rounded-full bg-accent/20 flex items-center justify-center">
+                  <User className="w-4 h-4 text-accent" />
+                </div>
+              )}
               <span className="text-sm text-stone-700">
                 {profile?.username || user.email?.split('@')[0] || 'User'}
               </span>
