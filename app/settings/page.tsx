@@ -11,9 +11,10 @@ export default function SettingsPage() {
   const [username, setUsername] = useState('');
   const [publicProfile, setPublicProfile] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [coverUrl, setCoverUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const [uploading, setUploading] = useState(false);
-  const [isPro, setIsPro] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [uploadingCover, setUploadingCover] = useState(false);
 
   useEffect(() => {
     const load = async () => {
@@ -21,14 +22,14 @@ export default function SettingsPage() {
       if (user) {
         const { data } = await supabase
           .from('user_profiles')
-          .select('username, public_profile, avatar_url, is_pro')
+          .select('username, public_profile, avatar_url, cover_url')
           .eq('id', user.id)
           .single();
         if (data) {
           setUsername(data.username || '');
           setPublicProfile(data.public_profile || false);
           setAvatarUrl(data.avatar_url);
-          setIsPro(data.is_pro || false);
+          setCoverUrl(data.cover_url);
         }
       }
       setLoading(false);
@@ -59,6 +60,28 @@ export default function SettingsPage() {
     }
   };
 
+  const uploadFile = async (file: File, type: 'avatar' | 'cover') => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Not signed in');
+
+    const fileExt = file.name.split('.').pop();
+    const filePath = type === 'avatar'
+      ? `${user.id}/avatar-${Date.now()}.${fileExt}`
+      : `${user.id}/cover-${Date.now()}.${fileExt}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from('avatars')
+      .upload(filePath, file);
+
+    if (uploadError) throw uploadError;
+
+    const { data: { publicUrl } } = supabase.storage
+      .from('avatars')
+      .getPublicUrl(filePath);
+
+    return publicUrl;
+  };
+
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -71,44 +94,52 @@ export default function SettingsPage() {
       return;
     }
 
-    setUploading(true);
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      toast.error('Not signed in');
-      setUploading(false);
-      return;
-    }
-
-    const fileExt = file.name.split('.').pop();
-    const filePath = `${user.id}/${Date.now()}.${fileExt}`;
-
-    const { error: uploadError } = await supabase.storage
-      .from('avatars')
-      .upload(filePath, file);
-
-    if (uploadError) {
-      console.error('Upload error:', uploadError);
-      toast.error(uploadError.message);
-      setUploading(false);
-      return;
-    }
-
-    const { data: { publicUrl } } = supabase.storage
-      .from('avatars')
-      .getPublicUrl(filePath);
-
-    const { error: updateError } = await supabase
-      .from('user_profiles')
-      .update({ avatar_url: publicUrl })
-      .eq('id', user.id);
-
-    if (updateError) {
-      toast.error('Failed to update profile');
-    } else {
+    setUploadingAvatar(true);
+    try {
+      const publicUrl = await uploadFile(file, 'avatar');
+      const { error: updateError } = await supabase
+        .from('user_profiles')
+        .update({ avatar_url: publicUrl })
+        .eq('id', (await supabase.auth.getUser()).data.user?.id);
+      if (updateError) throw updateError;
       setAvatarUrl(publicUrl);
       toast.success('Avatar updated');
+    } catch (err) {
+      console.error('Avatar upload error:', err);
+      toast.error('Failed to upload avatar');
+    } finally {
+      setUploadingAvatar(false);
     }
-    setUploading(false);
+  };
+
+  const handleCoverUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please upload an image');
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('File too large (max 5MB)');
+      return;
+    }
+
+    setUploadingCover(true);
+    try {
+      const publicUrl = await uploadFile(file, 'cover');
+      const { error: updateError } = await supabase
+        .from('user_profiles')
+        .update({ cover_url: publicUrl })
+        .eq('id', (await supabase.auth.getUser()).data.user?.id);
+      if (updateError) throw updateError;
+      setCoverUrl(publicUrl);
+      toast.success('Cover image updated');
+    } catch (err) {
+      console.error('Cover upload error:', err);
+      toast.error('Failed to upload cover');
+    } finally {
+      setUploadingCover(false);
+    }
   };
 
   if (loading) {
@@ -147,8 +178,29 @@ export default function SettingsPage() {
             )}
             <label className="cursor-pointer bg-stone-100 hover:bg-stone-200 px-3 py-2 rounded-xl text-sm flex items-center gap-2">
               <Upload className="w-4 h-4" />
-              {uploading ? 'Uploading...' : 'Upload'}
-              <input type="file" accept="image/*" onChange={handleAvatarUpload} disabled={uploading} className="hidden" />
+              {uploadingAvatar ? 'Uploading...' : 'Upload'}
+              <input type="file" accept="image/*" onChange={handleAvatarUpload} disabled={uploadingAvatar} className="hidden" />
+            </label>
+          </div>
+        </div>
+
+        {/* Cover image upload */}
+        <div>
+          <label className="text-sm font-medium text-stone-700">Cover image</label>
+          <div className="mt-1">
+            {coverUrl ? (
+              <div className="relative w-full h-32 rounded-xl overflow-hidden border border-stone-200">
+                <Image src={coverUrl} alt="Cover" fill className="object-cover" unoptimized />
+              </div>
+            ) : (
+              <div className="w-full h-32 rounded-xl bg-gradient-to-r from-stone-100 to-stone-200 flex items-center justify-center text-stone-400 text-sm">
+                No cover image
+              </div>
+            )}
+            <label className="cursor-pointer bg-stone-100 hover:bg-stone-200 px-3 py-2 rounded-xl text-sm flex items-center gap-2 mt-2 w-fit">
+              <Upload className="w-4 h-4" />
+              {uploadingCover ? 'Uploading...' : 'Upload cover'}
+              <input type="file" accept="image/*" onChange={handleCoverUpload} disabled={uploadingCover} className="hidden" />
             </label>
           </div>
         </div>
@@ -179,7 +231,7 @@ export default function SettingsPage() {
           </button>
         </div>
 
-        {/* Embed widget section (only shown if public profile is enabled) */}
+        {/* Embed widget section */}
         {publicProfile && username && (
           <div className="border-t border-stone-200 pt-4 mt-2">
             <h3 className="font-medium text-stone-800 mb-2">📦 Embed your reading list</h3>
@@ -187,13 +239,9 @@ export default function SettingsPage() {
             <pre className="bg-stone-100 p-3 rounded-xl text-xs overflow-x-auto whitespace-pre-wrap break-all">
               {`<script src="${siteUrl}/embed/${username}"></script>`}
             </pre>
-            <p className="text-xs text-stone-400 mt-2">
-              This will render a list of your 10 most recent kept articles.
-            </p>
           </div>
         )}
 
-        {/* Save button */}
         <button onClick={handleSave} className="w-full py-2.5 bg-accent text-white rounded-xl font-medium">
           Save Settings
         </button>
