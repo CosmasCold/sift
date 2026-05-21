@@ -13,6 +13,7 @@ export default function SettingsPage() {
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
+  const [isPro, setIsPro] = useState(false);
 
   useEffect(() => {
     const load = async () => {
@@ -20,13 +21,14 @@ export default function SettingsPage() {
       if (user) {
         const { data } = await supabase
           .from('user_profiles')
-          .select('username, public_profile, avatar_url')
+          .select('username, public_profile, avatar_url, is_pro')
           .eq('id', user.id)
           .single();
         if (data) {
           setUsername(data.username || '');
           setPublicProfile(data.public_profile || false);
           setAvatarUrl(data.avatar_url);
+          setIsPro(data.is_pro || false);
         }
       }
       setLoading(false);
@@ -113,6 +115,8 @@ export default function SettingsPage() {
     return <div className="flex-1 pt-16 text-center">Loading…</div>;
   }
 
+  const siteUrl = process.env.NEXT_PUBLIC_URL || 'https://sift-lac.vercel.app';
+
   return (
     <main className="flex-1 pt-12 pb-16 px-4 max-w-lg mx-auto">
       <Link href="/library" className="inline-flex items-center gap-1 text-sm text-stone-500 hover:text-stone-700 mb-6">
@@ -129,13 +133,13 @@ export default function SettingsPage() {
           <div className="flex items-center gap-4 mt-1">
             {avatarUrl ? (
               <Image
-  src={avatarUrl}
-  alt="avatar"
-  width={64}
-  height={64}
-  unoptimized
-  className="w-16 h-16 rounded-full object-cover border"
-/>
+                src={avatarUrl}
+                alt="avatar"
+                width={64}
+                height={64}
+                unoptimized
+                className="w-16 h-16 rounded-full object-cover border"
+              />
             ) : (
               <div className="w-16 h-16 rounded-full bg-stone-100 flex items-center justify-center text-stone-400">
                 <User className="w-8 h-8" />
@@ -149,6 +153,7 @@ export default function SettingsPage() {
           </div>
         </div>
 
+        {/* Username */}
         <div>
           <label className="text-sm font-medium text-stone-700">Username</label>
           <input
@@ -160,6 +165,7 @@ export default function SettingsPage() {
           />
         </div>
 
+        {/* Public profile toggle */}
         <div className="flex items-center justify-between">
           <div>
             <p className="text-sm font-medium text-stone-700">Public profile</p>
@@ -173,6 +179,21 @@ export default function SettingsPage() {
           </button>
         </div>
 
+        {/* Embed widget section (only shown if public profile is enabled) */}
+        {publicProfile && username && (
+          <div className="border-t border-stone-200 pt-4 mt-2">
+            <h3 className="font-medium text-stone-800 mb-2">📦 Embed your reading list</h3>
+            <p className="text-xs text-stone-500 mb-2">Copy this code into your website, blog, or Notion:</p>
+            <pre className="bg-stone-100 p-3 rounded-xl text-xs overflow-x-auto whitespace-pre-wrap break-all">
+              {`<script src="${siteUrl}/embed/${username}"></script>`}
+            </pre>
+            <p className="text-xs text-stone-400 mt-2">
+              This will render a list of your 10 most recent kept articles.
+            </p>
+          </div>
+        )}
+
+        {/* Save button */}
         <button onClick={handleSave} className="w-full py-2.5 bg-accent text-white rounded-xl font-medium">
           Save Settings
         </button>
