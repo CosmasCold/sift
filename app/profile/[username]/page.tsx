@@ -1,31 +1,59 @@
 import { createClient } from '@/lib/supabase/server';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import Link from 'next/link';
 
-export default async function PublicProfilePage({ params }: { params: { username: string } }) {
+export default async function PublicProfilePage({
+  params,
+}: {
+  params: Promise<{ username: string }>;
+}) {
+  const { username } = await params;
+
+  // If no username, redirect to library
+  if (!username || username === '') {
+    redirect('/library');
+  }
+
   const supabase = await createClient();
-  
-  // Try to find profile by username
+
   const { data: profile, error } = await supabase
     .from('user_profiles')
     .select('id, username, public_profile, is_pro')
-    .eq('username', params.username)
+    .eq('username', username)
     .maybeSingle();
 
   if (error) {
     console.error('Profile query error:', error);
-    return <div>Error: {error.message}</div>;
+    return <div className="pt-16 text-center text-red-500">Database error: {error.message}</div>;
   }
 
   if (!profile) {
-    return <div>Profile not found for username: {params.username}</div>;
+    return (
+      <div className="pt-16 text-center">
+        <h1 className="text-2xl font-bold text-stone-800">Profile not found</h1>
+        <p className="text-stone-500 mt-2">No user with username &quot;{username}&quot; exists.</p>
+        <Link href="/library" className="inline-block mt-4 text-accent underline">
+          Go to Library
+        </Link>
+      </div>
+    );
   }
 
   if (!profile.public_profile) {
-    return <div>This profile is private.</div>;
+    return (
+      <main className="flex-1 pt-12 pb-16 px-4 max-w-3xl mx-auto text-center">
+        <h1 className="text-3xl font-serif font-bold text-stone-800 mb-2">@{profile.username}</h1>
+        <div className="bg-white rounded-2xl p-8 border border-stone-200 shadow-card mt-6">
+          <p className="text-stone-600">This profile is private.</p>
+          <Link href="/" className="inline-block mt-4 text-accent underline">
+            Back to Sift
+          </Link>
+        </div>
+      </main>
+    );
   }
 
-  // Pro gate (temporary for testing, you can comment this out)
+  // Pro gate (comment out for testing)
   if (!profile.is_pro) {
     return (
       <main className="flex-1 pt-12 pb-16 px-4 max-w-3xl mx-auto text-center">
@@ -57,7 +85,9 @@ export default async function PublicProfilePage({ params }: { params: { username
           {articles.map((article) => (
             <div key={article.id} className="bg-white rounded-2xl border p-5">
               <p className="text-stone-700">{article.summary}</p>
-              <p className="text-xs text-stone-400 mt-2">{article.verdict} · {new Date(article.created_at).toLocaleDateString()}</p>
+              <p className="text-xs text-stone-400 mt-2">
+                {article.verdict} · {new Date(article.created_at).toLocaleDateString()}
+              </p>
             </div>
           ))}
         </div>
