@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
+import toast from 'react-hot-toast';
 
 export default async function PublicProfilePage({
   params,
@@ -47,9 +48,6 @@ export default async function PublicProfilePage({
     );
   }
 
-  // Temp: remove Pro gate for now (you can decide later)
-  // if (!profile.is_pro) { ... }
-
   const { data: articles } = await supabase
     .from('sifted_articles')
     .select('id, summary, verdict, created_at')
@@ -58,27 +56,36 @@ export default async function PublicProfilePage({
     .order('created_at', { ascending: false })
     .limit(20);
 
-  // Format join date
   const joinDate = profile.created_at
     ? new Date(profile.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long' })
     : 'recently';
 
   return (
     <main className="flex-1 pt-12 pb-16 px-4 max-w-3xl mx-auto">
-      <div className="flex items-center gap-3 mb-1">
+      <div className="flex flex-wrap items-center gap-3 mb-1">
         <h1 className="text-3xl font-serif font-bold text-stone-800">@{profile.username}</h1>
         <span className="inline-block bg-stone-100 text-stone-600 text-xs px-2 py-1 rounded-full">
           Reader since {joinDate}
         </span>
-        <a
-  href={`/profile/${username}/feed.xml`}
-  target="_blank"
-  rel="noopener noreferrer"
-  className="text-sm text-stone-400 hover:text-accent transition-colors"
-  title="RSS feed"
->
-  📡 RSS
-</a>
+        <form action="/api/copy-feed" method="post" className="inline">
+          <button
+            type="button"
+            onClick={async () => {
+              const feedUrl = `${window.location.origin}/profile/${username}/feed.xml`;
+              await navigator.clipboard.writeText(feedUrl);
+              // If toast is not available globally, we'll use a simple alert for now
+              if (typeof toast !== 'undefined' && toast.success) {
+                toast.success('RSS feed URL copied!');
+              } else {
+                alert('RSS feed URL copied to clipboard! You can paste it into any RSS reader (Feedly, Inoreader, etc.).');
+              }
+            }}
+            className="text-sm bg-accent/10 hover:bg-accent/20 text-accent px-3 py-1 rounded-full transition-colors flex items-center gap-1"
+            title="Copy RSS feed URL"
+          >
+            📡 Copy RSS Feed
+          </button>
+        </form>
       </div>
       <p className="text-stone-500 mb-8">What they&apos;re reading and keeping.</p>
       {articles?.length ? (
