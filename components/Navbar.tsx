@@ -5,7 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase/client';
-import { User, LogOut, Settings, Library, Rss } from 'lucide-react';
+import { User, LogOut, Settings, Library, Rss, Users } from 'lucide-react';
 
 export default function Navbar() {
   const router = useRouter();
@@ -69,6 +69,9 @@ export default function Navbar() {
             <Link href="/library" className="text-stone-600 hover:text-accent transition-colors flex items-center gap-1">
               <Library className="w-4 h-4" /> Library
             </Link>
+            <Link href="/explore" className="text-stone-600 hover:text-accent transition-colors flex items-center gap-1">
+  <Users className="w-4 h-4" /> Explore
+</Link>
             <Link href="/feeds" className="text-stone-600 hover:text-accent transition-colors flex items-center gap-1">
               <Rss className="w-4 h-4" /> Feeds
             </Link>
