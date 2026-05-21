@@ -136,7 +136,11 @@ export default function HomePage() {
       if (resultsArr.length > 0) {
         setResult(resultsArr[0]);
         toast.success(`Sifted ${resultsArr.length} article${resultsArr.length > 1 ? 's' : ''}`);
-      } else {
+      }
+      if (resultsArr.length > 1) {
+  toast(`The other ${resultsArr.length - 1} article(s) are in your Library.`);
+}
+      else {
         toast.error('Could not sift any of the URLs');
       }
 
@@ -212,7 +216,7 @@ export default function HomePage() {
                 type="button"
                 onClick={() => setBatchMode(!batchMode)}
                 className={`text-sm font-medium transition-colors ${
-                  batchMode ? 'text-accent' : 'text-stone-400 hover:text-accent'
+                  batchMode ? 'text-accent' : 'text-stone-600 hover:text-accent'
                 }`}
               >
                 {batchMode ? 'Single URL' : 'Batch URLs'}
@@ -252,8 +256,7 @@ export default function HomePage() {
             <button
               type="submit"
               disabled={loading}
-              className="flex items-center justify-center gap-2 px-5 py-2.5 bg-accent text-white rounded-xl font-medium hover:bg-accent-hover disabled:opacity-50 transition-colors w-full sm:w-auto mt-2"
-            >
+className="flex items-center justify-center gap-2 px-5 py-2.5 bg-accent text-white rounded-xl font-medium hover:bg-accent-hover disabled:opacity-50 transition-colors sm:w-auto mt-2"            >
               {loading ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
