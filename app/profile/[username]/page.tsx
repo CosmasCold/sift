@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import CopyRssButton from './CopyRssButton';
+import ShareButton from './ShareButton';
 
 // Helper to calculate reading streak (consecutive days with kept articles)
 function calculateStreak(dates: Date[]): number {
@@ -131,12 +132,7 @@ export default async function PublicProfilePage({
             </div>
             <div className="md:ml-auto flex gap-2">
               <CopyRssButton username={username} />
-              <button
-                onClick={() => navigator.clipboard.writeText(window.location.href)}
-                className="bg-white/20 hover:bg-white/30 backdrop-blur rounded-full px-3 py-1 text-sm transition"
-              >
-                Share
-              </button>
+              <ShareButton username={username} />
             </div>
           </div>
         </div>
