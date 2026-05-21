@@ -15,17 +15,29 @@ export default async function PublicProfilePage({
 
   const supabase = await createClient();
 
-  const { data: profile, error } = await supabase
+  // Fetch profile
+  const { data: profile, error: profileError } = await supabase
     .from('user_profiles')
     .select('id, username, public_profile, is_pro, created_at')
     .eq('username', username)
     .maybeSingle();
 
-  if (error || !profile) {
+  if (profileError) {
+    console.error('Profile error:', profileError);
+    return (
+      <div className="pt-16 text-center text-red-600">
+        Error loading profile: {profileError.message}
+      </div>
+    );
+  }
+
+  if (!profile) {
     return (
       <div className="pt-16 text-center">
         <h1 className="text-2xl font-bold text-stone-800">Profile not found</h1>
-        <p className="text-stone-500 mt-2">No user with username &quot;{username}&quot; exists.</p>
+        <p className="text-stone-500 mt-2">
+          No user with username &quot;{username}&quot; exists.
+        </p>
         <Link href="/library" className="inline-block mt-4 text-accent underline">
           Go to Library
         </Link>
@@ -47,13 +59,23 @@ export default async function PublicProfilePage({
     );
   }
 
-  const { data: articles } = await supabase
+  // Fetch articles
+  const { data: articles, error: articlesError } = await supabase
     .from('sifted_articles')
     .select('id, summary, verdict, created_at')
     .eq('user_id', profile.id)
     .eq('kept', true)
     .order('created_at', { ascending: false })
     .limit(20);
+
+  if (articlesError) {
+    console.error('Articles error:', articlesError);
+    return (
+      <div className="pt-16 text-center text-red-600">
+        Error loading articles: {articlesError.message}
+      </div>
+    );
+  }
 
   const joinDate = profile.created_at
     ? new Date(profile.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long' })
@@ -66,8 +88,6 @@ export default async function PublicProfilePage({
         <span className="inline-block bg-stone-100 text-stone-600 text-xs px-2 py-1 rounded-full">
           Reader since {joinDate}
         </span>
-
-        {/* RSS button – uses a simple form with alert (no client-side libraries) */}
         <button
           type="button"
           onClick={async () => {
