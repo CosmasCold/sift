@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Search, User } from 'lucide-react';
+import { Search, User, Tag } from 'lucide-react';
 
 interface Profile {
   username: string;
@@ -12,17 +12,23 @@ interface Profile {
 }
 
 export default function ExplorePage() {
+  const [searchMode, setSearchMode] = useState<'username' | 'tag'>('username');
   const [query, setQuery] = useState('');
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
 
   const handleSearch = async () => {
-    if (!query.trim() || query.trim().length < 2) return;
+    const trimmed = query.trim();
+    if (!trimmed) return;
+    if (searchMode === 'username' && trimmed.length < 2) return;
+    if (searchMode === 'tag' && trimmed.length < 1) return;
+
     setLoading(true);
     setSearched(true);
     try {
-      const res = await fetch(`/api/explore?q=${encodeURIComponent(query.trim())}`);
+      const param = searchMode === 'username' ? `q=${encodeURIComponent(trimmed)}` : `tag=${encodeURIComponent(trimmed)}`;
+      const res = await fetch(`/api/explore?${param}`);
       const data = await res.json();
       setProfiles(data.profiles || []);
     } catch (err) {
@@ -40,24 +46,50 @@ export default function ExplorePage() {
   return (
     <main className="flex-1 pt-12 pb-16 px-4 max-w-3xl mx-auto">
       <h1 className="text-3xl font-serif font-bold text-stone-800 mb-2">Explore public profiles</h1>
-      <p className="text-stone-500 mb-6">Find readers with similar interests.</p>
+      <p className="text-stone-500 mb-6">Find readers by username or by tag (e.g., AI, design).</p>
+
+      {/* Search mode toggle */}
+      <div className="flex gap-4 mb-4">
+        <label className="flex items-center gap-2 text-sm">
+          <input
+            type="radio"
+            checked={searchMode === 'username'}
+            onChange={() => setSearchMode('username')}
+            className="accent-accent"
+          />
+          Search by username
+        </label>
+        <label className="flex items-center gap-2 text-sm">
+          <input
+            type="radio"
+            checked={searchMode === 'tag'}
+            onChange={() => setSearchMode('tag')}
+            className="accent-accent"
+          />
+          Search by tag
+        </label>
+      </div>
 
       {/* Search bar */}
       <div className="flex gap-2 mb-8">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
+          {searchMode === 'username' ? (
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
+          ) : (
+            <Tag className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
+          )}
           <input
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={handleKeyPress}
-            placeholder="Search by username..."
+            placeholder={searchMode === 'username' ? 'Search by username...' : 'Search by tag (e.g., AI, productivity)...'}
             className="w-full pl-9 pr-3 py-2 bg-white/70 backdrop-blur-sm border border-stone-200 rounded-xl focus:outline-none focus:border-accent"
           />
         </div>
         <button
           onClick={handleSearch}
-          disabled={loading || query.trim().length < 2}
+          disabled={loading || (searchMode === 'username' && query.trim().length < 2) || (searchMode === 'tag' && query.trim().length < 1)}
           className="px-4 py-2 bg-accent text-white rounded-xl hover:bg-accent-hover disabled:opacity-50 transition-colors"
         >
           {loading ? 'Searching...' : 'Search'}
@@ -71,7 +103,7 @@ export default function ExplorePage() {
             <div className="text-center py-12 text-stone-500">Searching...</div>
           ) : profiles.length === 0 ? (
             <div className="text-center py-12 text-stone-500">
-              {query ? `No public profiles found for "${query}"` : 'Enter a username to search'}
+              {query ? `No public profiles found ${searchMode === 'username' ? `for "${query}"` : `with tag "${query}"`}` : 'Enter a search term'}
             </div>
           ) : (
             <div className="grid gap-3">
