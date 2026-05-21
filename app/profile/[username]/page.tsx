@@ -111,9 +111,11 @@ export default async function PublicProfilePage({
         ) : (
           <div className={`w-full h-full ${defaultCoverGradient}`} />
         )}
-        <div className="absolute inset-0 bg-black/10" /> {/* subtle overlay for readability */}
+        <div className="absolute inset-0 bg-black/5" /> {/* subtle overlay for depth */}
+        
+        {/* Banner overlay container – light blurred background, dark text */}
         <div className="absolute bottom-0 left-0 right-0 p-6">
-  <div className="max-w-4xl mx-auto bg-black/30 backdrop-blur-sm rounded-xl p-4 flex flex-col md:flex-row items-center gap-4">
+          <div className="max-w-4xl mx-auto bg-white/30 backdrop-blur-md rounded-xl p-4 flex flex-col md:flex-row items-center gap-4 shadow-lg">
             {/* Avatar */}
             <div className="w-24 h-24 rounded-full border-4 border-white bg-white overflow-hidden shadow-lg">
               {profile.avatar_url ? (
@@ -125,8 +127,8 @@ export default async function PublicProfilePage({
               )}
             </div>
             <div className="text-center md:text-left">
-              <h1 className="text-3xl font-bold">@{profile.username}</h1>
-              <div className="flex flex-wrap gap-3 mt-1 text-sm opacity-90">
+              <h1 className="text-3xl font-bold text-stone-800">@{profile.username}</h1>
+              <div className="flex flex-wrap gap-3 mt-1 text-sm text-stone-600">
                 <span>📅 Reader since {joinDate}</span>
                 {streak > 0 && <span>🔥 {streak} day streak</span>}
               </div>
