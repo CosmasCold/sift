@@ -2,48 +2,48 @@
 @tailwind components;
 @tailwind utilities;
 
-/* stylelint-disable unknownAtRules */
+@layer base {
+  body {
+    background: linear-gradient(135deg, #faf7f2 0%, #f3f0ea 50%, #ede7f5 100%);
+    position: relative;
+    min-height: 100vh;
+  }
 
-body {
-  background: linear-gradient(135deg, #faf7f2 0%, #f3f0ea 50%, #ede7f5 100%);
-  position: relative;
-  min-height: 100vh;
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: url('/reading-bg.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    opacity: 0.06;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  main, nav, footer, .noise-overlay {
+    position: relative;
+    z-index: 1;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
 }
 
-/* Subtle reading-themed overlay */
-body::before {
-  content: '';
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-image: url('/reading-bg.jpg');
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  opacity: 0.06;
-  pointer-events: none;
-  z-index: 0;
+@layer components {
+  .card {
+    @apply bg-white/90 backdrop-blur-sm rounded-2xl shadow-card hover:shadow-card-hover transition-shadow duration-300;
+  }
 }
 
-/* Ensure content sits above overlay */
-main, nav, footer, .noise-overlay {
-  position: relative;
-  z-index: 1;
-}
-
-/* Card styling utility */
-.card {
-  @apply bg-white/90 backdrop-blur-sm rounded-2xl shadow-card hover:shadow-card-hover transition-shadow duration-300;
-}
-
-/* Focus ring */
-*:focus {
-  outline: none;
-  @apply ring-2 ring-accent/50;
-}
-
-html {
-  scroll-behavior: smooth;
+@layer utilities {
+  *:focus {
+    outline: none;
+    @apply ring-2 ring-accent/50;
+  }
 }
