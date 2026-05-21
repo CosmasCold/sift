@@ -49,57 +49,75 @@
 }
 
 /* Dark mode overrides */
+/* Dark mode overrides */
 .dark body {
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f0f1a 100%);
+  background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 50%, #16213e 100%);
 }
 
 .dark body::before {
-  opacity: 0.03;
+  opacity: 0.05;
+}
+
+/* Navbar & Footer - darker */
+.dark nav,
+.dark footer {
+  background-color: rgba(0, 0, 0, 0.7) !important;
+  backdrop-filter: blur(8px);
+  border-bottom-color: rgba(255, 255, 255, 0.1);
 }
 
 .dark .bg-white\/90,
 .dark .bg-white\/70,
 .dark .bg-white\/80,
 .dark .bg-white {
-  background-color: rgba(0, 0, 0, 0.85) !important;
+  background-color: rgba(30, 30, 40, 0.85) !important;
   backdrop-filter: blur(4px);
 }
 
+.dark .card,
+.dark .bg-white\/90,
+.dark .bg-white\/70 {
+  background-color: rgba(30, 30, 40, 0.9) !important;
+}
+
+/* Article cards in library and profile */
+.dark .bg-white\/90 {
+  background-color: rgba(40, 40, 55, 0.9) !important;
+}
+
+/* Text colors */
 .dark .text-stone-800,
 .dark .text-stone-700 {
-  color: #e5e5e5;
+  color: #f0f0f0;
 }
 
 .dark .text-stone-600,
 .dark .text-stone-500,
-.dark .text-stone-400 {
-  color: #a3a3a3;
+.dark .text-stone-400,
+.dark .text-stone-300 {
+  color: #c0c0c0;
+}
+
+.dark .text-stone-200 {
+  color: #a0a0a0;
 }
 
 .dark .bg-stone-100,
 .dark .bg-stone-50 {
-  background-color: #2a2a2a;
+  background-color: #2a2a35;
 }
 
 .dark .border-stone-200,
 .dark .border-stone-100 {
-  border-color: #333;
+  border-color: #3a3a45;
 }
 
 .dark .shadow-card,
 .dark .shadow-card-hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
 }
 
-.dark .card {
-  background-color: rgba(0, 0, 0, 0.85);
-}
-
-/* Focus outlines – rounded */
-nav a:focus-visible,
-footer a:focus-visible,
-button:focus-visible,
-a:focus-visible {
-  outline: none;
-  @apply ring-2 ring-accent/50 rounded-md;
+/* Focus ring in dark mode */
+.dark *:focus-visible {
+  --tw-ring-color: #8b7bb0;
 }

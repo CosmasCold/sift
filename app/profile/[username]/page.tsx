@@ -112,8 +112,8 @@ export default async function PublicProfilePage({
           <div className={`w-full h-full ${defaultCoverGradient}`} />
         )}
         <div className="absolute inset-0 bg-black/10" /> {/* subtle overlay for readability */}
-        <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
-          <div className="max-w-4xl mx-auto flex flex-col md:flex-row items-center gap-4">
+        <div className="absolute bottom-0 left-0 right-0 p-6">
+  <div className="max-w-4xl mx-auto bg-black/30 backdrop-blur-sm rounded-xl p-4 flex flex-col md:flex-row items-center gap-4">
             {/* Avatar */}
             <div className="w-24 h-24 rounded-full border-4 border-white bg-white overflow-hidden shadow-lg">
               {profile.avatar_url ? (
