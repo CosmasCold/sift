@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server';
-import { notFound, redirect } from 'next/navigation';
+import { redirect } from 'next/navigation';
 import Link from 'next/link';
 
 export default async function PublicProfilePage({
@@ -9,7 +9,6 @@ export default async function PublicProfilePage({
 }) {
   const { username } = await params;
 
-  // If no username, redirect to library
   if (!username || username === '') {
     redirect('/library');
   }
@@ -18,16 +17,11 @@ export default async function PublicProfilePage({
 
   const { data: profile, error } = await supabase
     .from('user_profiles')
-    .select('id, username, public_profile, is_pro')
+    .select('id, username, public_profile, is_pro, created_at')
     .eq('username', username)
     .maybeSingle();
 
-  if (error) {
-    console.error('Profile query error:', error);
-    return <div className="pt-16 text-center text-red-500">Database error: {error.message}</div>;
-  }
-
-  if (!profile) {
+  if (error || !profile) {
     return (
       <div className="pt-16 text-center">
         <h1 className="text-2xl font-bold text-stone-800">Profile not found</h1>
@@ -53,20 +47,8 @@ export default async function PublicProfilePage({
     );
   }
 
-  // Pro gate (comment out for testing)
-  if (!profile.is_pro) {
-    return (
-      <main className="flex-1 pt-12 pb-16 px-4 max-w-3xl mx-auto text-center">
-        <h1 className="text-3xl font-serif font-bold text-stone-800 mb-2">@{profile.username}</h1>
-        <div className="bg-white rounded-2xl p-8 border border-stone-200 shadow-card mt-6">
-          <p className="text-stone-600">This profile is only visible to Pro users.</p>
-          <Link href="/pricing" className="inline-block mt-4 bg-accent text-white px-6 py-2 rounded-xl">
-            Upgrade to Pro
-          </Link>
-        </div>
-      </main>
-    );
-  }
+  // Temp: remove Pro gate for now (you can decide later)
+  // if (!profile.is_pro) { ... }
 
   const { data: articles } = await supabase
     .from('sifted_articles')
@@ -76,9 +58,19 @@ export default async function PublicProfilePage({
     .order('created_at', { ascending: false })
     .limit(20);
 
+  // Format join date
+  const joinDate = profile.created_at
+    ? new Date(profile.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long' })
+    : 'recently';
+
   return (
     <main className="flex-1 pt-12 pb-16 px-4 max-w-3xl mx-auto">
-      <h1 className="text-3xl font-serif font-bold text-stone-800 mb-1">@{profile.username}</h1>
+      <div className="flex items-center gap-3 mb-1">
+        <h1 className="text-3xl font-serif font-bold text-stone-800">@{profile.username}</h1>
+        <span className="inline-block bg-stone-100 text-stone-600 text-xs px-2 py-1 rounded-full">
+          Reader since {joinDate}
+        </span>
+      </div>
       <p className="text-stone-500 mb-8">What they&apos;re reading and keeping.</p>
       {articles?.length ? (
         <div className="grid gap-4">
