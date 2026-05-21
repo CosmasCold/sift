@@ -196,7 +196,7 @@ export default async function PublicProfilePage({
 
         <div className="flex items-center gap-2 mb-4">
   <BookOpen className="w-5 h-5 text-accent" />
-  <h2 className="text-xl font-sans font-semibold text-stone-800 dark:text-stone-200">Reading list</h2>
+  <h2 className="text-xl font-sans font-semibold text-stone-900 dark:text-stone-100">Reading list</h2>
 </div>
 
         {articles?.length ? (

@@ -143,20 +143,21 @@ export default function SettingsPage() {
   };
 
   if (loading) {
-    return <div className="flex-1 pt-16 text-center">Loading…</div>;
+    return <div className="flex-1 pt-16 text-center text-stone-800 dark:text-stone-200">Loading…</div>;
   }
 
   const siteUrl = process.env.NEXT_PUBLIC_URL || 'https://sift-lac.vercel.app';
 
   return (
     <main className="flex-1 pt-12 pb-16 px-4 max-w-lg mx-auto">
-      <Link href="/library" className="inline-flex items-center gap-1 text-sm text-stone-500 hover:text-stone-700 dark:text-stone-400 dark:hover:text-stone-300 mb-6">
+      <Link href="/library" className="inline-flex items-center gap-1 text-sm text-stone-600 hover:text-stone-800 dark:text-stone-400 dark:hover:text-stone-200 mb-6">
         <ArrowLeft className="w-4 h-4" />
         Back
       </Link>
 
       <h1 className="text-2xl font-sans font-bold text-stone-800 dark:text-stone-100 mb-6">Settings</h1>
 
+      {/* White background in light mode, dark in dark mode */}
       <div className="space-y-6 bg-white rounded-2xl shadow-card p-6 dark:bg-stone-800/90">
         {/* Avatar upload */}
         <div>
