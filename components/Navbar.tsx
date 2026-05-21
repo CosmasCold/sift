@@ -5,10 +5,12 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase/client';
-import { User, LogOut, Settings, Library, Rss, Users } from 'lucide-react';
+import { User, LogOut, Settings, Library, Rss, Users, Sun, Moon } from 'lucide-react';
+import { useTheme } from './ThemeProvider';
 
 export default function Navbar() {
   const router = useRouter();
+  const { theme, toggleTheme } = useTheme();
   const [user, setUser] = useState<{ id: string; email?: string } | null>(null);
   const [profile, setProfile] = useState<{ username: string; avatar_url: string | null; public_profile: boolean } | null>(null);
 
@@ -52,7 +54,7 @@ export default function Navbar() {
   return (
     <nav className="relative z-20 border-b border-stone-200/30 bg-white/40 backdrop-blur-md px-4 py-3">
       <div className="max-w-6xl mx-auto flex items-center justify-between flex-wrap gap-4">
-        <Link href="/" className="flex items-center gap-2">
+        <Link href="/" className="flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-accent/50 rounded-md">
           <Image
             src="/sift-logo.png"
             alt="Sift logo"
@@ -65,26 +67,31 @@ export default function Navbar() {
 
         {user ? (
           <div className="flex items-center gap-4">
-            <Link href="/library" className="text-stone-600 hover:text-accent transition-colors flex items-center gap-1">
+            <Link href="/library" className="text-stone-600 hover:text-accent transition-colors flex items-center gap-1 focus:outline-none focus:ring-2 focus:ring-accent/50 rounded-md">
               <Library className="w-4 h-4" /> Library
             </Link>
-            <Link href="/feeds" className="text-stone-600 hover:text-accent transition-colors flex items-center gap-1">
+            <Link href="/feeds" className="text-stone-600 hover:text-accent transition-colors flex items-center gap-1 focus:outline-none focus:ring-2 focus:ring-accent/50 rounded-md">
               <Rss className="w-4 h-4" /> Feeds
             </Link>
-            <Link href="/explore" className="text-stone-600 hover:text-accent transition-colors flex items-center gap-1">
+            <Link href="/explore" className="text-stone-600 hover:text-accent transition-colors flex items-center gap-1 focus:outline-none focus:ring-2 focus:ring-accent/50 rounded-md">
               <Users className="w-4 h-4" /> Explore
             </Link>
             {profile?.username && profile?.public_profile && (
-              <Link
-                href={`/profile/${profile.username}`}
-                className="text-stone-600 hover:text-accent transition-colors flex items-center gap-1"
-              >
+              <Link href={`/profile/${profile.username}`} className="text-stone-600 hover:text-accent transition-colors flex items-center gap-1 focus:outline-none focus:ring-2 focus:ring-accent/50 rounded-md">
                 <User className="w-4 h-4" /> Profile
               </Link>
             )}
-            <Link href="/settings" className="text-stone-600 hover:text-accent transition-colors flex items-center gap-1">
+            <Link href="/settings" className="text-stone-600 hover:text-accent transition-colors flex items-center gap-1 focus:outline-none focus:ring-2 focus:ring-accent/50 rounded-md">
               <Settings className="w-4 h-4" /> Settings
             </Link>
+
+            <button
+              onClick={toggleTheme}
+              className="text-stone-600 hover:text-accent transition-colors focus:outline-none focus:ring-2 focus:ring-accent/50 rounded-md p-1"
+              title={theme === 'light' ? 'Dark mode' : 'Light mode'}
+            >
+              {theme === 'light' ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
+            </button>
 
             <div className="flex items-center gap-2 ml-2">
               {profile?.avatar_url ? (
@@ -106,7 +113,7 @@ export default function Navbar() {
               </span>
               <button
                 onClick={handleSignOut}
-                className="text-stone-500 hover:text-red-500 transition-colors ml-2"
+                className="text-stone-500 hover:text-red-500 transition-colors ml-2 focus:outline-none focus:ring-2 focus:ring-red-500/50 rounded-md"
                 title="Sign out"
               >
                 <LogOut className="w-4 h-4" />
@@ -114,7 +121,7 @@ export default function Navbar() {
             </div>
           </div>
         ) : (
-          <Link href="/auth" className="text-sm bg-accent text-white px-4 py-2 rounded-xl">
+          <Link href="/auth" className="text-sm bg-accent text-white px-4 py-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-accent/50">
             Sign In
           </Link>
         )}

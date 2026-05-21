@@ -47,3 +47,59 @@
     @apply ring-2 ring-accent/50;
   }
 }
+
+/* Dark mode overrides */
+.dark body {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f0f1a 100%);
+}
+
+.dark body::before {
+  opacity: 0.03;
+}
+
+.dark .bg-white\/90,
+.dark .bg-white\/70,
+.dark .bg-white\/80,
+.dark .bg-white {
+  background-color: rgba(0, 0, 0, 0.85) !important;
+  backdrop-filter: blur(4px);
+}
+
+.dark .text-stone-800,
+.dark .text-stone-700 {
+  color: #e5e5e5;
+}
+
+.dark .text-stone-600,
+.dark .text-stone-500,
+.dark .text-stone-400 {
+  color: #a3a3a3;
+}
+
+.dark .bg-stone-100,
+.dark .bg-stone-50 {
+  background-color: #2a2a2a;
+}
+
+.dark .border-stone-200,
+.dark .border-stone-100 {
+  border-color: #333;
+}
+
+.dark .shadow-card,
+.dark .shadow-card-hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.dark .card {
+  background-color: rgba(0, 0, 0, 0.85);
+}
+
+/* Focus outlines – rounded */
+nav a:focus-visible,
+footer a:focus-visible,
+button:focus-visible,
+a:focus-visible {
+  outline: none;
+  @apply ring-2 ring-accent/50 rounded-md;
+}

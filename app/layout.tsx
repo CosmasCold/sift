@@ -4,6 +4,7 @@ import './globals.css';
 import { Toaster } from 'react-hot-toast';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import { ThemeProvider } from '@/components/ThemeProvider';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -18,13 +19,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body className={`${inter.className} min-h-screen flex flex-col`}>
-        <div className="noise-overlay" />
-        <Navbar />
-        <main className="flex-1 relative z-10">{children}</main>
-        <Footer />
-        <Toaster position="top-center" />
+        <ThemeProvider>
+          <div className="noise-overlay" />
+          <Navbar />
+          <main className="flex-1 relative z-10">{children}</main>
+          <Footer />
+          <Toaster position="top-center" />
+        </ThemeProvider>
       </body>
     </html>
   );
