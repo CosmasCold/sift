@@ -30,7 +30,7 @@ export default function ExplorePage() {
       const res = await fetch(`/api/explore?${param}`);
       const data = await res.json();
       setProfiles(data.profiles || []);
-    } catch (err) { setProfiles([]); } finally { setLoading(false); }
+    } catch { setProfiles([]); } finally { setLoading(false); }
   };
 
   return (
