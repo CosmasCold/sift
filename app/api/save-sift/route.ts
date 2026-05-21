@@ -9,7 +9,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { url, sourceUrl, summary, insight, verdict } = await request.json();
+    const { sourceUrl, summary, insight, verdict } = await request.json();
     if (!summary || !verdict) {
       return NextResponse.json({ error: 'Missing fields' }, { status: 400 });
     }

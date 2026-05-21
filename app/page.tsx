@@ -25,18 +25,18 @@ export default function HomePage() {
   const [showManualFallback, setShowManualFallback] = useState(false);
   const [batchMode, setBatchMode] = useState(false);
   const [batchUrls, setBatchUrls] = useState('');
-  const [audioUrl, setAudioUrl] = useState<string | null>(null);
-const [audioPlaying, setAudioPlaying] = useState(false);
+  const [audioPlaying, setAudioPlaying] = useState(false);
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => setUser(data.user ?? null));
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => setUser(session?.user ?? null)
-    );
-    // eslint-disable-next-line react-hooks/set-state-in-effect
+  supabase.auth.getUser().then(({ data }) => {
+    setUser(data.user ?? null);
     setLoadingAuth(false);
-    return () => subscription.unsubscribe();
-  }, []);
+  });
+  const { data: { subscription } } = supabase.auth.onAuthStateChange(
+    (_event, session) => setUser(session?.user ?? null)
+  );
+  return () => subscription.unsubscribe();
+}, []);
 
   if (loadingAuth) {
     return (
@@ -72,29 +72,28 @@ const [audioPlaying, setAudioPlaying] = useState(false);
     );
   }
 
-const handleListen = async () => {
-  if (!result) return;
-  try {
-    const res = await fetch('/api/listen', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text: result.summary }),
-    });
-    if (res.ok) {
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
-      setAudioUrl(url);
-      const audio = new Audio(url);
-      audio.onplay = () => setAudioPlaying(true);
-      audio.onended = () => setAudioPlaying(false);
-      audio.play();
-    } else {
-      toast.error('Could not generate audio');
+  const handleListen = async () => {
+    if (!result) return;
+    try {
+      const res = await fetch('/api/listen', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: result.summary }),
+      });
+      if (res.ok) {
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        const audio = new Audio(url);
+        audio.onplay = () => setAudioPlaying(true);
+        audio.onended = () => setAudioPlaying(false);
+        audio.play();
+      } else {
+        toast.error('Could not generate audio');
+      }
+    } catch {
+      toast.error('Something went wrong');
     }
-  } catch {
-    toast.error('Something went wrong');
-  }
-};
+  };
 
   const handleSift = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -219,6 +218,7 @@ const handleListen = async () => {
                 {batchMode ? 'Single URL' : 'Batch URLs'}
               </button>
             </div>
+
             {batchMode ? (
               <textarea
                 value={batchUrls}
@@ -245,25 +245,27 @@ const handleListen = async () => {
                 >
                   <ClipboardList className="w-5 h-5" />
                 </button>
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="flex items-center gap-2 px-5 py-2.5 bg-accent text-white rounded-xl font-medium hover:bg-accent-hover disabled:opacity-50 transition-colors"
-                >
-                  {loading ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      Sifting…
-                    </>
-                  ) : (
-                    <>
-                      Sift
-                      <ArrowRight className="w-4 h-4" />
-                    </>
-                  )}
-                </button>
               </div>
             )}
+
+            {/* Submit button - always visible */}
+            <button
+              type="submit"
+              disabled={loading}
+              className="flex items-center justify-center gap-2 px-5 py-2.5 bg-accent text-white rounded-xl font-medium hover:bg-accent-hover disabled:opacity-50 transition-colors w-full sm:w-auto mt-2"
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Sifting…
+                </>
+              ) : (
+                <>
+                  Sift
+                  <ArrowRight className="w-4 h-4" />
+                </>
+              )}
+            </button>
           </>
         )}
 
@@ -359,35 +361,26 @@ const handleListen = async () => {
                 <p className="text-stone-800 italic leading-relaxed">{result.insight}</p>
               </div>
             )}
-            <a
-              href={result.sourceUrl || url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 text-accent hover:underline text-sm font-medium"
-            >
-              Read full article
-              <ArrowRight className="w-3.5 h-3.5" />
-            </a>
             <div className="flex items-center gap-4 mt-4">
-  <a
-    href={result.sourceUrl || url}
-    target="_blank"
-    rel="noopener noreferrer"
-    className="inline-flex items-center gap-1.5 text-accent hover:underline text-sm font-medium"
-  >
-    Read full article
-    <ArrowRight className="w-3.5 h-3.5" />
-  </a>
-  <button
-    onClick={handleListen}
-    disabled={audioPlaying}
-    className={`inline-flex items-center gap-1.5 text-sm font-medium transition-colors ${
-      audioPlaying ? 'text-stone-400 cursor-not-allowed' : 'text-accent hover:underline'
-    }`}
-  >
-    {audioPlaying ? '🔊 Playing…' : '🎧 Listen'}
-  </button>
-</div>
+              <a
+                href={result.sourceUrl || url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 text-accent hover:underline text-sm font-medium"
+              >
+                Read full article
+                <ArrowRight className="w-3.5 h-3.5" />
+              </a>
+              <button
+                onClick={handleListen}
+                disabled={audioPlaying}
+                className={`inline-flex items-center gap-1.5 text-sm font-medium transition-colors ${
+                  audioPlaying ? 'text-stone-400 cursor-not-allowed' : 'text-accent hover:underline'
+                }`}
+              >
+                {audioPlaying ? '🔊 Playing…' : '🎧 Listen'}
+              </button>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
