@@ -129,12 +129,13 @@ export default function SettingsPage() {
           <div className="flex items-center gap-4 mt-1">
             {avatarUrl ? (
               <Image
-                src={avatarUrl}
-                alt="avatar"
-                width={64}
-                height={64}
-                className="w-16 h-16 rounded-full object-cover border"
-              />
+  src={avatarUrl}
+  alt="avatar"
+  width={64}
+  height={64}
+  unoptimized
+  className="w-16 h-16 rounded-full object-cover border"
+/>
             ) : (
               <div className="w-16 h-16 rounded-full bg-stone-100 flex items-center justify-center text-stone-400">
                 <User className="w-8 h-8" />

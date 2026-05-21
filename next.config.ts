@@ -5,3 +5,15 @@ const nextConfig: NextConfig = {
 };
 
 export default nextConfig;
+
+module.exports = {
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'nohkpjeukrdrttmtpafl.supabase.co',
+        pathname: '/storage/v1/object/public/avatars/**',
+      },
+    ],
+  },
+};

@@ -79,12 +79,13 @@ export default function Navbar() {
             <div className="flex items-center gap-2 ml-2">
               {profile?.avatar_url ? (
                 <Image
-                  src={profile.avatar_url}
-                  alt="avatar"
-                  width={24}
-                  height={24}
-                  className="w-6 h-6 rounded-full object-cover"
-                />
+  src={profile.avatar_url}
+  alt="avatar"
+  width={24}
+  height={24}
+  unoptimized
+  className="w-6 h-6 rounded-full object-cover"
+/>
               ) : (
                 <div className="w-6 h-6 rounded-full bg-accent/20 flex items-center justify-center">
                   <User className="w-4 h-4 text-accent" />

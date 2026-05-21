@@ -253,6 +253,7 @@ export default function HomePage() {
             )}
 
             {/* Submit button - always visible */}
+            <div className="flex justify-center mt-2"></div>
             <button
   type="submit"
   disabled={loading}
