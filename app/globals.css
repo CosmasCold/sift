@@ -61,9 +61,21 @@
 /* Navbar & Footer - darker */
 .dark nav,
 .dark footer {
-  background-color: rgba(0, 0, 0, 0.7) !important;
+  background-color: rgba(30, 30, 42, 0.85) !important;
   backdrop-filter: blur(8px);
   border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+.dark nav a,
+.dark footer a,
+.dark nav button,
+.dark footer button {
+  color: #d1d5db !important;
+}
+
+.dark nav a:hover,
+.dark footer a:hover {
+  color: #a78bfa !important;
 }
 
 .dark .bg-white\/90,

@@ -128,7 +128,7 @@ export default async function PublicProfilePage({
             </div>
             <div className="text-center md:text-left">
               <h1 className="text-3xl font-bold text-stone-800">@{profile.username}</h1>
-              <div className="flex flex-wrap gap-3 mt-1 text-sm text-stone-600">
+              <div className="flex flex-wrap gap-3 mt-1 text-sm text-stone-700 dark:text-stone-300">
                 <span>📅 Reader since {joinDate}</span>
                 {streak > 0 && <span>🔥 {streak} day streak</span>}
               </div>

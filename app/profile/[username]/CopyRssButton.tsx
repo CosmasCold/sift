@@ -14,10 +14,8 @@ export default function CopyRssButton({ username }: { username: string }) {
 
   return (
     <button
-      type="button"
       onClick={handleCopy}
-      className="text-sm bg-accent/10 hover:bg-accent/20 text-accent px-3 py-1 rounded-full transition-colors flex items-center gap-1"
-      title="Copy RSS feed URL"
+      className="bg-stone-200 hover:bg-stone-300 dark:bg-stone-700 dark:hover:bg-stone-600 rounded-full px-3 py-1 text-sm transition text-stone-800 dark:text-stone-200 shadow-sm"
     >
       📡 {copied ? 'Copied!' : 'Copy RSS Feed'}
     </button>

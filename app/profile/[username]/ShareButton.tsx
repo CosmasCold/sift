@@ -15,7 +15,7 @@ export default function ShareButton({ username }: { username: string }) {
   return (
     <button
       onClick={handleShare}
-      className="bg-white/20 hover:bg-white/30 backdrop-blur rounded-full px-3 py-1 text-sm transition"
+      className="bg-stone-200 hover:bg-stone-300 dark:bg-stone-700 dark:hover:bg-stone-600 rounded-full px-3 py-1 text-sm transition text-stone-800 dark:text-stone-200 shadow-sm"
     >
       {copied ? 'Copied!' : 'Share'}
     </button>
