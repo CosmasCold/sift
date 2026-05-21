@@ -150,17 +150,17 @@ export default function SettingsPage() {
 
   return (
     <main className="flex-1 pt-12 pb-16 px-4 max-w-lg mx-auto">
-      <Link href="/library" className="inline-flex items-center gap-1 text-sm text-stone-500 hover:text-stone-700 mb-6">
+      <Link href="/library" className="inline-flex items-center gap-1 text-sm text-stone-500 hover:text-stone-700 dark:text-stone-400 dark:hover:text-stone-300 mb-6">
         <ArrowLeft className="w-4 h-4" />
         Back
       </Link>
 
-      <h1 className="text-2xl font-serif font-bold text-stone-800 mb-6">Settings</h1>
+      <h1 className="text-2xl font-serif font-bold text-stone-800 dark:text-stone-100 mb-6">Settings</h1>
 
-      <div className="space-y-6 bg-white rounded-2xl p-6 border border-stone-200 shadow-card">
+      <div className="space-y-6 bg-white/90 backdrop-blur-sm rounded-2xl shadow-card p-6 dark:bg-stone-800/90">
         {/* Avatar upload */}
         <div>
-          <label className="text-sm font-medium text-stone-700">Profile picture</label>
+          <label className="text-sm font-medium text-stone-700 dark:text-stone-200">Profile picture</label>
           <div className="flex items-center gap-4 mt-1">
             {avatarUrl ? (
               <Image
@@ -169,14 +169,14 @@ export default function SettingsPage() {
                 width={64}
                 height={64}
                 unoptimized
-                className="w-16 h-16 rounded-full object-cover border"
+                className="w-16 h-16 rounded-full object-cover border dark:border-stone-600"
               />
             ) : (
-              <div className="w-16 h-16 rounded-full bg-stone-100 flex items-center justify-center text-stone-400">
+              <div className="w-16 h-16 rounded-full bg-stone-100 dark:bg-stone-700 flex items-center justify-center text-stone-400 dark:text-stone-500">
                 <User className="w-8 h-8" />
               </div>
             )}
-            <label className="cursor-pointer bg-stone-100 hover:bg-stone-200 px-3 py-2 rounded-xl text-sm flex items-center gap-2">
+            <label className="cursor-pointer bg-stone-100 hover:bg-stone-200 dark:bg-stone-700 dark:hover:bg-stone-600 px-3 py-2 rounded-xl text-sm flex items-center gap-2 text-stone-700 dark:text-stone-200 transition-colors">
               <Upload className="w-4 h-4" />
               {uploadingAvatar ? 'Uploading...' : 'Upload'}
               <input type="file" accept="image/*" onChange={handleAvatarUpload} disabled={uploadingAvatar} className="hidden" />
@@ -186,18 +186,18 @@ export default function SettingsPage() {
 
         {/* Cover image upload */}
         <div>
-          <label className="text-sm font-medium text-stone-700">Cover image</label>
+          <label className="text-sm font-medium text-stone-700 dark:text-stone-200">Cover image</label>
           <div className="mt-1">
             {coverUrl ? (
-              <div className="relative w-full h-32 rounded-xl overflow-hidden border border-stone-200">
+              <div className="relative w-full h-32 rounded-xl overflow-hidden border dark:border-stone-600">
                 <Image src={coverUrl} alt="Cover" fill className="object-cover" unoptimized />
               </div>
             ) : (
-              <div className="w-full h-32 rounded-xl bg-gradient-to-r from-stone-100 to-stone-200 flex items-center justify-center text-stone-400 text-sm">
+              <div className="w-full h-32 rounded-xl bg-gradient-to-r from-stone-100 to-stone-200 dark:from-stone-700 dark:to-stone-800 flex items-center justify-center text-stone-400 dark:text-stone-500 text-sm">
                 No cover image
               </div>
             )}
-            <label className="cursor-pointer bg-stone-100 hover:bg-stone-200 px-3 py-2 rounded-xl text-sm flex items-center gap-2 mt-2 w-fit">
+            <label className="cursor-pointer bg-stone-100 hover:bg-stone-200 dark:bg-stone-700 dark:hover:bg-stone-600 px-3 py-2 rounded-xl text-sm flex items-center gap-2 mt-2 w-fit text-stone-700 dark:text-stone-200 transition-colors">
               <Upload className="w-4 h-4" />
               {uploadingCover ? 'Uploading...' : 'Upload cover'}
               <input type="file" accept="image/*" onChange={handleCoverUpload} disabled={uploadingCover} className="hidden" />
@@ -207,12 +207,12 @@ export default function SettingsPage() {
 
         {/* Username */}
         <div>
-          <label className="text-sm font-medium text-stone-700">Username</label>
+          <label className="text-sm font-medium text-stone-700 dark:text-stone-200">Username</label>
           <input
             type="text"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
-            className="w-full mt-1 px-3 py-2 border border-stone-200 rounded-xl"
+            className="w-full mt-1 px-3 py-2 border border-stone-200 dark:border-stone-600 rounded-xl bg-white dark:bg-stone-800 text-stone-800 dark:text-stone-200 focus:outline-none focus:ring-2 focus:ring-accent/50"
             placeholder="yourname"
           />
         </div>
@@ -220,12 +220,12 @@ export default function SettingsPage() {
         {/* Public profile toggle */}
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm font-medium text-stone-700">Public profile</p>
-            <p className="text-xs text-stone-400">Allow others to see what you&apos;re keeping.</p>
+            <p className="text-sm font-medium text-stone-700 dark:text-stone-200">Public profile</p>
+            <p className="text-xs text-stone-500 dark:text-stone-400">Allow others to see what you&apos;re keeping.</p>
           </div>
           <button
             onClick={() => setPublicProfile(!publicProfile)}
-            className={`relative w-11 h-6 rounded-full transition-colors ${publicProfile ? 'bg-accent' : 'bg-stone-300'}`}
+            className={`relative w-11 h-6 rounded-full transition-colors ${publicProfile ? 'bg-accent' : 'bg-stone-300 dark:bg-stone-600'}`}
           >
             <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition-transform ${publicProfile ? 'translate-x-5' : ''}`} />
           </button>
@@ -233,16 +233,16 @@ export default function SettingsPage() {
 
         {/* Embed widget section */}
         {publicProfile && username && (
-          <div className="border-t border-stone-200 pt-4 mt-2">
-            <h3 className="font-medium text-stone-800 mb-2">📦 Embed your reading list</h3>
-            <p className="text-xs text-stone-500 mb-2">Copy this code into your website, blog, or Notion:</p>
-            <pre className="bg-stone-100 p-3 rounded-xl text-xs overflow-x-auto whitespace-pre-wrap break-all">
+          <div className="border-t border-stone-200 dark:border-stone-700 pt-4 mt-2">
+            <h3 className="font-medium text-stone-800 dark:text-stone-200 mb-2">📦 Embed your reading list</h3>
+            <p className="text-xs text-stone-500 dark:text-stone-400 mb-2">Copy this code into your website, blog, or Notion:</p>
+            <pre className="bg-stone-100 dark:bg-stone-800 p-3 rounded-xl text-xs overflow-x-auto whitespace-pre-wrap break-all text-stone-800 dark:text-stone-200 border border-stone-200 dark:border-stone-700">
               {`<script src="${siteUrl}/embed/${username}"></script>`}
             </pre>
           </div>
         )}
 
-        <button onClick={handleSave} className="w-full py-2.5 bg-accent text-white rounded-xl font-medium">
+        <button onClick={handleSave} className="w-full py-2.5 bg-accent text-white rounded-xl font-medium hover:bg-accent-hover transition-colors">
           Save Settings
         </button>
       </div>
