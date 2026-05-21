@@ -60,10 +60,10 @@ export default async function PublicProfilePage({
     );
   }
 
-  // Fetch articles
+  // Fetch articles including tags
   const { data: articles, error: articlesError } = await supabase
     .from('sifted_articles')
-    .select('id, summary, verdict, created_at')
+    .select('id, summary, verdict, created_at, tags')
     .eq('user_id', profile.id)
     .eq('kept', true)
     .order('created_at', { ascending: false })
@@ -100,6 +100,15 @@ export default async function PublicProfilePage({
               <p className="text-xs text-stone-400 mt-2">
                 {article.verdict} · {new Date(article.created_at).toLocaleDateString()}
               </p>
+              {article.tags && article.tags.length > 0 && (
+                <div className="flex flex-wrap gap-1 mt-2">
+                  {article.tags.map((tag: string) => (
+                    <span key={tag} className="text-xs bg-stone-100 px-2 py-0.5 rounded-full text-stone-600">
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              )}
             </div>
           ))}
         </div>
