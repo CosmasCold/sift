@@ -5,7 +5,7 @@ import Image from 'next/image';
 import CopyRssButton from './CopyRssButton';
 import ShareButton from './ShareButton';
 
-// Helper to calculate reading streak (consecutive days with kept articles)
+// Helper to calculate reading streak
 function calculateStreak(dates: Date[]): number {
   if (!dates.length) return 0;
   const uniqueDates = [...new Set(dates.map(d => d.toDateString()))];
@@ -57,7 +57,7 @@ export default async function PublicProfilePage({
     return (
       <main className="flex-1 pt-12 pb-16 px-4 max-w-3xl mx-auto text-center">
         <h1 className="text-3xl font-serif font-bold text-stone-800 mb-2">@{profile.username}</h1>
-        <div className="bg-white rounded-2xl p-8 border border-stone-200 shadow-card mt-6">
+        <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-card p-8">
           <p className="text-stone-600">This profile is private.</p>
           <Link href="/" className="inline-block mt-4 text-accent underline">Back to Sift</Link>
         </div>
@@ -72,7 +72,6 @@ export default async function PublicProfilePage({
     .eq('user_id', profile.id)
     .eq('kept', true);
 
-  // Compute stats
   const totalArticles = allArticles?.length || 0;
   const allTags = allArticles?.flatMap(a => a.tags || []) || [];
   const tagFrequency: Record<string, number> = {};
@@ -81,7 +80,7 @@ export default async function PublicProfilePage({
   const dates = allArticles?.map(a => new Date(a.created_at)).filter(d => !isNaN(d.getTime())) || [];
   const streak = calculateStreak(dates);
 
-  // Fetch paginated articles for display (with source_url and tags)
+  // Fetch paginated articles for display
   let query = supabase
     .from('sifted_articles')
     .select('id, summary, verdict, created_at, tags, source_url')
@@ -100,17 +99,19 @@ export default async function PublicProfilePage({
     ? new Date(profile.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long' })
     : 'recently';
 
-  
-  
+  // Soft, unsaturated cover gradient (used only if no cover_url)
+  const defaultCoverGradient = 'bg-gradient-to-r from-purple-200/50 via-purple-300/40 to-purple-400/30';
 
   return (
     <main className="flex-1 pb-16">
       {/* Cover Section */}
-      <div className="relative h-48 md:h-64 w-full bg-gradient-to-r from-purple-700 via-accent to-pink-600">
-        {profile.cover_url && (
+      <div className="relative h-48 md:h-64 w-full overflow-hidden">
+        {profile.cover_url ? (
           <Image src={profile.cover_url} alt="Cover" fill className="object-cover" unoptimized />
+        ) : (
+          <div className={`w-full h-full ${defaultCoverGradient}`} />
         )}
-        <div className="absolute inset-0 bg-black/20" />
+        <div className="absolute inset-0 bg-black/10" /> {/* subtle overlay for readability */}
         <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
           <div className="max-w-4xl mx-auto flex flex-col md:flex-row items-center gap-4">
             {/* Avatar */}
@@ -118,7 +119,7 @@ export default async function PublicProfilePage({
               {profile.avatar_url ? (
                 <Image src={profile.avatar_url} alt={profile.username} width={96} height={96} className="object-cover" unoptimized />
               ) : (
-                <div className="w-full h-full bg-accent/20 flex items-center justify-center text-4xl">
+                <div className="w-full h-full bg-accent/20 flex items-center justify-center text-4xl text-stone-600">
                   {profile.username.charAt(0).toUpperCase()}
                 </div>
               )}
@@ -141,25 +142,25 @@ export default async function PublicProfilePage({
       <div className="max-w-4xl mx-auto px-4 mt-8">
         {/* Stats Cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          <div className="bg-white rounded-xl p-4 text-center shadow-sm border">
+          <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-4 text-center shadow-card">
             <div className="text-2xl font-bold text-accent">{totalArticles}</div>
             <div className="text-xs text-stone-500">articles kept</div>
           </div>
-          <div className="bg-white rounded-xl p-4 text-center shadow-sm border">
+          <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-4 text-center shadow-card">
             <div className="text-2xl font-bold text-accent">{uniqueTags}</div>
             <div className="text-xs text-stone-500">unique tags</div>
           </div>
-          <div className="bg-white rounded-xl p-4 text-center shadow-sm border">
+          <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-4 text-center shadow-card">
             <div className="text-2xl font-bold text-accent">{streak}</div>
             <div className="text-xs text-stone-500">current streak</div>
           </div>
-          <div className="bg-white rounded-xl p-4 text-center shadow-sm border">
+          <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-4 text-center shadow-card">
             <div className="text-2xl font-bold text-accent">∞</div>
             <div className="text-xs text-stone-500">curiosity</div>
           </div>
         </div>
 
-        {/* Tag Cloud (if any tags) */}
+        {/* Tag Cloud */}
         {uniqueTags > 0 && (
           <div className="mb-8">
             <h2 className="text-lg font-semibold text-stone-800 mb-3">📌 Tags I follow</h2>
@@ -167,11 +168,11 @@ export default async function PublicProfilePage({
               {Object.entries(tagFrequency)
                 .sort((a, b) => b[1] - a[1])
                 .slice(0, 20)
-                .map(([tag, count]: [string, number]) => (
+                .map(([tag, count]) => (
                   <Link
                     key={tag}
                     href={`/profile/${username}?tag=${encodeURIComponent(tag)}`}
-                    className={`inline-block px-3 py-1 rounded-full bg-stone-100 hover:bg-accent/20 transition-all hover:scale-105 text-stone-700 text-sm`}
+                    className="inline-block px-3 py-1 rounded-full bg-stone-100 hover:bg-accent/20 transition-all hover:scale-105 text-stone-700 text-sm"
                     style={{ fontSize: `${Math.max(12, 12 + count * 1.5)}px` }}
                   >
                     #{tag} ({count})
@@ -197,7 +198,7 @@ export default async function PublicProfilePage({
             {articles.map((article) => (
               <div
                 key={article.id}
-                className="group bg-white rounded-2xl border border-stone-200 hover:border-accent/30 hover:shadow-lg transition-all duration-300 overflow-hidden"
+                className="group bg-white/90 backdrop-blur-sm rounded-2xl shadow-card hover:shadow-card-hover transition-all duration-300 overflow-hidden"
               >
                 {article.source_url ? (
                   <a href={article.source_url} target="_blank" rel="noopener noreferrer" className="block p-5">
@@ -212,10 +213,7 @@ export default async function PublicProfilePage({
                     {article.tags && article.tags.length > 0 && (
                       <div className="flex flex-wrap gap-1 mt-3">
                         {article.tags.map((tag: string) => (
-                          <span
-                            key={tag}
-                            className="text-xs bg-stone-100 px-2 py-0.5 rounded-full text-stone-500"
-                          >
+                          <span key={tag} className="text-xs bg-stone-100 px-2 py-0.5 rounded-full text-stone-500">
                             #{tag}
                           </span>
                         ))}
@@ -245,7 +243,7 @@ export default async function PublicProfilePage({
             ))}
           </div>
         ) : (
-          <div className="text-center py-12 bg-white/50 rounded-2xl border border-stone-200">
+          <div className="text-center py-12 bg-white/50 rounded-2xl shadow-card">
             <p className="text-stone-500">
               {activeTag ? `No articles tagged with "${activeTag}".` : 'No public articles yet.'}
             </p>

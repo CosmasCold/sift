@@ -4,7 +4,7 @@
 
 @layer base {
   body {
-    background: linear-gradient(135deg, #faf7f2 0%, #f3f0ea 50%, #ede7f5 100%);
+  background: linear-gradient(135deg, #faf7f2 0%, #e8dfed 50%, #d9cee8 100%);
     position: relative;
     min-height: 100vh;
   }
@@ -16,7 +16,7 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background-image: url('/reading-bg.jpg');
+    background-image: url('/reading-bg.png');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
