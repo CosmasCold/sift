@@ -18,14 +18,13 @@ export async function POST(request: NextRequest) {
     const kept = verdict !== 'You can skip this';
 
     const { error } = await supabase.from('sifted_articles').insert({
-      user_id: user.id,
-      url: url || null,
-      source_url: sourceUrl || null,
-      summary,
-      insight: insight || '',
-      verdict,
-      kept,
-    });
+  user_id: user.id,
+  source_url: sourceUrl || null,
+  summary,
+  insight: insight || '',
+  verdict,
+  kept,
+});
 
     if (error) {
       console.error('Save sift error:', error);
