@@ -77,34 +77,6 @@ export default function LibraryPage() {
     }
   };
 
-  const exportMarkdown = () => {
-  const kept = articles.filter(a => a.kept);
-  if (kept.length === 0) {
-    toast.error('No kept articles to export');
-    return;
-  }
-
-  const md = kept
-    .map(
-      (a) =>
-        `## ${a.summary?.substring(0, 60) || 'Untitled'}\n\n` +
-        `- **Verdict:** ${a.verdict}\n` +
-        `- **Date:** ${new Date(a.created_at).toLocaleDateString()}\n` +
-        `- **Source:** ${a.source_url || a.url || ''}\n\n` +
-        `${a.summary}\n\n` +
-        (a.insight ? `> ${a.insight}\n\n` : '')
-    )
-    .join('---\n\n');
-
-  const blob = new Blob([md], { type: 'text/markdown' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `sift-export-${new Date().toISOString().split('T')[0]}.md`;
-  a.click();
-  toast.success('Exported!');
-};
-
   const filteredArticles = articles
     .filter(a => {
       if (filter === 'kept') return a.kept;
@@ -136,39 +108,38 @@ export default function LibraryPage() {
         className="bg-white/70 backdrop-blur-md rounded-2xl border border-stone-200/60 shadow-lg px-6 py-4 mb-6 flex flex-wrap items-center justify-between gap-4"
       >
         <h1 className="text-2xl font-serif font-bold text-stone-800">Your Library</h1>
-        <span className="text-sm text-stone-500 bg-white/80 rounded-full px-3 py-1">
-          {articles.length} sifted
-        </span>
-        <button
-  onClick={async () => {
-    const res = await fetch('/api/surprise');
-    const data = await res.json();
-    if (data.article) {
-      // Show it: set the expanded ID to the random article's ID
-      setExpandedId(data.article.id);
-      // Switch to 'all' filter so we can see it regardless of kept/discarded
-      setFilter('all');
-      // Clear the search so it's not hidden
-      setSearch('');
-      toast.success('Found one!');
-    } else {
-      toast.error('Nothing to surprise you with');
-    }
-  }}
-  className="px-4 py-2 bg-accent text-white rounded-xl text-sm font-medium hover:bg-accent-hover transition-colors flex items-center gap-1"
->
-  Surprise Me
-</button>
+        <div className="flex items-center gap-3">
+          <span className="text-sm text-stone-500 bg-white/80 rounded-full px-3 py-1">
+            {articles.length} sifted
+          </span>
+          {/* Surprise Me button */}
+          <button
+            onClick={async () => {
+              const res = await fetch('/api/surprise');
+              const data = await res.json();
+              if (data.article) {
+                setExpandedId(data.article.id);
+                setFilter('all');
+                setSearch('');
+                toast.success('Found one!');
+                // Scroll to the article after a short delay
+                setTimeout(() => {
+                  const el = document.getElementById(`article-${data.article.id}`);
+                  if (el) {
+                    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                  }
+                }, 100);
+              } else {
+                toast.error('Nothing to surprise you with');
+              }
+            }}
+            className="px-4 py-2 bg-accent text-white rounded-xl text-sm font-medium hover:bg-accent-hover transition-colors"
+          >
+            Surprise Me
+          </button>
+        </div>
       </motion.div>
 
-<div className="flex justify-end mb-2">
-  <button
-    onClick={exportMarkdown}
-    className="px-3 py-1.5 text-sm bg-white/70 backdrop-blur-sm border border-stone-200 rounded-xl text-stone-600 hover:bg-white transition-colors"
-  >
-    Export Markdown
-  </button>
-</div>
       {/* Filter & Search */}
       <div className="flex flex-wrap items-center gap-3 mb-6">
         <div className="flex flex-wrap gap-2">
@@ -222,6 +193,7 @@ export default function LibraryPage() {
         <div className="grid gap-4 max-w-3xl mx-auto w-full">
           {filteredArticles.map((article) => (
             <motion.div
+              id={`article-${article.id}`}
               key={article.id}
               layout
               initial={{ opacity: 0, y: 10 }}
