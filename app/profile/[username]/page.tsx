@@ -70,6 +70,15 @@ export default async function PublicProfilePage({
         <span className="inline-block bg-stone-100 text-stone-600 text-xs px-2 py-1 rounded-full">
           Reader since {joinDate}
         </span>
+        <a
+  href={`/profile/${username}/feed.xml`}
+  target="_blank"
+  rel="noopener noreferrer"
+  className="text-sm text-stone-400 hover:text-accent transition-colors"
+  title="RSS feed"
+>
+  📡 RSS
+</a>
       </div>
       <p className="text-stone-500 mb-8">What they&apos;re reading and keeping.</p>
       {articles?.length ? (
