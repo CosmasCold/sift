@@ -1,0 +1,162 @@
+import { NextRequest, NextResponse } from 'next/server';
+import * as cheerio from 'cheerio';
+import { createClient } from '@/lib/supabase/server';
+
+interface FeedbackRow {
+  summary: string | null;
+  verdict: string;
+  feedback: string;
+}
+
+export const maxDuration = 60; // Increase timeout to 60 seconds
+
+const GROQ_API_KEY = process.env.GROQ_API_KEY!;
+
+const BASE_PROMPT = `You are Sift, a personalised reading assistant. You receive the full text of an article and, when available, examples of the user's past feedback. Use the feedback to calibrate your verdict. Return a JSON object with:
+
+- summary: a one-paragraph plain‑English summary
+- insight: the single most useful or surprising sentence in the article, quoted exactly (empty string if nothing stands out)
+- verdict: "Worth a full read", "Skim this", or "You can skip this"
+
+Return ONLY valid JSON. No markdown, no extra text.`;
+
+export async function POST(request: NextRequest) {
+  try {
+    const { url, manualText } = await request.json();
+    let articleText = manualText?.trim();
+
+    // --------------------------------------------------
+    // 1. Get the current user (if signed in) and their feedback history
+    // --------------------------------------------------
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    let feedbackContext = '';
+    if (user) {
+      const { data: feedbackData } = await supabase
+        .from('sifted_articles')
+        .select('summary, verdict, feedback, source_url')
+        .eq('user_id', user.id)
+        .not('feedback', 'is', null)
+        .order('created_at', { ascending: false })
+        .limit(5);
+
+      if (feedbackData && feedbackData.length > 0) {
+        const examples = feedbackData
+          .map(
+            (row: FeedbackRow) =>
+              `- Summary: "${row.summary?.substring(0, 200)}" | Verdict: "${row.verdict}" | User feedback: "${row.feedback}"`
+          )
+          .join('\n');
+        feedbackContext = `\nThe user has given the following feedback on past articles:\n${examples}\nUse these preferences to adjust your verdict. If the user consistently disagreed with "Worth a full read" on long articles, prefer "Skim this" for similar content.`;
+      }
+    }
+
+    // --------------------------------------------------
+    // 2. Fetch article text (or use manual paste)
+    // --------------------------------------------------
+    if (!articleText) {
+      if (!url) {
+        return NextResponse.json({ error: 'URL is required' }, { status: 400 });
+      }
+
+      let html: string;
+      try {
+        const res = await fetch(url, {
+          headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36' },
+          signal: AbortSignal.timeout(30000), 
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        html = await res.text();
+      } catch (fetchError: unknown) {
+        const message =
+          fetchError instanceof Error ? fetchError.message : 'Unknown error';
+        console.error('Fetch error:', message);
+        return NextResponse.json(
+          {
+            error: 'Could not fetch that article. You can paste the text manually.',
+            needsManualFallback: true,
+          },
+          { status: 400 }
+        );
+      }
+
+      const $ = cheerio.load(html);
+      $('script, style, nav, footer, header, aside, .sidebar, .comments, noscript').remove();
+
+      const selectors = ['article', '[role="main"]', 'main', '.post-content', '.article-body', '.entry-content'];
+      for (const selector of selectors) {
+        const el = $(selector);
+        if (el.length > 0) {
+          articleText = el.text();
+          break;
+        }
+      }
+      if (!articleText) articleText = $('body').text();
+
+      articleText = articleText.replace(/\s+/g, ' ').trim();
+      console.log('Extracted text length:', articleText.length);
+
+      if (articleText.length < 100) {
+        return NextResponse.json(
+          {
+            error: 'Not enough text could be extracted from that page. You can paste the text manually.',
+            needsManualFallback: true,
+          },
+          { status: 400 }
+        );
+      }
+
+      articleText = articleText.substring(0, 4000);
+    }
+
+    // --------------------------------------------------
+    // 3. Call Groq with feedback‑enhanced prompt
+    // --------------------------------------------------
+    if (!GROQ_API_KEY) {
+      return NextResponse.json({ error: 'API key not configured' }, { status: 500 });
+    }
+
+    const systemMessage = feedbackContext
+      ? `${BASE_PROMPT}\n${feedbackContext}`
+      : BASE_PROMPT;
+
+    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${GROQ_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'llama-3.1-8b-instant',
+        messages: [
+          { role: 'system', content: systemMessage },
+          { role: 'user', content: articleText },
+        ],
+        temperature: 0.2,
+        max_tokens: 600,
+      }),
+    });
+
+    if (!response.ok) {
+      const err = await response.text();
+      console.error('Groq error:', err);
+      return NextResponse.json({ error: 'AI analysis failed' }, { status: 502 });
+    }
+
+    const data = await response.json();
+    const content = data.choices[0].message.content.trim();
+    let result;
+    try {
+      result = JSON.parse(content);
+    } catch {
+      const cleaned = content.replace(/```json\n?|```/g, '').trim();
+      result = JSON.parse(cleaned);
+    }
+
+    return NextResponse.json({ ...result, sourceUrl: url });
+  } catch (error) {
+    console.error('Sift error:', error);
+    return NextResponse.json({ error: 'Something unexpected happened. Please try again.' }, { status: 500 });
+  }
+}
