@@ -50,11 +50,12 @@
 
 @layer utilities {
   *:focus {
-  outline: none;
-  --tw-ring-color: #8b5cf6;
-  --tw-ring-offset-width: 2px;
-  --tw-ring-offset-color: #2a2a35;
-  border-radius: 0.25rem;
+    outline: none;
+    --tw-ring-color: #8b5cf6;
+    --tw-ring-offset-width: 2px;
+    --tw-ring-offset-color: #2a2a35;
+    border-radius: 0.25rem;
+  }
 }
 
 /* Global dark styles (no .dark prefix) */
