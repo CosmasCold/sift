@@ -19,7 +19,6 @@ export default async function PublicProfilePage({
 
   const supabase = await createClient();
 
-  // Fetch profile
   const { data: profile, error: profileError } = await supabase
     .from('user_profiles')
     .select('id, username, public_profile, is_pro, created_at')
@@ -63,16 +62,14 @@ export default async function PublicProfilePage({
     );
   }
 
-  // Build query for articles (always kept)
   let query = supabase
     .from('sifted_articles')
-    .select('id, summary, verdict, created_at, tags')
+    .select('id, summary, verdict, created_at, tags, source_url')
     .eq('user_id', profile.id)
     .eq('kept', true)
     .order('created_at', { ascending: false })
     .limit(20);
 
-  // Apply tag filter if provided
   if (activeTag && activeTag.trim() !== '') {
     query = query.contains('tags', [activeTag.trim()]);
   }
@@ -102,7 +99,6 @@ export default async function PublicProfilePage({
         <CopyRssButton username={username} />
       </div>
 
-      {/* Tag filter indicator and clear link */}
       {activeTag && (
         <div className="mb-4 flex items-center gap-2">
           <span className="text-sm text-stone-600">Filtering by tag:</span>
@@ -124,7 +120,13 @@ export default async function PublicProfilePage({
         <div className="grid gap-4">
           {articles.map((article) => (
             <div key={article.id} className="bg-white rounded-2xl border p-5">
-              <p className="text-stone-700">{article.summary}</p>
+              {article.source_url ? (
+                <a href={article.source_url} target="_blank" rel="noopener noreferrer" className="block hover:underline">
+                  <p className="text-stone-700">{article.summary}</p>
+                </a>
+              ) : (
+                <p className="text-stone-700">{article.summary}</p>
+              )}
               <p className="text-xs text-stone-400 mt-2">
                 {article.verdict} · {new Date(article.created_at).toLocaleDateString()}
               </p>
@@ -139,6 +141,13 @@ export default async function PublicProfilePage({
                       {tag}
                     </a>
                   ))}
+                </div>
+              )}
+              {article.source_url && (
+                <div className="mt-2">
+                  <a href={article.source_url} target="_blank" rel="noopener noreferrer" className="text-xs text-accent hover:underline">
+                    Read original →
+                  </a>
                 </div>
               )}
             </div>

@@ -21,9 +21,9 @@ interface SiftEntry {
   kept: boolean;
   created_at: string;
   feed: Feed | null;
+  tags: string[];
 }
 
-// Helper to group articles by date
 const getDateGroup = (date: Date) => {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -99,7 +99,20 @@ export default function LibraryPage() {
     }
   };
 
-  // Filter articles based on kept/discarded, search, and feed
+  const updateTags = async (articleId: string, newTags: string[]) => {
+    const res = await fetch('/api/update-tags', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ articleId, tags: newTags }),
+    });
+    if (res.ok) {
+      setArticles(prev => prev.map(a => (a.id === articleId ? { ...a, tags: newTags } : a)));
+      toast.success('Tags updated');
+    } else {
+      toast.error('Failed to update tags');
+    }
+  };
+
   const filteredByStatus = articles.filter(a => {
     if (filter === 'kept') return a.kept;
     if (filter === 'discarded') return !a.kept;
@@ -114,7 +127,6 @@ export default function LibraryPage() {
     ? filteredBySearch
     : filteredBySearch.filter(a => a.feed?.id === feedFilter);
 
-  // Group by date
   const grouped = useMemo(() => {
     const groups: Record<string, SiftEntry[]> = {};
     for (const article of finalFiltered) {
@@ -125,7 +137,6 @@ export default function LibraryPage() {
     return groups;
   }, [finalFiltered]);
 
-  // Get unique feeds for filter dropdown
   const feedsList = useMemo(() => {
     const feeds = new Map<string, string>();
     articles.forEach(a => {
@@ -174,9 +185,7 @@ export default function LibraryPage() {
                 toast.success('Found one!');
                 setTimeout(() => {
                   const el = document.getElementById(`article-${data.article.id}`);
-                  if (el) {
-                    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                  }
+                  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 }, 100);
               } else {
                 toast.error('Nothing to surprise you with');
@@ -189,7 +198,7 @@ export default function LibraryPage() {
         </div>
       </motion.div>
 
-      {/* Filters: status, search, feed */}
+      {/* Filters */}
       <div className="flex flex-col gap-3 mb-6">
         <div className="flex flex-wrap items-center gap-3">
           <div className="flex flex-wrap gap-2">
@@ -222,7 +231,6 @@ export default function LibraryPage() {
             />
           </div>
         </div>
-        {/* Feed filter dropdown */}
         {feedsList.length > 0 && (
           <div className="flex items-center gap-2">
             <Filter className="w-4 h-4 text-stone-400" />
@@ -240,7 +248,6 @@ export default function LibraryPage() {
         )}
       </div>
 
-      {/* Empty state */}
       {finalFiltered.length === 0 ? (
         <motion.div
           initial={{ opacity: 0, y: 10 }}
@@ -248,13 +255,7 @@ export default function LibraryPage() {
           className="bg-white/70 backdrop-blur-md rounded-2xl border border-stone-200/60 shadow-lg px-6 py-10 text-center"
         >
           <BookOpen className="w-12 h-12 text-stone-300 mx-auto mb-4" />
-          <p className="text-stone-500 text-sm">
-            {filter === 'discarded'
-              ? 'No discarded articles.'
-              : search
-              ? 'No matching articles.'
-              : 'Nothing sifted yet. Sift an article to start your library.'}
-          </p>
+          <p className="text-stone-500 text-sm">Nothing found.</p>
         </motion.div>
       ) : (
         <div className="grid gap-6">
@@ -284,46 +285,28 @@ export default function LibraryPage() {
                             {new Date(article.created_at).toLocaleDateString()}
                             {article.feed?.title && ` · from ${article.feed.title}`}
                           </p>
+                          {article.tags && article.tags.length > 0 && (
+                            <div className="flex flex-wrap gap-1 mt-2">
+                              {article.tags.map((tag) => (
+                                <span key={tag} className="text-xs bg-stone-100 px-2 py-0.5 rounded-full text-stone-600">
+                                  {tag}
+                                </span>
+                              ))}
+                            </div>
+                          )}
                         </div>
                       </div>
                       <div className="flex items-center gap-2 flex-shrink-0 sm:ml-auto">
-                        <button
-                          onClick={() => toggleKeep(article.id, article.kept)}
-                          className={`p-1 rounded-md transition-colors ${
-                            article.kept
-                              ? 'text-verdict-green hover:text-stone-400'
-                              : 'text-stone-400 hover:text-verdict-green'
-                          }`}
-                          title={article.kept ? 'Discard' : 'Keep'}
-                        >
-                          {article.kept ? <CheckCircle className="w-4 h-4" /> : <Archive className="w-4 h-4" />}
+                        <button onClick={() => toggleKeep(article.id, article.kept)} className="p-1 rounded-md transition-colors" title={article.kept ? 'Discard' : 'Keep'}>
+                          {article.kept ? <CheckCircle className="w-4 h-4 text-verdict-green" /> : <Archive className="w-4 h-4 text-stone-400" />}
                         </button>
-                        <button
-                          onClick={() => handleFeedback(article.id, 'agree')}
-                          className={`p-1 rounded-md transition-colors ${
-                            article.feedback === 'agree'
-                              ? 'text-verdict-green bg-verdict-green/10'
-                              : 'text-stone-400 hover:text-verdict-green'
-                          }`}
-                          title="Agree with verdict"
-                        >
+                        <button onClick={() => handleFeedback(article.id, 'agree')} className={`p-1 rounded-md ${article.feedback === 'agree' ? 'text-verdict-green' : 'text-stone-400'}`}>
                           <ThumbsUp className="w-4 h-4" />
                         </button>
-                        <button
-                          onClick={() => handleFeedback(article.id, 'disagree')}
-                          className={`p-1 rounded-md transition-colors ${
-                            article.feedback === 'disagree'
-                              ? 'text-verdict-amber bg-verdict-amber/10'
-                              : 'text-stone-400 hover:text-verdict-amber'
-                          }`}
-                          title="Disagree with verdict"
-                        >
+                        <button onClick={() => handleFeedback(article.id, 'disagree')} className={`p-1 rounded-md ${article.feedback === 'disagree' ? 'text-verdict-amber' : 'text-stone-400'}`}>
                           <ThumbsDown className="w-4 h-4" />
                         </button>
-                        <button
-                          onClick={() => setExpandedId(expandedId === article.id ? null : article.id)}
-                          className="text-accent hover:underline text-sm"
-                        >
+                        <button onClick={() => setExpandedId(expandedId === article.id ? null : article.id)} className="text-accent hover:underline text-sm">
                           {expandedId === article.id ? 'Close' : 'Read'}
                         </button>
                         <button onClick={() => handleDelete(article.id)} className="text-stone-400 hover:text-red-500">
@@ -347,15 +330,34 @@ export default function LibraryPage() {
                               </div>
                             )}
                             {article.source_url && (
-                              <a
-                                href={article.source_url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="inline-flex items-center gap-1 text-accent hover:underline text-sm"
-                              >
+                              <a href={article.source_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-accent hover:underline text-sm">
                                 Read original <ArrowRight className="w-3 h-3" />
                               </a>
                             )}
+                            {/* Tag editor */}
+                            <div className="pt-2">
+                              <label className="text-xs font-medium text-stone-500 block mb-1">Tags (comma separated)</label>
+                              <form
+                                onSubmit={async (e) => {
+                                  e.preventDefault();
+                                  const formData = new FormData(e.currentTarget);
+                                  const tagsInput = formData.get('tags')?.toString().trim();
+                                  const newTags = tagsInput ? tagsInput.split(',').map(t => t.trim()).filter(t => t) : [];
+                                  await updateTags(article.id, newTags);
+                                }}
+                                className="flex gap-2"
+                              >
+                                <input
+                                  name="tags"
+                                  defaultValue={(article.tags || []).join(', ')}
+                                  placeholder="e.g., AI, design, product"
+                                  className="flex-1 px-2 py-1 text-sm border border-stone-200 rounded-lg focus:outline-none focus:border-accent"
+                                />
+                                <button type="submit" className="px-3 py-1 text-sm bg-accent/10 text-accent rounded-lg hover:bg-accent/20">
+                                  Save
+                                </button>
+                              </form>
+                            </div>
                           </div>
                         </motion.div>
                       )}

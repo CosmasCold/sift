@@ -10,7 +10,7 @@ import { User, LogOut, Settings, Library, Rss, Users } from 'lucide-react';
 export default function Navbar() {
   const router = useRouter();
   const [user, setUser] = useState<{ id: string; email?: string } | null>(null);
-  const [profile, setProfile] = useState<{ username: string; avatar_url: string | null } | null>(null);
+  const [profile, setProfile] = useState<{ username: string; avatar_url: string | null; public_profile: boolean } | null>(null);
 
   useEffect(() => {
     const getUser = async () => {
@@ -19,7 +19,7 @@ export default function Navbar() {
       if (user) {
         const { data } = await supabase
           .from('user_profiles')
-          .select('username, avatar_url')
+          .select('username, avatar_url, public_profile')
           .eq('id', user.id)
           .single();
         setProfile(data);
@@ -32,7 +32,7 @@ export default function Navbar() {
       if (session?.user) {
         supabase
           .from('user_profiles')
-          .select('username, avatar_url')
+          .select('username, avatar_url, public_profile')
           .eq('id', session.user.id)
           .single()
           .then(({ data }) => setProfile(data));
@@ -52,7 +52,6 @@ export default function Navbar() {
   return (
     <nav className="relative z-20 border-b border-stone-200/30 bg-white/40 backdrop-blur-md px-4 py-3">
       <div className="max-w-6xl mx-auto flex items-center justify-between flex-wrap gap-4">
-        {/* Logo */}
         <Link href="/" className="flex items-center gap-2">
           <Image
             src="/sift-logo.png"
@@ -69,12 +68,20 @@ export default function Navbar() {
             <Link href="/library" className="text-stone-600 hover:text-accent transition-colors flex items-center gap-1">
               <Library className="w-4 h-4" /> Library
             </Link>
-            <Link href="/explore" className="text-stone-600 hover:text-accent transition-colors flex items-center gap-1">
-  <Users className="w-4 h-4" /> Explore
-</Link>
             <Link href="/feeds" className="text-stone-600 hover:text-accent transition-colors flex items-center gap-1">
               <Rss className="w-4 h-4" /> Feeds
             </Link>
+            <Link href="/explore" className="text-stone-600 hover:text-accent transition-colors flex items-center gap-1">
+              <Users className="w-4 h-4" /> Explore
+            </Link>
+            {profile?.username && profile?.public_profile && (
+              <Link
+                href={`/profile/${profile.username}`}
+                className="text-stone-600 hover:text-accent transition-colors flex items-center gap-1"
+              >
+                <User className="w-4 h-4" /> Profile
+              </Link>
+            )}
             <Link href="/settings" className="text-stone-600 hover:text-accent transition-colors flex items-center gap-1">
               <Settings className="w-4 h-4" /> Settings
             </Link>
@@ -82,13 +89,13 @@ export default function Navbar() {
             <div className="flex items-center gap-2 ml-2">
               {profile?.avatar_url ? (
                 <Image
-  src={profile.avatar_url}
-  alt="avatar"
-  width={24}
-  height={24}
-  unoptimized
-  className="w-6 h-6 rounded-full object-cover"
-/>
+                  src={profile.avatar_url}
+                  alt="avatar"
+                  width={24}
+                  height={24}
+                  unoptimized
+                  className="w-6 h-6 rounded-full object-cover"
+                />
               ) : (
                 <div className="w-6 h-6 rounded-full bg-accent/20 flex items-center justify-center">
                   <User className="w-4 h-4 text-accent" />

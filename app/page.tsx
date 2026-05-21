@@ -21,6 +21,7 @@ export default function HomePage() {
   const [url, setUrl] = useState('');
   const [manualText, setManualText] = useState('');
   const [result, setResult] = useState<SiftResult | null>(null);
+  const [batchResults, setBatchResults] = useState<SiftResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [showManualFallback, setShowManualFallback] = useState(false);
   const [batchMode, setBatchMode] = useState(false);
@@ -28,14 +29,29 @@ export default function HomePage() {
   const [audioPlaying, setAudioPlaying] = useState(false);
 
   useEffect(() => {
+  // Prevent state updates if the component unmounts while fetching
+  let isMounted = true;
+
+  // 1. Get the current user session
   supabase.auth.getUser().then(({ data }) => {
-    setUser(data.user ?? null);
-    setLoadingAuth(false);
+    if (isMounted) setUser(data.user ?? null);
+  }).finally(() => {
+    // Set loading to false ONLY after the async operation is done
+    if (isMounted) setLoadingAuth(false);
   });
+
+  // 2. Listen for real-time auth state changes (login, logout)
   const { data: { subscription } } = supabase.auth.onAuthStateChange(
-    (_event, session) => setUser(session?.user ?? null)
+    (_event, session) => {
+      if (isMounted) setUser(session?.user ?? null);
+    }
   );
-  return () => subscription.unsubscribe();
+
+  // 3. Cleanup: Unsubscribe and mark component as unmounted
+  return () => {
+    isMounted = false;
+    subscription.unsubscribe();
+  };
 }, []);
 
   if (loadingAuth) {
@@ -104,6 +120,8 @@ export default function HomePage() {
       if (lines.length === 0) return;
 
       setLoading(true);
+      setBatchResults([]);
+      setResult(null);
       const resultsArr: SiftResult[] = [];
 
       for (const u of lines) {
@@ -135,12 +153,12 @@ export default function HomePage() {
 
       if (resultsArr.length > 0) {
         setResult(resultsArr[0]);
+        setBatchResults(resultsArr);
         toast.success(`Sifted ${resultsArr.length} article${resultsArr.length > 1 ? 's' : ''}`);
-      }
-      if (resultsArr.length > 1) {
-  toast(`The other ${resultsArr.length - 1} article(s) are in your Library.`);
-}
-      else {
+        if (resultsArr.length > 1) {
+          toast(`The other ${resultsArr.length - 1} article(s) are listed below.`);
+        }
+      } else {
         toast.error('Could not sift any of the URLs');
       }
 
@@ -158,6 +176,7 @@ export default function HomePage() {
 
     setLoading(true);
     setResult(null);
+    setBatchResults([]);
 
     try {
       const res = await fetch('/api/sift', {
@@ -252,13 +271,11 @@ export default function HomePage() {
               </div>
             )}
 
-            {/* Submit button - always visible */}
-            <div className="flex justify-center mt-2"></div>
             <button
-  type="submit"
-  disabled={loading}
-  className="flex items-center justify-center gap-2 px-5 py-2.5 bg-accent text-white rounded-xl font-medium hover:bg-accent-hover disabled:opacity-50 transition-colors self-start mt-2"
->
+              type="submit"
+              disabled={loading}
+              className="flex items-center justify-center gap-2 px-5 py-2.5 bg-accent text-white rounded-xl font-medium hover:bg-accent-hover disabled:opacity-50 transition-colors self-start mt-2"
+            >
               {loading ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
@@ -316,7 +333,7 @@ export default function HomePage() {
         )}
       </motion.form>
 
-      {!result && !loading && (
+      {!result && !loading && !batchResults.length && (
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -389,6 +406,22 @@ export default function HomePage() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {batchMode && batchResults.length > 1 && (
+        <div className="w-full max-w-2xl mt-4 p-4 bg-white/90 backdrop-blur-sm rounded-2xl border border-stone-200 shadow-card">
+          <h3 className="font-medium text-stone-700 mb-2">All sifted articles ({batchResults.length})</h3>
+          <div className="space-y-2">
+            {batchResults.map((item, idx) => (
+              <div key={idx} className="text-sm text-stone-600 border-b border-stone-100 pb-2 last:border-0">
+                <a href={item.sourceUrl} target="_blank" rel="noopener noreferrer" className="hover:underline">
+                  {item.summary.substring(0, 80)}…
+                </a>
+                <span className="text-xs text-stone-400 ml-2">({item.verdict})</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

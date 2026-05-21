@@ -9,7 +9,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { sourceUrl, summary, insight, verdict } = await request.json();
+    const { sourceUrl, summary, insight, verdict, tags } = await request.json();
     if (!summary || !verdict) {
       return NextResponse.json({ error: 'Missing fields' }, { status: 400 });
     }
@@ -18,13 +18,14 @@ export async function POST(request: NextRequest) {
     const kept = verdict !== 'You can skip this';
 
     const { error } = await supabase.from('sifted_articles').insert({
-  user_id: user.id,
-  source_url: sourceUrl || null,
-  summary,
-  insight: insight || '',
-  verdict,
-  kept,
-});
+      user_id: user.id,
+      source_url: sourceUrl || null,
+      summary,
+      insight: insight || '',
+      verdict,
+      kept,
+      tags: tags || [], // <-- new field
+    });
 
     if (error) {
       console.error('Save sift error:', error);
