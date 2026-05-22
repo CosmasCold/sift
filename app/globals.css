@@ -2,15 +2,54 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Light mode (default when .dark is missing) */
+:root {
+  --surface-50: #faf9f7;
+  --surface-100: #f5f2ef;
+  --surface-200: #ebe5df;
+  --surface-300: #d6cec5;
+  --surface-400: #b8a99c;
+  --surface-500: #9a897a;
+  --surface-600: #7d6d60;
+  --surface-700: #64564c;
+  --surface-800: #f0ede9;   /* light card background */
+  --surface-900: #ffffff;    /* light page background */
+  --surface-950: #f5f2ef;   /* deepest light */
+
+  --background: linear-gradient(135deg, #faf9f7 0%, #ece7f5 100%);
+  --text-primary: #1c1816;
+  --text-secondary: #4a3e6a;
+}
+
+/* Dark mode */
+.dark {
+  --surface-50: #f6f4f9;
+  --surface-100: #ece9f2;
+  --surface-200: #dbd4e5;
+  --surface-300: #c3b8d4;
+  --surface-400: #a595bc;
+  --surface-500: #8b7aa3;
+  --surface-600: #72648a;
+  --surface-700: #5c5070;
+  --surface-800: #2e2839;    /* dark card background */
+  --surface-900: #1f1c2e;    /* dark page background */
+  --surface-950: #171322;
+
+  --background: linear-gradient(135deg, #1f1c2e 0%, #171322 100%);
+  --text-primary: #faf9f7;
+  --text-secondary: #a595bc;
+}
+
 body {
   margin: 0;
   min-height: 100vh;
   position: relative;
-  background: linear-gradient(135deg, #1f1c2e 0%, #171322 100%);
-  color: #faf9f7;
+  background: var(--background);
+  color: var(--text-primary);
+  transition: background 0.3s ease, color 0.3s ease;
 }
 
-/* Reading overlay */
+/* Noise overlay (subtle) */
 body::before {
   content: '';
   position: fixed;
@@ -19,7 +58,19 @@ body::before {
   background-image: url('/reading-bg.png');
   background-size: cover;
   background-position: center;
-  opacity: 0.08; /* subtle — adjust between 0.05 and 0.12 */
+  opacity: 0.06;
   pointer-events: none;
   mix-blend-mode: soft-light;
+}
+
+/* Clean scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--surface-400);
+  border-radius: 3px;
 }

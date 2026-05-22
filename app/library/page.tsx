@@ -337,11 +337,23 @@ export default function LibraryPage() {
                               {new Date(article.created_at).toLocaleDateString()}
                               {article.feed?.title && ` · from ${article.feed.title}`}
                             </p>
-                            {/* Real reading time from DB, fallback to dash */}
                             {(() => {
-  const readingTime =
-    article.reading_time ??
-    Math.max(1, Math.ceil(article.summary.split(/\s+/).length / 200));
+  let readingTime = article.reading_time;
+
+  // If no real reading time, use a verdict‑based estimate
+  if (!readingTime) {
+    switch (article.verdict) {
+      case 'Worth a full read':
+        readingTime = 5;
+        break;
+      case 'Skim this':
+        readingTime = 3;
+        break;
+      default:
+        readingTime = 1;
+    }
+  }
+
   return (
     <span className="inline-flex items-center gap-1 text-xs text-surface-500">
       <Clock className="w-3 h-3" />

@@ -203,17 +203,39 @@ export default function HomePage() {
                 </button>
               </GlassCard>
             )}
-            <button
-              type="submit"
-              disabled={loading}
-              className="self-start mt-2 px-5 py-2.5 bg-accent-500 text-white rounded-xl font-medium hover:bg-accent-600 disabled:opacity-50 flex items-center gap-2 transition"
-            >
-              {loading ? (
-                <><Loader2 className="animate-spin w-4 h-4" /> Sifting…</>
-              ) : (
-                <>Sift <ArrowRight className="w-4 h-4" /></>
-              )}
-            </button>
+            <div className="flex items-center gap-2 mt-2">
+  <button
+    type="submit"
+    disabled={loading}
+    className="px-5 py-2.5 bg-accent-500 text-white rounded-xl font-medium hover:bg-accent-600 disabled:opacity-50 flex items-center gap-2 transition"
+  >
+    {loading ? (
+      <><Loader2 className="animate-spin w-4 h-4" /> Sifting…</>
+    ) : (
+      <>Sift <ArrowRight className="w-4 h-4" /></>
+    )}
+  </button>
+  <button
+    type="button"
+    disabled={loading || !url.trim()}
+    onClick={async () => {
+      const res = await fetch('/api/queue', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url }),
+      });
+      if (res.ok) {
+        toast.success('Saved to queue');
+        setUrl('');
+      } else {
+        toast.error('Could not save');
+      }
+    }}
+    className="px-5 py-2.5 bg-surface-800/60 border border-surface-700/50 text-surface-300 rounded-xl font-medium hover:bg-surface-700/60 disabled:opacity-50 flex items-center gap-2 transition"
+  >
+    Queue
+  </button>
+</div>
           </>
         )}
         {showManualFallback && (

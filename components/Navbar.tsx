@@ -5,8 +5,9 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase/client';
-import { User, LogOut, Settings, Library, Rss, Users } from 'lucide-react';
+import { User, LogOut, Settings, Library, Rss, Users, Inbox } from 'lucide-react';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
+import ThemeToggle from '@/components/ThemeToggle';
 
 export default function Navbar() {
   const router = useRouter();
@@ -72,6 +73,12 @@ export default function Navbar() {
               <Library className="w-4 h-4" /> Library
             </Link>
             <Link
+              href="/queue"
+              className="text-surface-300 hover:text-accent-400 transition flex items-center gap-1"
+            >
+              <Inbox className="w-4 h-4" /> Queue
+            </Link>
+            <Link
               href="/feeds"
               className="text-surface-300 hover:text-accent-400 transition flex items-center gap-1"
             >
@@ -115,6 +122,7 @@ export default function Navbar() {
               <span className="text-sm text-surface-300">
                 {profile?.username || user.email?.split('@')[0] || 'User'}
               </span>
+              <ThemeToggle />
               <button
                 onClick={handleSignOut}
                 className="text-surface-400 hover:text-red-400 transition ml-2"
