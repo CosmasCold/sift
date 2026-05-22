@@ -183,32 +183,36 @@ export default function HomePage() {
     handleSiftRef.current = handleSift;
   }, [handleSift]);
 
-  // ---- Browser extension support (placed after handleSift declaration) ----
-  useEffect(() => {
-    const siftUrl = searchParams.get('sift');
-    const queueUrl = searchParams.get('queue');
+  // ---- Browser extension support (fixed loop) ----
+useEffect(() => {
+  const siftUrl = searchParams.get('sift');
+  const queueUrl = searchParams.get('queue');
 
-    if (siftUrl && user && !loading) {
-      // Auto‑sift after a tiny delay so everything is ready
-      const timer = setTimeout(() => {
-        const fakeEvent = { preventDefault: () => {} } as React.FormEvent;
-        handleSiftRef.current(fakeEvent, siftUrl);
-      }, 100);
-      return () => clearTimeout(timer);
-    } else if (queueUrl && user) {
-      fetch('/api/queue', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url: queueUrl }),
+  // Clean up URL param immediately to prevent re-triggering
+  if (siftUrl || queueUrl) {
+    router.replace('/');
+  }
+
+  if (siftUrl && user && !loading) {
+    // Auto‑sift after a tiny delay
+    const timer = setTimeout(() => {
+      const fakeEvent = { preventDefault: () => {} } as React.FormEvent;
+      handleSiftRef.current(fakeEvent, siftUrl);
+    }, 100);
+    return () => clearTimeout(timer);
+  } else if (queueUrl && user) {
+    fetch('/api/queue', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url: queueUrl }),
+    })
+      .then(res => {
+        if (res.ok) toast.success('Saved to queue!');
+        else toast.error('Could not save to queue');
       })
-        .then(res => {
-          if (res.ok) toast.success('Saved to queue!');
-          else toast.error('Could not save to queue');
-        })
-        .catch(() => toast.error('Could not save to queue'))
-        .finally(() => router.replace('/'));
-    }
-  }, [searchParams, user, loading, router]);
+      .catch(() => toast.error('Could not save to queue'));
+  }
+}, [searchParams, user, loading, router]);
 
   // ---- Listen ----
   const handleListen = async () => {
