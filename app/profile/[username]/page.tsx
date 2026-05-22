@@ -4,7 +4,6 @@ import Link from 'next/link';
 import Image from 'next/image';
 import CopyRssButton from './CopyRssButton';
 import ShareButton from './ShareButton';
-import { GlassCard } from '@/components/ui/GlassCard';
 
 function calculateStreak(dates: Date[]): number {
   if (!dates.length) return 0;
@@ -56,12 +55,12 @@ export default async function PublicProfilePage({
     return (
       <main className="flex-1 pt-12 pb-16 px-4 max-w-3xl mx-auto text-center">
         <h1 className="text-3xl font-semibold text-surface-50 mb-2">@{profile.username}</h1>
-        <GlassCard className="p-6">
+        <div className="bg-surface-800 rounded-2xl border border-surface-700/50 p-6">
           <p className="text-surface-400">This profile is private.</p>
           <Link href="/" className="inline-block mt-4 text-accent-400 underline">
             Back to Sift
           </Link>
-        </GlassCard>
+        </div>
       </main>
     );
   }
@@ -109,8 +108,9 @@ export default async function PublicProfilePage({
         )}
         <div className="absolute inset-0 bg-surface-950/20" />
         <div className="absolute bottom-0 left-0 right-0 p-6">
-          <div className="max-w-4xl mx-auto bg-surface-950/60 backdrop-blur-xl rounded-2xl p-4 flex flex-col md:flex-row items-center gap-4 shadow-glass">
-            <div className="w-24 h-24 rounded-full border-4 border-white/10 bg-surface-800 overflow-hidden shadow-lg">
+          {/* Solid header card */}
+          <div className="max-w-4xl mx-auto bg-surface-800 rounded-2xl border border-surface-700/50 p-4 flex flex-col md:flex-row items-center gap-4 shadow-card">
+            <div className="w-24 h-24 rounded-full border-4 border-surface-700 bg-surface-800 overflow-hidden shadow-lg">
               {profile.avatar_url ? (
                 <Image
                   src={profile.avatar_url}
@@ -142,24 +142,24 @@ export default async function PublicProfilePage({
       </div>
 
       <div className="max-w-4xl mx-auto px-4 mt-8">
-        {/* Stats cards */}
+        {/* Stats cards – solid */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          <GlassCard className="text-center p-4">
+          <div className="bg-surface-800 rounded-2xl border border-surface-700/50 p-4 text-center">
             <div className="text-2xl font-bold text-accent-400">{totalArticles}</div>
             <div className="text-xs text-surface-400">articles kept</div>
-          </GlassCard>
-          <GlassCard className="text-center p-4">
+          </div>
+          <div className="bg-surface-800 rounded-2xl border border-surface-700/50 p-4 text-center">
             <div className="text-2xl font-bold text-accent-400">{uniqueTags}</div>
             <div className="text-xs text-surface-400">unique tags</div>
-          </GlassCard>
-          <GlassCard className="text-center p-4">
+          </div>
+          <div className="bg-surface-800 rounded-2xl border border-surface-700/50 p-4 text-center">
             <div className="text-2xl font-bold text-accent-400">{streak}</div>
             <div className="text-xs text-surface-400">current streak</div>
-          </GlassCard>
-          <GlassCard className="text-center p-4">
+          </div>
+          <div className="bg-surface-800 rounded-2xl border border-surface-700/50 p-4 text-center">
             <div className="text-2xl font-bold text-accent-400">∞</div>
             <div className="text-xs text-surface-400">curiosity</div>
-          </GlassCard>
+          </div>
         </div>
 
         {/* Tag cloud */}
@@ -174,7 +174,7 @@ export default async function PublicProfilePage({
                   <Link
                     key={tag}
                     href={`/profile/${username}?tag=${encodeURIComponent(tag)}`}
-                    className="px-3 py-1 rounded-full bg-surface-800/60 hover:bg-accent-400/10 transition-all text-surface-300 text-sm"
+                    className="px-3 py-1 rounded-full bg-surface-800 hover:bg-accent-400/10 transition-all text-surface-300 text-sm border border-surface-700/50"
                     style={{ fontSize: `${Math.max(12, 12 + count * 1.5)}px` }}
                   >
                     #{tag} ({count})
@@ -188,7 +188,9 @@ export default async function PublicProfilePage({
         {activeTag && (
           <div className="mb-4 flex items-center gap-2">
             <span className="text-sm text-surface-300">Filtering by tag:</span>
-            <span className="bg-accent-400/10 text-accent-400 px-2 py-1 rounded-full text-sm">#{activeTag}</span>
+            <span className="bg-accent-400/10 text-accent-400 px-2 py-1 rounded-full text-sm">
+              #{activeTag}
+            </span>
             <Link href={`/profile/${username}`} className="text-xs text-surface-400 underline">
               Clear
             </Link>
@@ -202,11 +204,21 @@ export default async function PublicProfilePage({
         {articles?.length ? (
           <div className="grid gap-5">
             {articles.map(article => (
-              <GlassCard key={article.id} variant="interactive" className="p-5">
-                <a href={article.source_url || '#'} target="_blank" rel="noopener noreferrer" className="block">
+              <div
+                key={article.id}
+                className="bg-surface-800 rounded-2xl border border-surface-700/50 p-5 transition-shadow hover:shadow-card"
+              >
+                <a
+                  href={article.source_url || '#'}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block"
+                >
                   <p className="text-surface-200 leading-relaxed">{article.summary}</p>
                   <div className="flex flex-wrap items-center gap-2 mt-3">
-                    <span className="text-xs font-medium text-surface-400">{article.verdict}</span>
+                    <span className="text-xs font-medium text-surface-400">
+                      {article.verdict}
+                    </span>
                     <span className="text-xs text-surface-500">·</span>
                     <span className="text-xs text-surface-400">
                       {new Date(article.created_at).toLocaleDateString()}
@@ -215,22 +227,27 @@ export default async function PublicProfilePage({
                   {article.tags && article.tags.length > 0 && (
                     <div className="flex flex-wrap gap-1 mt-3">
                       {article.tags.map((tag: string) => (
-                        <span key={tag} className="text-xs bg-surface-800/60 px-2 py-0.5 rounded-full text-surface-400">
+                        <span
+                          key={tag}
+                          className="text-xs bg-surface-700/50 px-2 py-0.5 rounded-full text-surface-400"
+                        >
                           #{tag}
                         </span>
                       ))}
                     </div>
                   )}
                 </a>
-              </GlassCard>
+              </div>
             ))}
           </div>
         ) : (
-          <GlassCard className="text-center py-12">
+          <div className="bg-surface-800 rounded-2xl border border-surface-700/50 p-12 text-center">
             <p className="text-surface-400">
-              {activeTag ? `No articles tagged with "${activeTag}".` : 'No public articles yet.'}
+              {activeTag
+                ? `No articles tagged with "${activeTag}".`
+                : 'No public articles yet.'}
             </p>
-          </GlassCard>
+          </div>
         )}
       </div>
     </main>
