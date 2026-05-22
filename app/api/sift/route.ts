@@ -8,7 +8,7 @@ interface FeedbackRow {
   feedback: string;
 }
 
-export const maxDuration = 60; // Increase timeout to 60 seconds
+export const maxDuration = 60;
 
 const GROQ_API_KEY = process.env.GROQ_API_KEY!;
 
@@ -63,8 +63,11 @@ export async function POST(request: NextRequest) {
       let html: string;
       try {
         const res = await fetch(url, {
-          headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36' },
-          signal: AbortSignal.timeout(30000), 
+          headers: {
+            'User-Agent':
+              'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+          },
+          signal: AbortSignal.timeout(30000),
         });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         html = await res.text();
@@ -84,7 +87,14 @@ export async function POST(request: NextRequest) {
       const $ = cheerio.load(html);
       $('script, style, nav, footer, header, aside, .sidebar, .comments, noscript').remove();
 
-      const selectors = ['article', '[role="main"]', 'main', '.post-content', '.article-body', '.entry-content'];
+      const selectors = [
+        'article',
+        '[role="main"]',
+        'main',
+        '.post-content',
+        '.article-body',
+        '.entry-content',
+      ];
       for (const selector of selectors) {
         const el = $(selector);
         if (el.length > 0) {
@@ -111,7 +121,13 @@ export async function POST(request: NextRequest) {
     }
 
     // --------------------------------------------------
-    // 3. Call Groq with feedback‑enhanced prompt
+    // 3. Calculate reading time (before any further processing)
+    // --------------------------------------------------
+    const wordCount = articleText.split(/\s+/).length;
+    const readingTime = Math.max(1, Math.ceil(wordCount / 200));
+
+    // --------------------------------------------------
+    // 4. Call Groq with feedback‑enhanced prompt
     // --------------------------------------------------
     if (!GROQ_API_KEY) {
       return NextResponse.json({ error: 'API key not configured' }, { status: 500 });
@@ -124,7 +140,7 @@ export async function POST(request: NextRequest) {
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${GROQ_API_KEY}`,
+        Authorization: `Bearer ${GROQ_API_KEY}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
@@ -154,9 +170,17 @@ export async function POST(request: NextRequest) {
       result = JSON.parse(cleaned);
     }
 
-    return NextResponse.json({ ...result, sourceUrl: url });
+    // Return the reading time alongside the AI result
+    return NextResponse.json({
+      ...result,
+      sourceUrl: url,
+      readingTime,   // <-- new field
+    });
   } catch (error) {
     console.error('Sift error:', error);
-    return NextResponse.json({ error: 'Something unexpected happened. Please try again.' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Something unexpected happened. Please try again.' },
+      { status: 500 }
+    );
   }
 }

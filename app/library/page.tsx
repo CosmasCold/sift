@@ -34,6 +34,7 @@ interface SiftEntry {
   created_at: string;
   feed: Feed | null;
   tags: string[];
+  reading_time: number | null; // <-- new
 }
 
 const getDateGroup = (date: Date) => {
@@ -47,12 +48,6 @@ const getDateGroup = (date: Date) => {
   if (date >= yesterday) return 'Yesterday';
   if (date >= weekAgo) return 'This Week';
   return 'Earlier';
-};
-
-// Reading time calculation (200 words per minute)
-const getReadingTime = (text: string): number => {
-  const words = text.split(/\s+/).length;
-  return Math.max(1, Math.round(words / 200));
 };
 
 export default function LibraryPage() {
@@ -242,225 +237,245 @@ export default function LibraryPage() {
         )}
       </div>
 
-      {/* Empty State */}
+      {/* Empty State – contextual micro‑copy + animation */}
       {final.length === 0 ? (
-  <motion.div
-    initial={{ opacity: 0, y: 20 }}
-    animate={{ opacity: 1, y: 0 }}
-    transition={{ duration: 0.4, ease: 'easeOut' }}
-  >
-    <GlassCard className="p-10 text-center">
-      <BookOpen className="w-12 h-12 text-surface-600 mx-auto mb-4" />
-      {search || feedFilter !== 'all' ? (
-        <>
-          <p className="text-surface-300 text-lg font-medium mb-1">No articles match your current filters.</p>
-          <p className="text-surface-400 text-sm">Try a different search term or source.</p>
-        </>
-      ) : filter === 'kept' ? (
-        <>
-          <p className="text-surface-300 text-lg font-medium mb-1">Your reading garden is empty.</p>
-          <p className="text-surface-400 text-sm">Sift an article and keep it to start growing your collection.</p>
-        </>
-      ) : filter === 'discarded' ? (
-        <>
-          <p className="text-surface-300 text-lg font-medium mb-1">Nothing discarded yet.</p>
-          <p className="text-surface-400 text-sm">Articles you discard will appear here.</p>
-        </>
-      ) : (
-        <>
-          <p className="text-surface-300 text-lg font-medium mb-1">Your library is waiting.</p>
-          <p className="text-surface-400 text-sm">Sift your first article to see it here.</p>
-        </>
-      )}
-    </GlassCard>
-  </motion.div>
-) : (
         <motion.div
-  initial="hidden"
-  animate="visible"
-  variants={{
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: { staggerChildren: 0.08 },
-    },
-  }}
-  className="grid gap-6"
->
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, ease: 'easeOut' }}
+        >
+          <GlassCard className="p-10 text-center">
+            <BookOpen className="w-12 h-12 text-surface-600 mx-auto mb-4" />
+            {search || feedFilter !== 'all' ? (
+              <>
+                <p className="text-surface-300 text-lg font-medium mb-1">
+                  No articles match your current filters.
+                </p>
+                <p className="text-surface-400 text-sm">
+                  Try a different search term or source.
+                </p>
+              </>
+            ) : filter === 'kept' ? (
+              <>
+                <p className="text-surface-300 text-lg font-medium mb-1">
+                  Your reading garden is empty.
+                </p>
+                <p className="text-surface-400 text-sm">
+                  Sift an article and keep it to start growing your collection.
+                </p>
+              </>
+            ) : filter === 'discarded' ? (
+              <>
+                <p className="text-surface-300 text-lg font-medium mb-1">
+                  Nothing discarded yet.
+                </p>
+                <p className="text-surface-400 text-sm">
+                  Articles you discard will appear here.
+                </p>
+              </>
+            ) : (
+              <>
+                <p className="text-surface-300 text-lg font-medium mb-1">
+                  Your library is waiting.
+                </p>
+                <p className="text-surface-400 text-sm">
+                  Sift your first article to see it here.
+                </p>
+              </>
+            )}
+          </GlassCard>
+        </motion.div>
+      ) : (
+        <motion.div
+          initial="hidden"
+          animate="visible"
+          variants={{
+            hidden: { opacity: 0 },
+            visible: {
+              opacity: 1,
+              transition: { staggerChildren: 0.08 },
+            },
+          }}
+          className="grid gap-6"
+        >
           {Object.entries(grouped).map(([groupName, articles]) => (
             <motion.div
-  key={groupName}
-  variants={{
-    hidden: { opacity: 0, y: 12 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.4 } },
-  }}
->
-              <h2 className="text-sm font-semibold text-surface-400 mb-3 px-1">{groupName}</h2>
+              key={groupName}
+              variants={{
+                hidden: { opacity: 0, y: 12 },
+                visible: { opacity: 1, y: 0, transition: { duration: 0.4 } },
+              }}
+            >
+              <h2 className="text-sm font-semibold text-surface-400 mb-3 px-1">
+                {groupName}
+              </h2>
               <div className="grid gap-4">
-                {articles.map((article) => {
-                  const readingTime = getReadingTime(article.summary);
-                  return (
-                    <motion.div
-                      id={`article-${article.id}`}
-                      key={article.id}
-                      layout
-                      className="bg-surface-800/60 backdrop-blur-xl border border-surface-700/50 shadow-glass rounded-2xl p-5 transition-shadow hover:shadow-glass"
-                    >
-                      <div className="flex flex-col sm:flex-row items-start gap-3">
-                        <div className="flex items-start gap-2 flex-1 min-w-0">
-                          <span
-                            className={`w-3 h-3 rounded-full shrink-0 mt-0.5 ${
-                              article.verdict === 'Worth a full read'
-                                ? 'bg-verdict-green'
-                                : article.verdict === 'Skim this'
-                                ? 'bg-verdict-amber'
-                                : 'bg-verdict-grey'
-                            }`}
-                          />
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-surface-50 line-clamp-2">
-                              {article.summary}
+                {articles.map((article) => (
+                  <motion.div
+                    id={`article-${article.id}`}
+                    key={article.id}
+                    layout
+                    className="bg-surface-800/60 backdrop-blur-xl border border-surface-700/50 shadow-glass rounded-2xl p-5 transition-shadow hover:shadow-glass"
+                  >
+                    <div className="flex flex-col sm:flex-row items-start gap-3">
+                      <div className="flex items-start gap-2 flex-1 min-w-0">
+                        <span
+                          className={`w-3 h-3 rounded-full shrink-0 mt-0.5 ${
+                            article.verdict === 'Worth a full read'
+                              ? 'bg-verdict-green'
+                              : article.verdict === 'Skim this'
+                              ? 'bg-verdict-amber'
+                              : 'bg-verdict-grey'
+                          }`}
+                        />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-surface-50 line-clamp-2">
+                            {article.summary}
+                          </p>
+                          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1">
+                            <p className="text-xs text-surface-400">
+                              {new Date(article.created_at).toLocaleDateString()}
+                              {article.feed?.title && ` · from ${article.feed.title}`}
                             </p>
-                            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1">
-                              <p className="text-xs text-surface-400">
-                                {new Date(article.created_at).toLocaleDateString()}
-                                {article.feed?.title && ` · from ${article.feed.title}`}
-                              </p>
+                            {/* Real reading time from DB, fallback to dash */}
+                            {article.reading_time ? (
                               <span className="inline-flex items-center gap-1 text-xs text-surface-500">
                                 <Clock className="w-3 h-3" />
-                                ~{readingTime} min read
+                                ~{article.reading_time} min read
                               </span>
-                            </div>
-                            {article.tags?.length > 0 && (
-                              <div className="flex flex-wrap gap-1 mt-2">
-                                {article.tags.map((tag: string) => (
-                                  <span
-                                    key={tag}
-                                    className="text-xs bg-surface-800/60 px-2 py-0.5 rounded-full text-surface-400"
-                                  >
-                                    #{tag}
-                                  </span>
-                                ))}
-                              </div>
+                            ) : (
+                              <span className="text-xs text-surface-500">—</span>
                             )}
                           </div>
-                        </div>
-                        <div className="flex items-center gap-2 shrink-0">
-                          <button
-                            onClick={() => toggleKeep(article.id, article.kept)}
-                            className="p-1 rounded-md hover:bg-surface-800"
-                          >
-                            {article.kept ? (
-                              <CheckCircle className="w-4 h-4 text-verdict-green" />
-                            ) : (
-                              <Archive className="w-4 h-4 text-surface-400" />
-                            )}
-                          </button>
-                          <button
-                            onClick={() => handleFeedback(article.id, 'agree')}
-                            className={`p-1 rounded-md ${
-                              article.feedback === 'agree'
-                                ? 'text-verdict-green'
-                                : 'text-surface-400'
-                            }`}
-                          >
-                            <ThumbsUp className="w-4 h-4" />
-                          </button>
-                          <button
-                            onClick={() => handleFeedback(article.id, 'disagree')}
-                            className={`p-1 rounded-md ${
-                              article.feedback === 'disagree'
-                                ? 'text-verdict-amber'
-                                : 'text-surface-400'
-                            }`}
-                          >
-                            <ThumbsDown className="w-4 h-4" />
-                          </button>
-                          <button
-                            onClick={() =>
-                              setExpandedId(expandedId === article.id ? null : article.id)
-                            }
-                            className="text-accent-400 hover:underline text-sm"
-                          >
-                            {expandedId === article.id ? 'Close' : 'Read'}
-                          </button>
-                          <button
-                            onClick={() => handleDelete(article.id)}
-                            className="text-surface-400 hover:text-red-400"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
+                          {article.tags?.length > 0 && (
+                            <div className="flex flex-wrap gap-1 mt-2">
+                              {article.tags.map((tag: string) => (
+                                <span
+                                  key={tag}
+                                  className="text-xs bg-surface-800/60 px-2 py-0.5 rounded-full text-surface-400"
+                                >
+                                  #{tag}
+                                </span>
+                              ))}
+                            </div>
+                          )}
                         </div>
                       </div>
-                      <AnimatePresence>
-                        {expandedId === article.id && (
-                          <motion.div
-                            initial={{ height: 0, opacity: 0 }}
-                            animate={{ height: 'auto', opacity: 1 }}
-                            exit={{ height: 0, opacity: 0 }}
-                            className="overflow-hidden"
-                          >
-                            <div className="pt-4 mt-4 border-t border-surface-700/50 space-y-3">
-                              <p className="text-surface-200 text-sm leading-relaxed">
-                                {article.summary}
-                              </p>
-                              {article.insight && (
-                                <div className="bg-surface-800/60 rounded-xl p-3 border-l-4 border-accent-400">
-                                  <p className="text-surface-300 italic text-sm">
-                                    {article.insight}
-                                  </p>
-                                </div>
-                              )}
-                              {article.source_url && (
-                                <a
-                                  href={article.source_url}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="inline-flex items-center gap-1 text-accent-400 hover:underline text-sm"
-                                >
-                                  Read original <ArrowRight className="w-3 h-3" />
-                                </a>
-                              )}
-                              <div>
-                                <label className="text-xs font-medium text-surface-400 block mb-1">
-                                  Tags (comma separated)
-                                </label>
-                                <form
-                                  onSubmit={async (e) => {
-                                    e.preventDefault();
-                                    const fd = new FormData(e.currentTarget);
-                                    const input = fd.get('tags')?.toString().trim();
-                                    const newTags = input
-                                      ? input
-                                          .split(',')
-                                          .map((t) => t.trim())
-                                          .filter((t) => t)
-                                      : [];
-                                    await updateTags(article.id, newTags);
-                                  }}
-                                  className="flex gap-2"
-                                >
-                                  <input
-                                    name="tags"
-                                    defaultValue={(article.tags || []).join(', ')}
-                                    placeholder="e.g., AI, design"
-                                    className="flex-1 px-2 py-1 text-sm border border-surface-700 rounded-lg bg-surface-800/50 text-surface-50 placeholder-surface-500 focus:ring-2 focus:ring-accent-400/50 outline-none"
-                                  />
-                                  <button
-                                    type="submit"
-                                    className="px-3 py-1 text-sm bg-accent-400/10 text-accent-400 rounded-lg hover:bg-accent-400/20 transition"
-                                  >
-                                    Save
-                                  </button>
-                                </form>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <button
+                          onClick={() => toggleKeep(article.id, article.kept)}
+                          className="p-1 rounded-md hover:bg-surface-800"
+                        >
+                          {article.kept ? (
+                            <CheckCircle className="w-4 h-4 text-verdict-green" />
+                          ) : (
+                            <Archive className="w-4 h-4 text-surface-400" />
+                          )}
+                        </button>
+                        <button
+                          onClick={() => handleFeedback(article.id, 'agree')}
+                          className={`p-1 rounded-md ${
+                            article.feedback === 'agree'
+                              ? 'text-verdict-green'
+                              : 'text-surface-400'
+                          }`}
+                        >
+                          <ThumbsUp className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => handleFeedback(article.id, 'disagree')}
+                          className={`p-1 rounded-md ${
+                            article.feedback === 'disagree'
+                              ? 'text-verdict-amber'
+                              : 'text-surface-400'
+                          }`}
+                        >
+                          <ThumbsDown className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() =>
+                            setExpandedId(expandedId === article.id ? null : article.id)
+                          }
+                          className="text-accent-400 hover:underline text-sm"
+                        >
+                          {expandedId === article.id ? 'Close' : 'Read'}
+                        </button>
+                        <button
+                          onClick={() => handleDelete(article.id)}
+                          className="text-surface-400 hover:text-red-400"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                    <AnimatePresence>
+                      {expandedId === article.id && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: 'auto', opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          className="overflow-hidden"
+                        >
+                          <div className="pt-4 mt-4 border-t border-surface-700/50 space-y-3">
+                            <p className="text-surface-200 text-sm leading-relaxed">
+                              {article.summary}
+                            </p>
+                            {article.insight && (
+                              <div className="bg-surface-800/60 rounded-xl p-3 border-l-4 border-accent-400">
+                                <p className="text-surface-300 italic text-sm">
+                                  {article.insight}
+                                </p>
                               </div>
+                            )}
+                            {article.source_url && (
+                              <a
+                                href={article.source_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1 text-accent-400 hover:underline text-sm"
+                              >
+                                Read original <ArrowRight className="w-3 h-3" />
+                              </a>
+                            )}
+                            <div>
+                              <label className="text-xs font-medium text-surface-400 block mb-1">
+                                Tags (comma separated)
+                              </label>
+                              <form
+                                onSubmit={async (e) => {
+                                  e.preventDefault();
+                                  const fd = new FormData(e.currentTarget);
+                                  const input = fd.get('tags')?.toString().trim();
+                                  const newTags = input
+                                    ? input
+                                        .split(',')
+                                        .map((t) => t.trim())
+                                        .filter((t) => t)
+                                    : [];
+                                  await updateTags(article.id, newTags);
+                                }}
+                                className="flex gap-2"
+                              >
+                                <input
+                                  name="tags"
+                                  defaultValue={(article.tags || []).join(', ')}
+                                  placeholder="e.g., AI, design"
+                                  className="flex-1 px-2 py-1 text-sm border border-surface-700 rounded-lg bg-surface-800/50 text-surface-50 placeholder-surface-500 focus:ring-2 focus:ring-accent-400/50 outline-none"
+                                />
+                                <button
+                                  type="submit"
+                                  className="px-3 py-1 text-sm bg-accent-400/10 text-accent-400 rounded-lg hover:bg-accent-400/20 transition"
+                                >
+                                  Save
+                                </button>
+                              </form>
                             </div>
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                    </motion.div>
-                  );
-                })}
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </motion.div>
+                ))}
               </div>
             </motion.div>
           ))}
