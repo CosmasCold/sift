@@ -1,4 +1,3 @@
-// app/library/LibraryClient.tsx
 'use client';
 
 import { useEffect, useState, useMemo } from 'react';
@@ -14,6 +13,7 @@ import {
   CheckCircle,
   Filter,
   Clock,
+  Sparkles,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { GlassCard } from '@/components/ui/GlassCard';
@@ -62,7 +62,6 @@ export default function LibraryClient() {
   const [search, setSearch] = useState('');
   const [feedFilter, setFeedFilter] = useState<string>('all');
 
-  // Derived directly from URL – no effect needed
   const tagFilter = searchParams.get('tag');
 
   useEffect(() => {
@@ -112,7 +111,7 @@ export default function LibraryClient() {
     });
     if (!res.ok) {
       setArticles((prev) =>
-        prev.map((a) => (a.id === id ? { ...a, feedback: current.feedback } : a)),
+        prev.map((a) => (a.id === id ? { ...a, feedback: current.feedback } : a))
       );
       toast.error('Failed');
     }
@@ -125,7 +124,9 @@ export default function LibraryClient() {
       body: JSON.stringify({ articleId, tags: newTags }),
     });
     if (res.ok) {
-      setArticles((prev) => prev.map((a) => (a.id === articleId ? { ...a, tags: newTags } : a)));
+      setArticles((prev) =>
+        prev.map((a) => (a.id === articleId ? { ...a, tags: newTags } : a))
+      );
       toast.success('Tags updated');
     } else toast.error('Failed');
   };
@@ -156,6 +157,17 @@ export default function LibraryClient() {
     return Array.from(feeds.entries()).map(([id, title]) => ({ id, title }));
   }, [articles]);
 
+  // Weekly digest preview
+  const weeklyDigest = useMemo(() => {
+    const now = new Date();
+    const weekAgo = new Date();
+    weekAgo.setDate(now.getDate() - 7);
+    return articles
+      .filter((a) => a.kept && new Date(a.created_at) >= weekAgo)
+      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+      .slice(0, 3);
+  }, [articles]);
+
   if (loading)
     return (
       <div className="flex justify-center pt-16">
@@ -165,6 +177,44 @@ export default function LibraryClient() {
 
   return (
     <main className="flex-1 pt-12 pb-16 px-4 max-w-3xl mx-auto">
+      {/* Weekly digest preview */}
+      {!loading && weeklyDigest.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+          className="mb-6"
+        >
+          <GlassCard className="p-4">
+            <div className="flex items-center gap-2 mb-3">
+              <Sparkles className="w-5 h-5 text-accent-400" />
+              <span className="text-sm font-semibold text-surface-300">
+                This week you kept {weeklyDigest.length} article
+                {weeklyDigest.length > 1 ? 's' : ''}
+              </span>
+            </div>
+            <div className="space-y-2">
+              {weeklyDigest.map((article) => (
+                <button
+                  key={article.id}
+                  onClick={() => {
+                    setExpandedId(article.id);
+                    setTimeout(() => {
+                      document
+                        .getElementById(`article-${article.id}`)
+                        ?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }, 100);
+                  }}
+                  className="w-full text-left text-sm text-surface-200 hover:text-accent-400 transition line-clamp-1"
+                >
+                  {article.summary}
+                </button>
+              ))}
+            </div>
+          </GlassCard>
+        </motion.div>
+      )}
+
       {/* Header */}
       <GlassCard className="p-6 mb-6 flex flex-wrap items-center justify-between gap-4">
         <h1 className="text-2xl font-semibold text-surface-50">Your Library</h1>
@@ -342,9 +392,7 @@ export default function LibraryClient() {
                     key={article.id}
                     layout
                     onClick={() =>
-                      setExpandedId(
-                        expandedId === article.id ? null : article.id
-                      )
+                      setExpandedId(expandedId === article.id ? null : article.id)
                     }
                     className="bg-surface-800/60 backdrop-blur-xl border border-surface-700/50 shadow-glass rounded-2xl p-5 transition-shadow hover:shadow-glass cursor-pointer"
                   >
@@ -383,7 +431,7 @@ export default function LibraryClient() {
                                 <span
                                   key={tag}
                                   onClick={(e) => {
-                                    e.stopPropagation(); // prevent card expand
+                                    e.stopPropagation();
                                     router.push(`/library?tag=${encodeURIComponent(tag)}`);
                                   }}
                                   className="text-xs bg-surface-800/60 px-2 py-0.5 rounded-full text-surface-400 hover:bg-accent-400/10 hover:text-accent-400 cursor-pointer transition"
@@ -395,7 +443,10 @@ export default function LibraryClient() {
                           )}
                         </div>
                       </div>
-                      <div className="flex items-center gap-2 shrink-0" onClick={(e) => e.stopPropagation()}>
+                      <div
+                        className="flex items-center gap-2 shrink-0"
+                        onClick={(e) => e.stopPropagation()}
+                      >
                         <button
                           onClick={(e) => {
                             e.stopPropagation();

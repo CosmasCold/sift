@@ -59,6 +59,17 @@ body {
   opacity: 0.1;                /* subtly visible in dark mode */
 }
 
+/* ========== Select / Option styling ========== */
+select {
+  color: var(--surface-50);
+  background-color: var(--surface-800);
+}
+
+option {
+  background-color: var(--surface-800);
+  color: var(--surface-50);
+}
+
 /* ========== Scrollbar ========== */
 ::-webkit-scrollbar {
   width: 6px;
