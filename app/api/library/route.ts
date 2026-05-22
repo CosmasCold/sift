@@ -23,7 +23,9 @@ export async function GET() {
       created_at,
       tags,
       reading_time,
+      thumbnail_url,
       feed:sift_feeds(id, title)
+    
     `)
     .eq('user_id', user.id)
     .order('created_at', { ascending: false });

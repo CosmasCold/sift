@@ -2,14 +2,16 @@
 
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowRight, Flame, Users } from 'lucide-react';
+import { ArrowRight, Flame, Users, ImageOff } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { GlassCard } from '@/components/ui/GlassCard';
+import Image from 'next/image';
 
 interface TrendingArticle {
   source_url: string | null;
   summary: string;
   verdict: string;
+  thumbnail_url: string | null;
   keeperCount: number;
   latestDate: string;
 }
@@ -78,8 +80,26 @@ export default function TrendingClient() {
             >
               <GlassCard variant="interactive" className="p-5">
                 <div className="flex gap-4">
+                  {/* Rank badge */}
                   <div className="flex-shrink-0 w-8 h-8 rounded-full bg-accent-400/10 flex items-center justify-center text-sm font-bold text-accent-400">
                     {index + 1}
+                  </div>
+                  {/* Thumbnail */}
+                  <div className="flex-shrink-0 w-16 h-16 rounded-xl overflow-hidden bg-surface-800/50">
+                    {article.thumbnail_url ? (
+                      <Image
+                        src={article.thumbnail_url}
+                        alt=""
+                        width={64}
+                        height={64}
+                        className="object-cover w-full h-full"
+                        unoptimized
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-surface-500">
+                        <ImageOff className="w-5 h-5" />
+                      </div>
+                    )}
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-surface-200 leading-relaxed line-clamp-3">

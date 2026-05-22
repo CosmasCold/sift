@@ -9,12 +9,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { sourceUrl, summary, insight, verdict, tags, readingTime } = await request.json();
+    const { sourceUrl, summary, insight, verdict, tags, readingTime, thumbnailUrl } = await request.json();
     if (!summary || !verdict) {
       return NextResponse.json({ error: 'Missing fields' }, { status: 400 });
     }
 
-    // Automatically discard skipped articles
     const kept = verdict !== 'You can skip this';
 
     const { error } = await supabase.from('sifted_articles').insert({
@@ -25,7 +24,8 @@ export async function POST(request: NextRequest) {
       verdict,
       kept,
       tags: tags || [],
-      reading_time: readingTime ?? null, // <-- new field
+      reading_time: readingTime ?? null,
+      thumbnail_url: thumbnailUrl || null, // <-- new
     });
 
     if (error) {

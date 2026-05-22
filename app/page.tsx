@@ -88,7 +88,8 @@ export default function HomePage() {
                 summary: data.summary,
                 insight: data.insight,
                 verdict: data.verdict,
-                readingTime: data.readingTime, // added
+                readingTime: data.readingTime,
+                thumbnailUrl: data.thumbnailUrl // added
               }),
             }).catch(() => {});
           }
@@ -133,7 +134,8 @@ export default function HomePage() {
             summary: data.summary,
             insight: data.insight,
             verdict: data.verdict,
-            readingTime: data.readingTime, // added
+            readingTime: data.readingTime,
+            thumbnailUrl: data.thumbnailUrl // added
           }),
         }).catch(() => {});
       }

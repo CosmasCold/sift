@@ -24,6 +24,7 @@ export async function POST(request: NextRequest) {
   try {
     const { url, manualText } = await request.json();
     let articleText = manualText?.trim();
+    let thumbnailUrl: string | null = null;
 
     // --------------------------------------------------
     // 1. Get the current user (if signed in) and their feedback history
@@ -53,7 +54,7 @@ export async function POST(request: NextRequest) {
     }
 
     // --------------------------------------------------
-    // 2. Fetch article text (or use manual paste)
+    // 2. Fetch article text (or use manual paste) and extract OG image
     // --------------------------------------------------
     if (!articleText) {
       if (!url) {
@@ -85,6 +86,13 @@ export async function POST(request: NextRequest) {
       }
 
       const $ = cheerio.load(html);
+
+      // ---- Extract OG image ----
+      const ogImage = $('meta[property="og:image"]').attr('content');
+      if (ogImage) {
+        thumbnailUrl = ogImage.startsWith('http') ? ogImage : new URL(ogImage, url).href;
+      }
+
       $('script, style, nav, footer, header, aside, .sidebar, .comments, noscript').remove();
 
       const selectors = [
@@ -121,13 +129,13 @@ export async function POST(request: NextRequest) {
     }
 
     // --------------------------------------------------
-    // 3. Calculate reading time (before any further processing)
+    // 3. Calculate reading time
     // --------------------------------------------------
     const wordCount = articleText.split(/\s+/).length;
     const readingTime = Math.max(1, Math.ceil(wordCount / 200));
 
     // --------------------------------------------------
-    // 4. Call Groq with feedback‑enhanced prompt
+    // 4. Call Groq
     // --------------------------------------------------
     if (!GROQ_API_KEY) {
       return NextResponse.json({ error: 'API key not configured' }, { status: 500 });
@@ -170,11 +178,11 @@ export async function POST(request: NextRequest) {
       result = JSON.parse(cleaned);
     }
 
-    // Return the reading time alongside the AI result
     return NextResponse.json({
       ...result,
       sourceUrl: url,
-      readingTime,   // <-- new field
+      readingTime,
+      thumbnailUrl, // <-- new
     });
   } catch (error) {
     console.error('Sift error:', error);

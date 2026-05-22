@@ -14,10 +14,12 @@ import {
   Filter,
   Clock,
   Sparkles,
+  ImageOff,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { useRouter, useSearchParams } from 'next/navigation';
+import Image from 'next/image';
 
 interface Feed {
   id: string;
@@ -37,6 +39,7 @@ interface SiftEntry {
   feed: Feed | null;
   tags: string[];
   reading_time: number | null;
+  thumbnail_url: string | null;
 }
 
 const getDateGroup = (date: Date) => {
@@ -157,7 +160,6 @@ export default function LibraryClient() {
     return Array.from(feeds.entries()).map(([id, title]) => ({ id, title }));
   }, [articles]);
 
-  // Weekly digest preview
   const weeklyDigest = useMemo(() => {
     const now = new Date();
     const weekAgo = new Date();
@@ -397,51 +399,70 @@ export default function LibraryClient() {
                     className="bg-surface-800/60 backdrop-blur-xl border border-surface-700/50 shadow-glass rounded-2xl p-5 transition-shadow hover:shadow-glass cursor-pointer"
                   >
                     <div className="flex flex-col sm:flex-row items-start gap-3">
-                      <div className="flex items-start gap-2 flex-1 min-w-0">
-                        <span
-                          className={`w-3 h-3 rounded-full shrink-0 mt-0.5 ${
-                            article.verdict === 'Worth a full read'
-                              ? 'bg-verdict-green'
-                              : article.verdict === 'Skim this'
-                              ? 'bg-verdict-amber'
-                              : 'bg-verdict-grey'
-                          }`}
-                        />
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-surface-50 line-clamp-2">
-                            {article.summary}
-                          </p>
-                          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1">
-                            <p className="text-xs text-surface-400">
-                              {new Date(article.created_at).toLocaleDateString()}
-                              {article.feed?.title && ` · from ${article.feed.title}`}
-                            </p>
-                            {article.reading_time ? (
-                              <span className="inline-flex items-center gap-1 text-xs text-surface-500">
-                                <Clock className="w-3 h-3" />
-                                ~{article.reading_time} min read
-                              </span>
-                            ) : (
-                              <span className="text-xs text-surface-500">—</span>
-                            )}
+                      {/* Thumbnail */}
+                      <div className="flex-shrink-0 w-14 h-14 rounded-lg overflow-hidden bg-surface-800/50">
+                        {article.thumbnail_url ? (
+                          <Image
+                            src={article.thumbnail_url}
+                            alt=""
+                            width={56}
+                            height={56}
+                            className="object-cover w-full h-full"
+                            unoptimized
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-surface-500">
+                            <ImageOff className="w-4 h-4" />
                           </div>
-                          {article.tags?.length > 0 && (
-                            <div className="flex flex-wrap gap-1 mt-2">
-                              {article.tags.map((tag: string) => (
-                                <span
-                                  key={tag}
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    router.push(`/library?tag=${encodeURIComponent(tag)}`);
-                                  }}
-                                  className="text-xs bg-surface-800/60 px-2 py-0.5 rounded-full text-surface-400 hover:bg-accent-400/10 hover:text-accent-400 cursor-pointer transition"
-                                >
-                                  #{tag}
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start gap-2">
+                          <span
+                            className={`w-3 h-3 rounded-full shrink-0 mt-0.5 ${
+                              article.verdict === 'Worth a full read'
+                                ? 'bg-verdict-green'
+                                : article.verdict === 'Skim this'
+                                ? 'bg-verdict-amber'
+                                : 'bg-verdict-grey'
+                            }`}
+                          />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-surface-50 line-clamp-2">
+                              {article.summary}
+                            </p>
+                            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1">
+                              <p className="text-xs text-surface-400">
+                                {new Date(article.created_at).toLocaleDateString()}
+                                {article.feed?.title && ` · from ${article.feed.title}`}
+                              </p>
+                              {article.reading_time ? (
+                                <span className="inline-flex items-center gap-1 text-xs text-surface-500">
+                                  <Clock className="w-3 h-3" />
+                                  ~{article.reading_time} min read
                                 </span>
-                              ))}
+                              ) : (
+                                <span className="text-xs text-surface-500">—</span>
+                              )}
                             </div>
-                          )}
+                          </div>
                         </div>
+                        {article.tags?.length > 0 && (
+                          <div className="flex flex-wrap gap-1 mt-2 ml-5">
+                            {article.tags.map((tag: string) => (
+                              <span
+                                key={tag}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  router.push(`/library?tag=${encodeURIComponent(tag)}`);
+                                }}
+                                className="text-xs bg-surface-800/60 px-2 py-0.5 rounded-full text-surface-400 hover:bg-accent-400/10 hover:text-accent-400 cursor-pointer transition"
+                              >
+                                #{tag}
+                              </span>
+                            ))}
+                          </div>
+                        )}
                       </div>
                       <div
                         className="flex items-center gap-2 shrink-0"
