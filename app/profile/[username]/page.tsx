@@ -251,12 +251,6 @@ export default async function PublicProfilePage({
                       Read original <ExternalLink className="w-3 h-3" />
                     </a>
                   )}
-                  <Link
-                    href={`/read/${article.id}`}
-                    className="inline-flex items-center gap-1 text-accent-400 hover:underline text-sm"
-                  >
-                    Read in Sift <ArrowRight className="w-3 h-3" />
-                  </Link>
                 </div>
               </div>
             ))}

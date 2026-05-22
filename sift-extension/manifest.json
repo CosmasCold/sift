@@ -1,0 +1,20 @@
+{
+  "manifest_version": 3,
+  "name": "Sift – AI Reading Triage",
+  "version": "1.0",
+  "description": "Sift any article with one click. AI verdict, summary, and insight.",
+  "permissions": ["activeTab"],
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icon-16.png",
+      "48": "icon-48.png",
+      "128": "icon-128.png"
+    }
+  },
+  "icons": {
+    "16": "icon-16.png",
+    "48": "icon-48.png",
+    "128": "icon-128.png"
+  }
+}

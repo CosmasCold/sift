@@ -716,13 +716,7 @@ export default function LibraryClient() {
                                   Read original <ArrowRight className="w-3 h-3" />
                                 </a>
                               )}
-                              <Link
-  href={`/read/${article.id}`}
-  className="inline-flex items-center gap-1 text-accent-400 hover:underline text-sm ml-3"
-  onClick={(e) => e.stopPropagation()}
->
-  Read in Sift
-</Link>
+                              
                               <div onClick={(e) => e.stopPropagation()}>
                                 <label className="text-xs font-medium text-surface-400 block mb-1">
                                   Tags (comma separated)

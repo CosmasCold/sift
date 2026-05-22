@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body {
+      width: 220px;
+      padding: 16px;
+      font-family: 'Inter', system-ui, sans-serif;
+      background: #1f1c2e;
+      color: #faf9f7;
+      text-align: center;
+    }
+    button {
+      width: 100%;
+      margin: 6px 0;
+      padding: 10px;
+      border: none;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .sift-btn {
+      background: #b4a7d6;
+      color: #1f1c2e;
+    }
+    .sift-btn:hover {
+      background: #9b8ac4;
+    }
+    .queue-btn {
+      background: #2e2839;
+      color: #faf9f7;
+      border: 1px solid #5c5070;
+    }
+    .queue-btn:hover {
+      background: #3a3447;
+    }
+    .title {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 12px;
+    }
+    .subtitle {
+      font-size: 11px;
+      color: #a595bc;
+      margin-bottom: 16px;
+    }
+  </style>
+</head>
+<body>
+  <div class="title">🧠 Sift</div>
+  <div class="subtitle">AI reading triage</div>
+  <button id="siftNow" class="sift-btn">⚡ Sift this page</button>
+  <button id="queueLater" class="queue-btn">📥 Queue for later</button>
+  <script src="popup.js"></script>
+</body>
+</html>
