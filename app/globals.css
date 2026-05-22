@@ -12,14 +12,14 @@
   --surface-500: #72648a;
   --surface-600: #8b7aa3;
   --surface-700: #a595bc;
-  --surface-800: #f0ede9;    /* light card background */
-  --surface-900: #ffffff;    /* page background */
-  --surface-950: #f5f2ef;    /* deepest light (borders etc.) */
+  --surface-800: #d5cec5;    /* card bg – slightly darker for contrast */
+  --surface-900: #ffffff;    /* page bg */
+  --surface-950: #f5f2ef;
 }
 
 /* ========== Dark mode ========== */
 .dark {
-  --surface-50: #f6f4f9;     /* lightest – main text */
+  --surface-50: #f6f4f9;
   --surface-100: #ece9f2;
   --surface-200: #dbd4e5;
   --surface-300: #c3b8d4;
@@ -27,12 +27,12 @@
   --surface-500: #8b7aa3;
   --surface-600: #72648a;
   --surface-700: #5c5070;
-  --surface-800: #2e2839;    /* dark card background */
-  --surface-900: #1f1c2e;    /* dark page background */
+  --surface-800: #2e2839;
+  --surface-900: #1f1c2e;
   --surface-950: #171322;
 }
 
-/* ========== Global body ========== */
+/* ========== Body ========== */
 body {
   margin: 0;
   min-height: 100vh;
@@ -42,27 +42,21 @@ body {
   transition: background 0.3s ease, color 0.3s ease;
 }
 
-/* ========== Reading overlay (visible in both modes) ========== */
-body::before {
-  content: '';
+/* ========== Noise / reading overlay (using the existing div) ========== */
+.noise-overlay {
   position: fixed;
   inset: 0;
-  z-index: 0;
+  z-index: 1;
   background-image: url('/reading-bg.png');
   background-size: cover;
   background-position: center;
-  opacity: 0.12;   /* slightly more visible in light mode */
+  background-repeat: no-repeat;
   pointer-events: none;
-  mix-blend-mode: soft-light;
+  opacity: 0.18;               /* clearly visible in light mode */
 }
 
-/* Fine-tune for each mode */
-:root body::before {
-  opacity: 0.18;   /* bolder in light mode so it's visible on white */
-}
-
-.dark body::before {
-  opacity: 0.08;
+.dark .noise-overlay {
+  opacity: 0.1;                /* subtly visible in dark mode */
 }
 
 /* ========== Scrollbar ========== */
