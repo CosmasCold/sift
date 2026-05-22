@@ -2,9 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Light mode (default when .dark is missing) */
+/* ======== Light mode (default, no .dark) ======== */
 :root {
-  --surface-50: #faf9f7;
+  /* Surface colours: 50 is lightest (white), 950 is darkest (near black) */
+  --surface-50: #ffffff;
   --surface-100: #f5f2ef;
   --surface-200: #ebe5df;
   --surface-300: #d6cec5;
@@ -12,18 +13,26 @@
   --surface-500: #9a897a;
   --surface-600: #7d6d60;
   --surface-700: #64564c;
-  --surface-800: #f0ede9;   /* light card background */
-  --surface-900: #ffffff;    /* light page background */
-  --surface-950: #f5f2ef;   /* deepest light */
-
-  --background: linear-gradient(135deg, #faf9f7 0%, #ece7f5 100%);
-  --text-primary: #1c1816;
-  --text-secondary: #4a3e6a;
+  --surface-800: #3a3532;    /* dark card bg (glass effect still works) */
+  --surface-900: #2a2624;    /* dark page background? No, we want light page bg. */
+  /* Wait, we need a light page bg. We'll use surface-50 as page bg? No. Let's structure properly: */
+  /* We want: background light, cards slightly darker, text dark. So: */
+  --surface-50: #1c1816;     /* darkest - primary text */
+  --surface-100: #2a2624;
+  --surface-200: #3a3532;
+  --surface-300: #4a3e6a;
+  --surface-400: #5c4d82;
+  --surface-500: #72648a;
+  --surface-600: #8b7aa3;
+  --surface-700: #a595bc;
+  --surface-800: #f0ede9;    /* light card background */
+  --surface-900: #ffffff;    /* page background */
+  --surface-950: #f5f2ef;    /* deepest light (borders, etc.) */
 }
 
-/* Dark mode */
+/* ======== Dark mode ======== */
 .dark {
-  --surface-50: #f6f4f9;
+  --surface-50: #f6f4f9;     /* lightest - primary text */
   --surface-100: #ece9f2;
   --surface-200: #dbd4e5;
   --surface-300: #c3b8d4;
@@ -34,22 +43,19 @@
   --surface-800: #2e2839;    /* dark card background */
   --surface-900: #1f1c2e;    /* dark page background */
   --surface-950: #171322;
-
-  --background: linear-gradient(135deg, #1f1c2e 0%, #171322 100%);
-  --text-primary: #faf9f7;
-  --text-secondary: #a595bc;
 }
 
+/* ======== Global background & text ======== */
 body {
   margin: 0;
   min-height: 100vh;
   position: relative;
-  background: var(--background);
-  color: var(--text-primary);
+  background: linear-gradient(135deg, var(--surface-950) 0%, var(--surface-900) 100%);
+  color: var(--surface-50);
   transition: background 0.3s ease, color 0.3s ease;
 }
 
-/* Noise overlay (subtle) */
+/* ======== Reading overlay (visible in both modes) ======== */
 body::before {
   content: '';
   position: fixed;
@@ -58,12 +64,22 @@ body::before {
   background-image: url('/reading-bg.png');
   background-size: cover;
   background-position: center;
-  opacity: 0.06;
+  opacity: 0.08;
   pointer-events: none;
   mix-blend-mode: soft-light;
 }
 
-/* Clean scrollbar */
+/* Slightly more visible overlay in light mode */
+@media (prefers-color-scheme: light) {
+  body::before {
+    opacity: 0.12;
+  }
+}
+.dark body::before {
+  opacity: 0.08;
+}
+
+/* ======== Scrollbar ======== */
 ::-webkit-scrollbar {
   width: 6px;
 }
