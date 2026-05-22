@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { GlassCard } from '@/components/ui/GlassCard';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 interface Feed {
   id: string;
@@ -34,7 +35,7 @@ interface SiftEntry {
   created_at: string;
   feed: Feed | null;
   tags: string[];
-  reading_time: number | null; // <-- new
+  reading_time: number | null;
 }
 
 const getDateGroup = (date: Date) => {
@@ -51,12 +52,17 @@ const getDateGroup = (date: Date) => {
 };
 
 export default function LibraryPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [articles, setArticles] = useState<SiftEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [filter, setFilter] = useState<'all' | 'kept' | 'discarded'>('kept');
   const [search, setSearch] = useState('');
   const [feedFilter, setFeedFilter] = useState<string>('all');
+
+  // Derived directly from URL – no effect needed
+  const tagFilter = searchParams.get('tag');
 
   useEffect(() => {
     fetch('/api/library')
@@ -125,7 +131,8 @@ export default function LibraryPage() {
 
   const filtered = articles
     .filter((a) => (filter === 'kept' ? a.kept : filter === 'discarded' ? !a.kept : true))
-    .filter((a) => a.summary.toLowerCase().includes(search.toLowerCase()));
+    .filter((a) => a.summary.toLowerCase().includes(search.toLowerCase()))
+    .filter((a) => (tagFilter ? a.tags?.includes(tagFilter) : true));
 
   const final =
     feedFilter === 'all' ? filtered : filtered.filter((a) => a.feed?.id === feedFilter);
@@ -187,6 +194,24 @@ export default function LibraryPage() {
         </div>
       </GlassCard>
 
+      {/* Active tag filter banner */}
+      {tagFilter && (
+        <div className="mb-4 flex items-center gap-2">
+          <span className="text-sm text-surface-300">Tagged:</span>
+          <span className="bg-accent-400/10 text-accent-400 px-2 py-1 rounded-full text-sm">
+            #{tagFilter}
+          </span>
+          <button
+            onClick={() => {
+              router.replace('/library');
+            }}
+            className="text-xs text-surface-400 underline"
+          >
+            Clear
+          </button>
+        </div>
+      )}
+
       {/* Filters */}
       <div className="flex flex-col gap-3 mb-6">
         <div className="flex flex-wrap items-center gap-3">
@@ -237,7 +262,7 @@ export default function LibraryPage() {
         )}
       </div>
 
-      {/* Empty State – contextual micro‑copy + animation */}
+      {/* Empty State */}
       {final.length === 0 ? (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -246,13 +271,13 @@ export default function LibraryPage() {
         >
           <GlassCard className="p-10 text-center">
             <BookOpen className="w-12 h-12 text-surface-600 mx-auto mb-4" />
-            {search || feedFilter !== 'all' ? (
+            {search || feedFilter !== 'all' || tagFilter ? (
               <>
                 <p className="text-surface-300 text-lg font-medium mb-1">
                   No articles match your current filters.
                 </p>
                 <p className="text-surface-400 text-sm">
-                  Try a different search term or source.
+                  Try a different search term, source, or tag.
                 </p>
               </>
             ) : filter === 'kept' ? (
@@ -315,7 +340,12 @@ export default function LibraryPage() {
                     id={`article-${article.id}`}
                     key={article.id}
                     layout
-                    className="bg-surface-800/60 backdrop-blur-xl border border-surface-700/50 shadow-glass rounded-2xl p-5 transition-shadow hover:shadow-glass"
+                    onClick={() =>
+                      setExpandedId(
+                        expandedId === article.id ? null : article.id
+                      )
+                    }
+                    className="bg-surface-800/60 backdrop-blur-xl border border-surface-700/50 shadow-glass rounded-2xl p-5 transition-shadow hover:shadow-glass cursor-pointer"
                   >
                     <div className="flex flex-col sm:flex-row items-start gap-3">
                       <div className="flex items-start gap-2 flex-1 min-w-0">
@@ -337,37 +367,25 @@ export default function LibraryPage() {
                               {new Date(article.created_at).toLocaleDateString()}
                               {article.feed?.title && ` · from ${article.feed.title}`}
                             </p>
-                            {(() => {
-  let readingTime = article.reading_time;
-
-  // If no real reading time, use a verdict‑based estimate
-  if (!readingTime) {
-    switch (article.verdict) {
-      case 'Worth a full read':
-        readingTime = 5;
-        break;
-      case 'Skim this':
-        readingTime = 3;
-        break;
-      default:
-        readingTime = 1;
-    }
-  }
-
-  return (
-    <span className="inline-flex items-center gap-1 text-xs text-surface-500">
-      <Clock className="w-3 h-3" />
-      ~{readingTime} min read
-    </span>
-  );
-})()}
+                            {article.reading_time ? (
+                              <span className="inline-flex items-center gap-1 text-xs text-surface-500">
+                                <Clock className="w-3 h-3" />
+                                ~{article.reading_time} min read
+                              </span>
+                            ) : (
+                              <span className="text-xs text-surface-500">—</span>
+                            )}
                           </div>
                           {article.tags?.length > 0 && (
                             <div className="flex flex-wrap gap-1 mt-2">
                               {article.tags.map((tag: string) => (
                                 <span
                                   key={tag}
-                                  className="text-xs bg-surface-800/60 px-2 py-0.5 rounded-full text-surface-400"
+                                  onClick={(e) => {
+                                    e.stopPropagation(); // prevent card expand
+                                    router.push(`/library?tag=${encodeURIComponent(tag)}`);
+                                  }}
+                                  className="text-xs bg-surface-800/60 px-2 py-0.5 rounded-full text-surface-400 hover:bg-accent-400/10 hover:text-accent-400 cursor-pointer transition"
                                 >
                                   #{tag}
                                 </span>
@@ -376,9 +394,12 @@ export default function LibraryPage() {
                           )}
                         </div>
                       </div>
-                      <div className="flex items-center gap-2 shrink-0">
+                      <div className="flex items-center gap-2 shrink-0" onClick={(e) => e.stopPropagation()}>
                         <button
-                          onClick={() => toggleKeep(article.id, article.kept)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleKeep(article.id, article.kept);
+                          }}
                           className="p-1 rounded-md hover:bg-surface-800"
                         >
                           {article.kept ? (
@@ -388,7 +409,10 @@ export default function LibraryPage() {
                           )}
                         </button>
                         <button
-                          onClick={() => handleFeedback(article.id, 'agree')}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleFeedback(article.id, 'agree');
+                          }}
                           className={`p-1 rounded-md ${
                             article.feedback === 'agree'
                               ? 'text-verdict-green'
@@ -398,7 +422,10 @@ export default function LibraryPage() {
                           <ThumbsUp className="w-4 h-4" />
                         </button>
                         <button
-                          onClick={() => handleFeedback(article.id, 'disagree')}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleFeedback(article.id, 'disagree');
+                          }}
                           className={`p-1 rounded-md ${
                             article.feedback === 'disagree'
                               ? 'text-verdict-amber'
@@ -408,15 +435,10 @@ export default function LibraryPage() {
                           <ThumbsDown className="w-4 h-4" />
                         </button>
                         <button
-                          onClick={() =>
-                            setExpandedId(expandedId === article.id ? null : article.id)
-                          }
-                          className="text-accent-400 hover:underline text-sm"
-                        >
-                          {expandedId === article.id ? 'Close' : 'Read'}
-                        </button>
-                        <button
-                          onClick={() => handleDelete(article.id)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDelete(article.id);
+                          }}
                           className="text-surface-400 hover:text-red-400"
                         >
                           <Trash2 className="w-4 h-4" />
@@ -430,6 +452,7 @@ export default function LibraryPage() {
                           animate={{ height: 'auto', opacity: 1 }}
                           exit={{ height: 0, opacity: 0 }}
                           className="overflow-hidden"
+                          onClick={(e) => e.stopPropagation()}
                         >
                           <div className="pt-4 mt-4 border-t border-surface-700/50 space-y-3">
                             <p className="text-surface-200 text-sm leading-relaxed">
@@ -448,11 +471,12 @@ export default function LibraryPage() {
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="inline-flex items-center gap-1 text-accent-400 hover:underline text-sm"
+                                onClick={(e) => e.stopPropagation()}
                               >
                                 Read original <ArrowRight className="w-3 h-3" />
                               </a>
                             )}
-                            <div>
+                            <div onClick={(e) => e.stopPropagation()}>
                               <label className="text-xs font-medium text-surface-400 block mb-1">
                                 Tags (comma separated)
                               </label>
@@ -475,7 +499,7 @@ export default function LibraryPage() {
                                   name="tags"
                                   defaultValue={(article.tags || []).join(', ')}
                                   placeholder="e.g., AI, design"
-                                  className="flex-1 px-2 py-1 text-sm border border-surface-700 rounded-lg bg-surface-800/50 text-surface-50 placeholder-surface-500 focus:ring-2 focus:ring-accent-400/50 outline-none"
+                                  className="flex-1 px-2 py-1 text-sm border border-surface-600 rounded-lg bg-surface-800 text-surface-50 placeholder-surface-400 focus:ring-2 focus:ring-accent-400/50 outline-none"
                                 />
                                 <button
                                   type="submit"

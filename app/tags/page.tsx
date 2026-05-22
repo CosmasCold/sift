@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import toast from 'react-hot-toast';
 import {
   Pencil,
@@ -8,6 +9,7 @@ import {
   GitMerge,
   X,
   Check,
+  ExternalLink,
 } from 'lucide-react';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { motion } from 'framer-motion';
@@ -21,15 +23,12 @@ export default function TagsPage() {
   const [tags, setTags] = useState<Tag[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Rename state
   const [editingTag, setEditingTag] = useState<string | null>(null);
   const [newName, setNewName] = useState('');
-
-  // Merge state
   const [mergeSource, setMergeSource] = useState<string | null>(null);
   const [mergeTarget, setMergeTarget] = useState('');
 
-  // Fetch tags on mount – no synchronous setState
+  // Fetch tags inside effect – loading is initially true, set to false after fetch
   useEffect(() => {
     const loadTags = async () => {
       try {
@@ -45,19 +44,18 @@ export default function TagsPage() {
     loadTags();
   }, []);
 
-  // Refresh tags (used after rename, merge, delete)
-  const fetchTags = () => {
+  // Helper to refresh tags after mutations (called from user actions, not effect)
+  const refreshTags = async () => {
     setLoading(true);
-    fetch('/api/tags')
-      .then(r => r.json())
-      .then(d => {
-        setTags(d.tags || []);
-        setLoading(false);
-      })
-      .catch(() => {
-        toast.error('Failed to load tags');
-        setLoading(false);
-      });
+    try {
+      const res = await fetch('/api/tags');
+      const data = await res.json();
+      setTags(data.tags || []);
+    } catch {
+      toast.error('Failed to load tags');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleRename = async (oldName: string) => {
@@ -65,20 +63,16 @@ export default function TagsPage() {
       setEditingTag(null);
       return;
     }
-    try {
-      const res = await fetch('/api/tags', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ oldName, newName: newName.trim() }),
-      });
-      if (res.ok) {
-        toast.success(`Renamed to "${newName.trim()}"`);
-        fetchTags();
-      } else {
-        toast.error('Failed to rename');
-      }
-    } catch {
-      toast.error('Something went wrong');
+    const res = await fetch('/api/tags', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ oldName, newName: newName.trim() }),
+    });
+    if (res.ok) {
+      toast.success(`Renamed to "${newName.trim()}"`);
+      refreshTags();
+    } else {
+      toast.error('Failed to rename');
     }
     setEditingTag(null);
     setNewName('');
@@ -86,20 +80,16 @@ export default function TagsPage() {
 
   const handleDelete = async (tag: string) => {
     if (!window.confirm(`Delete the tag "${tag}" from all articles?`)) return;
-    try {
-      const res = await fetch('/api/tags', {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tag }),
-      });
-      if (res.ok) {
-        toast.success(`Deleted "${tag}"`);
-        fetchTags();
-      } else {
-        toast.error('Failed to delete');
-      }
-    } catch {
-      toast.error('Something went wrong');
+    const res = await fetch('/api/tags', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ tag }),
+    });
+    if (res.ok) {
+      toast.success(`Deleted "${tag}"`);
+      refreshTags();
+    } else {
+      toast.error('Failed to delete');
     }
   };
 
@@ -109,20 +99,16 @@ export default function TagsPage() {
       toast.error('Cannot merge a tag into itself');
       return;
     }
-    try {
-      const res = await fetch('/api/tags', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ source: mergeSource, target: mergeTarget.trim() }),
-      });
-      if (res.ok) {
-        toast.success(`Merged "${mergeSource}" into "${mergeTarget.trim()}"`);
-        fetchTags();
-      } else {
-        toast.error('Failed to merge');
-      }
-    } catch {
-      toast.error('Something went wrong');
+    const res = await fetch('/api/tags', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ source: mergeSource, target: mergeTarget.trim() }),
+    });
+    if (res.ok) {
+      toast.success(`Merged "${mergeSource}" into "${mergeTarget.trim()}"`);
+      refreshTags();
+    } else {
+      toast.error('Failed to merge');
     }
     setMergeSource(null);
     setMergeTarget('');
@@ -138,7 +124,17 @@ export default function TagsPage() {
 
   return (
     <main className="flex-1 pt-12 pb-16 px-4 max-w-2xl mx-auto">
-      <h1 className="text-2xl font-semibold text-surface-50 mb-6">Tag Manager</h1>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-semibold text-surface-50">Tag Manager</h1>
+        {tags.length > 0 && (
+          <Link
+            href="/library"
+            className="text-sm text-accent-400 hover:underline flex items-center gap-1"
+          >
+            View Library <ExternalLink className="w-3 h-3" />
+          </Link>
+        )}
+      </div>
 
       {tags.length === 0 ? (
         <GlassCard className="p-10 text-center">
@@ -180,10 +176,7 @@ export default function TagsPage() {
                         autoFocus
                         className="flex-1 px-2 py-1 text-sm bg-surface-800/50 border border-surface-700 rounded-lg text-surface-50 placeholder-surface-500 focus:ring-2 focus:ring-accent-400/50 outline-none"
                       />
-                      <button
-                        type="submit"
-                        className="p-1 text-green-400 hover:bg-surface-700 rounded"
-                      >
+                      <button type="submit" className="p-1 text-green-400 hover:bg-surface-700 rounded">
                         <Check className="w-4 h-4" />
                       </button>
                       <button
@@ -199,9 +192,12 @@ export default function TagsPage() {
                     </form>
                   ) : (
                     <>
-                      <span className="bg-accent-400/10 text-accent-400 px-3 py-1 rounded-full text-sm font-medium">
+                      <Link
+                        href={`/library?tag=${encodeURIComponent(tag.name)}`}
+                        className="bg-accent-400/10 text-accent-400 px-3 py-1 rounded-full text-sm font-medium hover:bg-accent-400/20 transition"
+                      >
                         #{tag.name}
-                      </span>
+                      </Link>
                       <span className="text-xs text-surface-400">
                         {tag.count} article{tag.count !== 1 ? 's' : ''}
                       </span>
@@ -237,7 +233,6 @@ export default function TagsPage() {
                   </div>
                 )}
 
-                {/* Merge input row (appears when merging) */}
                 {mergeSource === tag.name && (
                   <div className="flex items-center gap-2 ml-2">
                     <span className="text-xs text-surface-400">into</span>
