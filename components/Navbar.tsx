@@ -10,6 +10,7 @@ import type { User as SupabaseUser } from '@supabase/supabase-js';
 import ThemeToggle from '@/components/ThemeToggle';
 import { Tag } from 'lucide-react';
 import { Flame } from 'lucide-react';
+import { Compass } from 'lucide-react';
 
 export default function Navbar() {
   const router = useRouter();
@@ -74,6 +75,12 @@ export default function Navbar() {
             >
               <Library className="w-4 h-4" /> Library
             </Link>
+            <Link
+  href="/discover"
+  className="text-surface-300 hover:text-accent-400 transition flex items-center gap-1"
+>
+  <Compass className="w-4 h-4" /> Discover
+</Link>
             <Link
   href="/trending"
   className="text-surface-300 hover:text-accent-400 transition flex items-center gap-1"
