@@ -18,7 +18,7 @@ function getInitialTheme(): boolean {
 export default function ThemeToggle() {
   const [dark, setDark] = useState(getInitialTheme);
 
-  // Apply the class whenever dark state changes (and also on mount)
+  // Apply the class whenever dark state changes
   useEffect(() => {
     if (dark) {
       document.documentElement.classList.add('dark');
@@ -46,7 +46,10 @@ export default function ThemeToggle() {
 
   return (
     <button
-      onClick={toggle}
+      onClick={(e) => {
+        e.stopPropagation();
+        toggle();
+      }}
       className="p-2 rounded-lg text-surface-400 hover:text-surface-200 hover:bg-surface-800/40 transition"
       aria-label="Toggle theme"
     >

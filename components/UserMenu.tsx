@@ -8,7 +8,6 @@ import {
   User,
   LogOut,
   Settings,
-  Library,
   Rss,
   Inbox,
   Users,
@@ -40,18 +39,19 @@ export default function UserMenu({ user, profile }: UserMenuProps) {
     router.push('/');
   };
 
-  // Close menu on outside click
+  // Close on outside click – uses "click" so link clicks still navigate
   useEffect(() => {
+    if (!open) return;
     const handler = (e: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
         setOpen(false);
       }
     };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, []);
+    document.addEventListener('click', handler);
+    return () => document.removeEventListener('click', handler);
+  }, [open]);
 
-  // Close on Escape key
+  // Close on Escape
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (e.key === 'Escape') setOpen(false);
