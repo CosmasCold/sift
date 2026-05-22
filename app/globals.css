@@ -8,12 +8,12 @@
   --surface-100: #2a2624;
   --surface-200: #3a3532;
   --surface-300: #4a3e6a;
-  --surface-400: #4a3e6a;    /* darker for better contrast */
-  --surface-500: #3a2e5a;    /* darker for better contrast */
+  --surface-400: #5c4d82;    /* slightly lighter than 300 for secondary text */
+  --surface-500: #6f5d9d;    /* used for muted text */
   --surface-600: #8b7aa3;
   --surface-700: #a595bc;
-  --surface-800: #d5cec5;    /* card bg */
-  --surface-900: #ffffff;    /* page bg */
+  --surface-800: #e8e3dd;    /* card background – warm, distinct from page */
+  --surface-900: #ffffff;    /* page background */
   --surface-950: #f5f2ef;
 }
 
