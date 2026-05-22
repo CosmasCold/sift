@@ -16,6 +16,7 @@ import {
   Sparkles,
   ImageOff,
   Layers,
+  Download,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { GlassCard } from '@/components/ui/GlassCard';
@@ -204,6 +205,37 @@ export default function LibraryClient() {
       .slice(0, 3);
   }, [articles]);
 
+  // Markdown export
+  const handleExport = () => {
+    if (final.length === 0) {
+      toast.error('No articles to export.');
+      return;
+    }
+    const date = new Date().toISOString().split('T')[0];
+    const md = final
+      .map((article) => {
+        const title = article.summary.substring(0, 80).replace(/\n/g, ' ') + '…';
+        const verdict = `**Verdict:** ${article.verdict}`;
+        const tags = article.tags?.length ? `**Tags:** ${article.tags.map(t => `#${t}`).join(' ')}` : '';
+        const link = article.source_url ? `**Source:** ${article.source_url}` : '';
+        const dateLine = `**Date:** ${new Date(article.created_at).toLocaleDateString()}`;
+        return `## ${title}\n\n${verdict}\n${dateLine}\n${link}\n${tags}\n\n${article.summary}\n\n---\n`;
+      })
+      .join('\n');
+
+    const header = `# Sift Export — ${date}\n\n`;
+    const blob = new Blob([header + md], { type: 'text/markdown' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `sift-export-${date}.md`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    toast.success(`${final.length} articles exported.`);
+  };
+
   if (loading)
     return (
       <div className="flex justify-center pt-16">
@@ -303,6 +335,14 @@ export default function LibraryClient() {
           <span className="text-sm text-surface-400 bg-surface-800/60 px-3 py-1 rounded-full">
             {articles.length} sifted
           </span>
+          <button
+            onClick={handleExport}
+            disabled={final.length === 0}
+            className="px-4 py-2 bg-surface-800/60 border border-surface-700/50 text-surface-300 rounded-xl text-sm font-medium hover:bg-surface-700/60 disabled:opacity-50 flex items-center gap-1 transition"
+            title="Export visible articles as Markdown"
+          >
+            <Download className="w-4 h-4" /> Export
+          </button>
           <button
             onClick={async () => {
               const res = await fetch('/api/surprise');
