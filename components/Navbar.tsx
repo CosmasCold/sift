@@ -8,6 +8,7 @@ import { supabase } from '@/lib/supabase/client';
 import { User, LogOut, Settings, Library, Rss, Users, Inbox } from 'lucide-react';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
 import ThemeToggle from '@/components/ThemeToggle';
+import { Tag } from 'lucide-react';
 
 export default function Navbar() {
   const router = useRouter();
@@ -72,6 +73,12 @@ export default function Navbar() {
             >
               <Library className="w-4 h-4" /> Library
             </Link>
+            <Link
+  href="/tags"
+  className="text-surface-300 hover:text-accent-400 transition flex items-center gap-1"
+>
+  <Tag className="w-4 h-4" /> Tags
+</Link>
             <Link
               href="/queue"
               className="text-surface-300 hover:text-accent-400 transition flex items-center gap-1"
