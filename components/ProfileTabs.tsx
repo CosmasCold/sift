@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
@@ -35,7 +35,9 @@ interface ProfileTabsProps {
   activeTag?: string;
   stats: { month: string; count: number }[];
   queueItem: { url: string } | null;
-  allArticles: Article[]; // new
+  allArticles: Article[];
+  followers: { follower_id: string; username: string; avatar_url: string | null }[];
+  following: { following_id: string; username: string; avatar_url: string | null }[];
 }
 
 const tabs = [
@@ -59,10 +61,12 @@ export default function ProfileTabs({
   stats,
   queueItem,
   allArticles,
+  followers,
+  following,
 }: ProfileTabsProps) {
-    const [activeTab, setActiveTab] = useState('reading');
-  
-  // Lazy initializer: randomly picks a highlight once, no effect needed
+  const [activeTab, setActiveTab] = useState('reading');
+
+  // Pick a random highlight once on mount (lazy initializer, no effect)
   const [highlight] = useState<Article | null>(() => {
     if (allArticles && allArticles.length > 0) {
       const randomIndex = Math.floor(Math.random() * allArticles.length);
@@ -81,7 +85,7 @@ export default function ProfileTabs({
 
   return (
     <>
-      {/* Highlight card (client-side random) */}
+      {/* Highlight card */}
       {highlight && (
         <div className="max-w-4xl mx-auto px-4 mt-8">
           <div className="bg-surface-800 rounded-2xl border border-surface-700/50 p-5 flex gap-4 items-center">
@@ -303,24 +307,89 @@ export default function ProfileTabs({
         {/* Network Tab */}
         {activeTab === 'network' && (
           <div className="grid gap-6 sm:grid-cols-2">
-            <GlassCard className="p-6 text-center">
-              <div className="text-3xl font-bold text-accent-400 mb-2">
-                {followingCount}
-              </div>
-              <p className="text-surface-400 text-sm mb-4">Following</p>
-              <Link
-                href="/following"
-                className="inline-flex items-center gap-1 text-accent-400 hover:underline text-sm"
-              >
-                View all <ArrowRight className="w-3 h-3" />
-              </Link>
+            {/* Following list */}
+            <GlassCard className="p-4">
+              <h3 className="text-sm font-semibold text-surface-300 mb-3">
+                Following ({followingCount})
+              </h3>
+              {following.length === 0 ? (
+                <p className="text-xs text-surface-400">Not following anyone yet.</p>
+              ) : (
+                <div className="space-y-2">
+                  {following.map((f) => (
+                    <Link
+                      key={f.following_id}
+                      href={`/profile/${f.username}`}
+                      className="flex items-center gap-2 p-1.5 rounded-lg hover:bg-surface-700/50 transition"
+                    >
+                      <div className="w-7 h-7 rounded-full bg-surface-700 overflow-hidden flex-shrink-0">
+                        {f.avatar_url ? (
+                          <Image
+                            src={f.avatar_url}
+                            alt=""
+                            width={28}
+                            height={28}
+                            className="object-cover w-full h-full"
+                            unoptimized
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-xs text-surface-400">
+                            {f.username[0].toUpperCase()}
+                          </div>
+                        )}
+                      </div>
+                      <span className="text-sm text-surface-200">@{f.username}</span>
+                    </Link>
+                  ))}
+                </div>
+              )}
+              {followingCount > following.length && (
+                <Link
+                  href="/following"
+                  className="inline-flex items-center gap-1 text-accent-400 hover:underline text-xs mt-3"
+                >
+                  View all <ArrowRight className="w-3 h-3" />
+                </Link>
+              )}
             </GlassCard>
-            <GlassCard className="p-6 text-center">
-              <div className="text-3xl font-bold text-accent-400 mb-2">
-                {followerCount}
-              </div>
-              <p className="text-surface-400 text-sm mb-4">Followers</p>
-              <p className="text-xs text-surface-500">Coming soon</p>
+
+            {/* Followers list */}
+            <GlassCard className="p-4">
+              <h3 className="text-sm font-semibold text-surface-300 mb-3">
+                Followers ({followerCount})
+              </h3>
+              {followers.length === 0 ? (
+                <p className="text-xs text-surface-400">No followers yet.</p>
+              ) : (
+                <div className="space-y-2">
+                  {followers.map((f) => (
+                    <Link
+                      key={f.follower_id}
+                      href={`/profile/${f.username}`}
+                      className="flex items-center gap-2 p-1.5 rounded-lg hover:bg-surface-700/50 transition"
+                    >
+                      <div className="w-7 h-7 rounded-full bg-surface-700 overflow-hidden flex-shrink-0">
+                        {f.avatar_url ? (
+                          <Image
+                            src={f.avatar_url}
+                            alt=""
+                            width={28}
+                            height={28}
+                            className="object-cover w-full h-full"
+                            unoptimized
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-xs text-surface-400">
+                            {f.username[0].toUpperCase()}
+                          </div>
+                        )}
+                      </div>
+                      <span className="text-sm text-surface-200">@{f.username}</span>
+                    </Link>
+                  ))}
+                </div>
+              )}
+              {/* No View all for followers yet */}
             </GlassCard>
           </div>
         )}

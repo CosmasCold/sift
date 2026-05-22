@@ -124,6 +124,41 @@ export default async function PublicProfilePage({
     .select('*', { count: 'exact', head: true })
     .eq('following_id', profile.id);
 
+    // Followers list (who follows this profile)
+  const { data: followersRaw } = await supabase
+    .from('follows')
+    .select('follower_id, user_profiles!follower_id(username, avatar_url)')
+    .eq('following_id', profile.id)
+    .limit(10);
+
+  // Following list (who this profile follows)
+  const { data: followingRaw } = await supabase
+    .from('follows')
+    .select('following_id, user_profiles!following_id(username, avatar_url)')
+    .eq('follower_id', profile.id)
+    .limit(10);
+
+  // Helper: Supabase returns user_profiles as an array; extract first element
+  const unwrapProfile = (row: Record<string, unknown>) => {
+    const profiles = row.user_profiles as { username: string; avatar_url: string | null }[] | undefined;
+    return {
+      username: profiles?.[0]?.username ?? '',
+      avatar_url: profiles?.[0]?.avatar_url ?? null,
+    };
+  };
+
+  const followers = (followersRaw || []).map((f) => ({
+    follower_id: f.follower_id as string,
+    username: unwrapProfile(f).username,
+    avatar_url: unwrapProfile(f).avatar_url,
+  }));
+
+  const following = (followingRaw || []).map((f) => ({
+    following_id: f.following_id as string,
+    username: unwrapProfile(f).username,
+    avatar_url: unwrapProfile(f).avatar_url,
+  }));
+
   const joinDate = profile.created_at
     ? new Date(profile.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long' })
     : 'recently';
@@ -179,7 +214,7 @@ export default async function PublicProfilePage({
         </div>
       </div>
 
-      {/* Tabbed content with highlight handled client-side */}
+      {/* Tabbed content */}
       <ProfileTabs
         username={username}
         articles={allArticles || []}
@@ -194,6 +229,8 @@ export default async function PublicProfilePage({
         stats={stats}
         queueItem={queueItem}
         allArticles={allArticles || []}
+        followers={followers}
+        following={following}
       />
     </main>
   );

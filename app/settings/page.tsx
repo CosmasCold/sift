@@ -4,13 +4,14 @@ import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { supabase } from '@/lib/supabase/client';
 import toast from 'react-hot-toast';
-import { ArrowLeft, Upload, User } from 'lucide-react';
+import { ArrowLeft, Upload, User, Mail } from 'lucide-react';
 import Link from 'next/link';
 import { GlassCard } from '@/components/ui/GlassCard';
 
 export default function SettingsPage() {
   const [username, setUsername] = useState('');
   const [publicProfile, setPublicProfile] = useState(false);
+  const [weeklyDigest, setWeeklyDigest] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [coverUrl, setCoverUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -23,12 +24,13 @@ export default function SettingsPage() {
       if (user) {
         const { data } = await supabase
           .from('user_profiles')
-          .select('username, public_profile, avatar_url, cover_url')
+          .select('username, public_profile, weekly_digest, avatar_url, cover_url')
           .eq('id', user.id)
           .single();
         if (data) {
           setUsername(data.username || '');
           setPublicProfile(data.public_profile || false);
+          setWeeklyDigest(data.weekly_digest || false);
           setAvatarUrl(data.avatar_url);
           setCoverUrl(data.cover_url);
         }
@@ -50,6 +52,7 @@ export default function SettingsPage() {
       .update({
         username: username.trim(),
         public_profile: publicProfile,
+        weekly_digest: weeklyDigest,
       })
       .eq('id', user.id);
 
@@ -229,6 +232,22 @@ export default function SettingsPage() {
             className={`relative w-11 h-6 rounded-full transition-colors ${publicProfile ? 'bg-accent-500' : 'bg-surface-600'}`}
           >
             <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition-transform ${publicProfile ? 'translate-x-5' : ''}`} />
+          </button>
+        </div>
+
+        {/* Weekly digest toggle – NEW */}
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm font-medium text-surface-300 flex items-center gap-2">
+              <Mail className="w-4 h-4 text-accent-400" /> Weekly digest
+            </p>
+            <p className="text-xs text-surface-400">Receive a Monday email with your top kept articles.</p>
+          </div>
+          <button
+            onClick={() => setWeeklyDigest(!weeklyDigest)}
+            className={`relative w-11 h-6 rounded-full transition-colors ${weeklyDigest ? 'bg-accent-500' : 'bg-surface-600'}`}
+          >
+            <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition-transform ${weeklyDigest ? 'translate-x-5' : ''}`} />
           </button>
         </div>
 
