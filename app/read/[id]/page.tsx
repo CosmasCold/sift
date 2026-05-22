@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ArrowLeft, Clock, ExternalLink, ImageOff } from 'lucide-react';
+import { ArrowLeft, Clock, ExternalLink } from 'lucide-react';
 import { GlassCard } from '@/components/ui/GlassCard';
 
 export default async function ReaderPage({
@@ -15,13 +15,18 @@ export default async function ReaderPage({
 
   const { data: article, error } = await supabase
     .from('sifted_articles')
-    .select('summary, full_text, verdict, source_url, thumbnail_url, reading_time, created_at')
+    .select(
+      'summary, full_text, verdict, source_url, thumbnail_url, reading_time, created_at'
+    )
     .eq('id', id)
     .single();
 
-  if (error || !article || !article.full_text) {
+  if (error || !article) {
     notFound();
   }
+
+  // Use full_text if available, otherwise fall back to summary
+  const displayText = article.full_text || article.summary;
 
   return (
     <main className="flex-1 pt-12 pb-16 px-4 max-w-2xl mx-auto">
@@ -35,7 +40,7 @@ export default async function ReaderPage({
       </Link>
 
       <GlassCard className="p-6 md:p-8">
-        {/* Header with thumbnail and meta */}
+        {/* Thumbnail (if available) */}
         {article.thumbnail_url && (
           <div className="w-full h-48 md:h-64 rounded-xl overflow-hidden mb-6 bg-surface-800/50">
             <Image
@@ -49,6 +54,7 @@ export default async function ReaderPage({
           </div>
         )}
 
+        {/* Verdict + meta */}
         <div className="flex items-center gap-3 mb-5 pb-4 border-b border-surface-700/50">
           <span
             className={`w-3 h-3 rounded-full ${
@@ -59,7 +65,9 @@ export default async function ReaderPage({
                 : 'bg-verdict-grey'
             }`}
           />
-          <span className="text-sm font-semibold text-surface-300">{article.verdict}</span>
+          <span className="text-sm font-semibold text-surface-300">
+            {article.verdict}
+          </span>
           <div className="ml-auto flex items-center gap-3">
             {article.reading_time && (
               <span className="text-xs text-surface-400 flex items-center gap-1">
@@ -79,9 +87,9 @@ export default async function ReaderPage({
           </div>
         </div>
 
-        {/* Full article text */}
-        <article className="prose prose-invert max-w-none">
-          {article.full_text.split('\n').map((paragraph, i) => (
+        {/* Article content */}
+        <article className="max-w-none">
+          {displayText.split('\n').map((paragraph, i) => (
             <p key={i} className="text-surface-200 leading-relaxed mb-4">
               {paragraph}
             </p>
