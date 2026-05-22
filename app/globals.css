@@ -3,6 +3,23 @@
 @tailwind utilities;
 
 body {
-  background: #2a2624; /* surface-900 — warm dark background */
-  color: #faf9f7; /* surface-50 — soft white text */
+  margin: 0;
+  min-height: 100vh;
+  position: relative;
+  background: linear-gradient(135deg, #1f1c2e 0%, #171322 100%);
+  color: #faf9f7;
+}
+
+/* Reading overlay */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background-image: url('/reading-bg.png');
+  background-size: cover;
+  background-position: center;
+  opacity: 0.08; /* subtle — adjust between 0.05 and 0.12 */
+  pointer-events: none;
+  mix-blend-mode: soft-light;
 }

@@ -8,20 +8,19 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        // New unified surface palette (warm taupe/gray)
         surface: {
-          50: '#faf9f7',
-          100: '#f5f2ef',
-          200: '#ebe5df',
-          300: '#d6cec5',
-          400: '#b8a99c',
-          500: '#9a897a',
-          600: '#7d6d60',
-          700: '#64564c',
-          800: '#3a3532',    // Glass card background
-          900: '#2a2624',    // Page background
-          950: '#1c1816',    // Deepest background
-        },
+  50: '#f6f4f9',
+  100: '#ece9f2',
+  200: '#dbd4e5',
+  300: '#c3b8d4',
+  400: '#a595bc',
+  500: '#8b7aa3',
+  600: '#72648a',
+  700: '#5c5070',
+  800: '#2e2839',    // Glass card background
+  900: '#1f1c2e',    // Page background (lighter stop of gradient)
+  950: '#171322',    // Deepest background (darker stop)
+},
         // New accent: Lavender Fog (replaces old accent)
         accent: {
           DEFAULT: '#b4a7d6', // accent-400
