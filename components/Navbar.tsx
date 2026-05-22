@@ -5,12 +5,9 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase/client';
-import { User, LogOut, Settings, Library, Rss, Users, Inbox } from 'lucide-react';
+import { User, LogOut, Settings, Library, Rss, Users, Inbox, Flame, Tag, Compass } from 'lucide-react';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
 import ThemeToggle from '@/components/ThemeToggle';
-import { Tag } from 'lucide-react';
-import { Flame } from 'lucide-react';
-import { Compass } from 'lucide-react';
 
 export default function Navbar() {
   const router = useRouter();
@@ -69,66 +66,36 @@ export default function Navbar() {
         </Link>
         {user ? (
           <div className="flex items-center gap-4">
-            <Link
-              href="/library"
-              className="text-surface-300 hover:text-accent-400 transition flex items-center gap-1"
-            >
+            <Link href="/library" className="text-surface-300 hover:text-accent-400 transition flex items-center gap-1">
               <Library className="w-4 h-4" /> Library
             </Link>
-            <Link
-  href="/following"
-  className="text-surface-300 hover:text-accent-400 transition flex items-center gap-1"
->
-  <Users className="w-4 h-4" /> Following
-</Link>
-            <Link
-  href="/discover"
-  className="text-surface-300 hover:text-accent-400 transition flex items-center gap-1"
->
-  <Compass className="w-4 h-4" /> Discover
-</Link>
-            <Link
-  href="/trending"
-  className="text-surface-300 hover:text-accent-400 transition flex items-center gap-1"
->
-  <Flame className="w-4 h-4" /> Trending
-</Link>
-            <Link
-  href="/tags"
-  className="text-surface-300 hover:text-accent-400 transition flex items-center gap-1"
->
-  <Tag className="w-4 h-4" /> Tags
-</Link>
-            <Link
-              href="/queue"
-              className="text-surface-300 hover:text-accent-400 transition flex items-center gap-1"
-            >
+            <Link href="/queue" className="text-surface-300 hover:text-accent-400 transition flex items-center gap-1">
               <Inbox className="w-4 h-4" /> Queue
             </Link>
-            <Link
-              href="/feeds"
-              className="text-surface-300 hover:text-accent-400 transition flex items-center gap-1"
-            >
+            <Link href="/feeds" className="text-surface-300 hover:text-accent-400 transition flex items-center gap-1">
               <Rss className="w-4 h-4" /> Feeds
             </Link>
-            <Link
-              href="/explore"
-              className="text-surface-300 hover:text-accent-400 transition flex items-center gap-1"
-            >
+            <Link href="/discover" className="text-surface-300 hover:text-accent-400 transition flex items-center gap-1">
+              <Compass className="w-4 h-4" /> Discover
+            </Link>
+            <Link href="/explore" className="text-surface-300 hover:text-accent-400 transition flex items-center gap-1">
               <Users className="w-4 h-4" /> Explore
             </Link>
+            <Link href="/following" className="text-surface-300 hover:text-accent-400 transition flex items-center gap-1">
+              <Users className="w-4 h-4" /> Following
+            </Link>
+            <Link href="/trending" className="text-surface-300 hover:text-accent-400 transition flex items-center gap-1">
+              <Flame className="w-4 h-4" /> Trending
+            </Link>
+            <Link href="/tags" className="text-surface-300 hover:text-accent-400 transition flex items-center gap-1">
+              <Tag className="w-4 h-4" /> Tags
+            </Link>
             {profile?.username && profile?.public_profile && (
-              <Link
-                href={`/profile/${profile.username}`}
-                className="text-surface-300 hover:text-accent-400 transition flex items-center gap-1"
-              >
+              <Link href={`/profile/${profile.username}`} className="text-surface-300 hover:text-accent-400 transition flex items-center gap-1">
                 <User className="w-4 h-4" /> Profile
               </Link>
             )}
-            <Link
-              href="/settings"
-              className="text-surface-300 hover:text-accent-400 transition flex items-center gap-1"
-            >
+            <Link href="/settings" className="text-surface-300 hover:text-accent-400 transition flex items-center gap-1">
               <Settings className="w-4 h-4" /> Settings
             </Link>
             <div className="flex items-center gap-2 ml-2">
@@ -152,6 +119,7 @@ export default function Navbar() {
               <ThemeToggle />
               <button
                 onClick={handleSignOut}
+                aria-label="Sign out"
                 className="text-surface-400 hover:text-red-400 transition ml-2"
               >
                 <LogOut className="w-4 h-4" />

@@ -12,9 +12,7 @@ export const metadata: Metadata = {
   description: 'Save articles. Let AI sift them. Get the insight in seconds.',
   icons: {
     icon: '/favicon.png',
-    apple: '/icon-192.png', // Apple touch icon
   },
-  manifest: '/manifest.json',
   openGraph: {
     title: 'Sift — Save, Summarize, Sift',
     description: 'AI-powered reading triage. Sift articles and keep what matters.',
@@ -36,12 +34,6 @@ export const metadata: Metadata = {
     title: 'Sift — Save, Summarize, Sift',
     description: 'AI-powered reading triage. Sift articles and keep what matters.',
     images: ['https://sift-lac.vercel.app/og-image.png'],
-  },
-  // Additional PWA meta tags
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: 'black-translucent',
-    title: 'Sift',
   },
 };
 
@@ -69,15 +61,18 @@ export default function RootLayout({
             `,
           }}
         />
-        <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-        <meta name="apple-mobile-web-app-title" content="Sift" />
-        <link rel="apple-touch-icon" href="/icon-192.png" />
       </head>
       <body className={`${inter.className} min-h-screen flex flex-col bg-surface-900 text-surface-50 transition-colors`}>
+        {/* Skip to main content */}
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-surface-800 focus:text-surface-50 focus:rounded-xl focus:outline-none"
+        >
+          Skip to main content
+        </a>
         <div className="noise-overlay" />
         <Navbar />
-        <main className="flex-1 relative z-10">{children}</main>
+        <main id="main-content" className="flex-1 relative z-10">{children}</main>
         <Footer />
         <Toaster
           position="top-center"

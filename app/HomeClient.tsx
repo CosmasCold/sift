@@ -30,7 +30,7 @@ interface SiftResult {
   fullText?: string;
 }
 
-export default function HomePage() {
+export default function HomeClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -77,7 +77,7 @@ export default function HomePage() {
     checkArticles();
   }, [user]);
 
-  // ---- Sift logic (accepts optional overrideUrl) ----
+  // ---- Sift logic ----
   const handleSift = useCallback(async (e: React.FormEvent, overrideUrl?: string) => {
     e.preventDefault();
 
@@ -152,7 +152,7 @@ export default function HomePage() {
         setResult(data);
         setShowManualFallback(false);
         setManualText('');
-        if (!overrideUrl) setUrl(''); // clear input only if user-initiated
+        if (!overrideUrl) setUrl('');
         fetch('/api/save-sift', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -177,42 +177,39 @@ export default function HomePage() {
     }
   }, [url, batchMode, batchUrls, showManualFallback, manualText]);
 
-  // Ref for calling handleSift from effects
   const handleSiftRef = useRef(handleSift);
   useEffect(() => {
     handleSiftRef.current = handleSift;
   }, [handleSift]);
 
-  // ---- Browser extension support (fixed loop) ----
-useEffect(() => {
-  const siftUrl = searchParams.get('sift');
-  const queueUrl = searchParams.get('queue');
+  // ---- Browser extension support ----
+  useEffect(() => {
+    const siftUrl = searchParams.get('sift');
+    const queueUrl = searchParams.get('queue');
 
-  // Clean up URL param immediately to prevent re-triggering
-  if (siftUrl || queueUrl) {
-    router.replace('/');
-  }
+    if (siftUrl || queueUrl) {
+      router.replace('/');
+    }
 
-  if (siftUrl && user && !loading) {
-    // Auto‑sift after a tiny delay
-    const timer = setTimeout(() => {
-      const fakeEvent = { preventDefault: () => {} } as React.FormEvent;
-      handleSiftRef.current(fakeEvent, siftUrl);
-    }, 100);
-    return () => clearTimeout(timer);
-  } else if (queueUrl && user) {
-    fetch('/api/queue', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ url: queueUrl }),
-    })
-      .then(res => {
-        if (res.ok) toast.success('Saved to queue!');
-        else toast.error('Could not save to queue');
+    if (siftUrl && user && !loading) {
+      const timer = setTimeout(() => {
+        const fakeEvent = { preventDefault: () => {} } as React.FormEvent;
+        handleSiftRef.current(fakeEvent, siftUrl);
+      }, 100);
+      return () => clearTimeout(timer);
+    } else if (queueUrl && user) {
+      fetch('/api/queue', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: queueUrl }),
       })
-      .catch(() => toast.error('Could not save to queue'));
-  }
-}, [searchParams, user, loading, router]);
+        .then(res => {
+          if (res.ok) toast.success('Saved to queue!');
+          else toast.error('Could not save to queue');
+        })
+        .catch(() => toast.error('Could not save to queue'));
+    }
+  }, [searchParams, user, loading, router]);
 
   // ---- Listen ----
   const handleListen = async () => {
@@ -233,12 +230,11 @@ useEffect(() => {
     } catch { toast.error('Something went wrong'); }
   };
 
-  // ---- Demo sift (for onboarding) ----
+  // ---- Demo sift ----
   const demoArticleUrl = 'https://www.quantamagazine.org/what-is-machine-learning-20240708/';
   const handleDemoSift = async () => {
     setUrl(demoArticleUrl);
     const dummyEvent = { preventDefault: () => {} } as React.FormEvent;
-    // Wait a tick for state to update, then sift
     setTimeout(() => {
       handleSiftRef.current(dummyEvent, demoArticleUrl);
     }, 50);
@@ -357,6 +353,7 @@ useEffect(() => {
                 <button
                   type="button"
                   onClick={() => setShowManualFallback(true)}
+                  aria-label="Paste article text manually"
                   className="text-surface-400 hover:text-accent-400 p-1"
                 >
                   <ClipboardList className="w-5 h-5" />

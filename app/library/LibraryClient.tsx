@@ -5,7 +5,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   ArrowRight,
   Trash2,
-  BookOpen,
   ThumbsUp,
   ThumbsDown,
   Search,
@@ -21,8 +20,8 @@ import {
 import toast from 'react-hot-toast';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { useRouter, useSearchParams } from 'next/navigation';
-import Link from 'next/link';
 import Image from 'next/image';
+import Link from 'next/link';
 
 interface Feed {
   id: string;
@@ -86,7 +85,6 @@ export default function LibraryClient() {
       .finally(() => setLoading(false));
   }, []);
 
-  // Fetch AI collections
   useEffect(() => {
     if (articles.length >= 2) {
       fetch('/api/collections')
@@ -96,7 +94,6 @@ export default function LibraryClient() {
     }
   }, [articles]);
 
-  // Clear feedback animation after a short delay
   useEffect(() => {
     if (Object.keys(feedbackAnimation).length === 0) return;
     const timeout = setTimeout(() => {
@@ -206,7 +203,6 @@ export default function LibraryClient() {
       .slice(0, 3);
   }, [articles]);
 
-  // Markdown export
   const handleExport = () => {
     if (final.length === 0) {
       toast.error('No articles to export.');
@@ -340,7 +336,7 @@ export default function LibraryClient() {
             onClick={handleExport}
             disabled={final.length === 0}
             className="px-4 py-2 bg-surface-800/60 border border-surface-700/50 text-surface-300 rounded-xl text-sm font-medium hover:bg-surface-700/60 disabled:opacity-50 flex items-center gap-1 transition"
-            title="Export visible articles as Markdown"
+            aria-label="Export visible articles as Markdown"
           >
             <Download className="w-4 h-4" /> Export
           </button>
@@ -523,6 +519,16 @@ export default function LibraryClient() {
                       id={`article-${article.id}`}
                       key={article.id}
                       layout
+                      role="button"
+                      tabIndex={0}
+                      aria-expanded={expandedId === article.id}
+                      aria-label={`Article: ${article.summary.substring(0, 60)}…`}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          setExpandedId(expandedId === article.id ? null : article.id);
+                        }
+                      }}
                       onClick={() =>
                         setExpandedId(expandedId === article.id ? null : article.id)
                       }
@@ -604,6 +610,7 @@ export default function LibraryClient() {
                               toggleKeep(article.id, article.kept);
                             }}
                             className="p-1 rounded-md hover:bg-surface-800"
+                            aria-label={article.kept ? 'Mark as discarded' : 'Keep article'}
                           >
                             {article.kept ? (
                               <CheckCircle className="w-4 h-4 text-verdict-green" />
@@ -622,6 +629,7 @@ export default function LibraryClient() {
                                 ? 'text-verdict-green'
                                 : 'text-surface-400'
                             }`}
+                            aria-label="Agree with verdict"
                             whileTap={{ scale: 0.9 }}
                             animate={
                               isAnimating && article.feedback === 'agree'
@@ -653,6 +661,7 @@ export default function LibraryClient() {
                                 ? 'text-verdict-amber'
                                 : 'text-surface-400'
                             }`}
+                            aria-label="Disagree with verdict"
                             whileTap={{ scale: 0.9 }}
                             animate={
                               isAnimating && article.feedback === 'disagree'
@@ -680,6 +689,7 @@ export default function LibraryClient() {
                               handleDelete(article.id);
                             }}
                             className="text-surface-400 hover:text-red-400"
+                            aria-label="Delete article"
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>
@@ -716,7 +726,6 @@ export default function LibraryClient() {
                                   Read original <ArrowRight className="w-3 h-3" />
                                 </a>
                               )}
-                              
                               <div onClick={(e) => e.stopPropagation()}>
                                 <label className="text-xs font-medium text-surface-400 block mb-1">
                                   Tags (comma separated)

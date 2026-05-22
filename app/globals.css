@@ -8,11 +8,11 @@
   --surface-100: #2a2624;
   --surface-200: #3a3532;
   --surface-300: #4a3e6a;
-  --surface-400: #5c4d82;
-  --surface-500: #72648a;
+  --surface-400: #4a3e6a;    /* darker for better contrast */
+  --surface-500: #3a2e5a;    /* darker for better contrast */
   --surface-600: #8b7aa3;
   --surface-700: #a595bc;
-  --surface-800: #d5cec5;    /* card bg – slightly darker for contrast */
+  --surface-800: #d5cec5;    /* card bg */
   --surface-900: #ffffff;    /* page bg */
   --surface-950: #f5f2ef;
 }
@@ -42,7 +42,7 @@ body {
   transition: background 0.3s ease, color 0.3s ease;
 }
 
-/* ========== Noise / reading overlay (using the existing div) ========== */
+/* ========== Noise overlay ========== */
 .noise-overlay {
   position: fixed;
   inset: 0;
@@ -52,31 +52,11 @@ body {
   background-position: center;
   background-repeat: no-repeat;
   pointer-events: none;
-  opacity: 0.18;               /* clearly visible in light mode */
+  opacity: 0.18;
 }
 
 .dark .noise-overlay {
-  opacity: 0.1;                /* subtly visible in dark mode */
-}
-
-/* ========== Select / Option styling ========== */
-select {
-  color: var(--surface-50);
-  background-color: var(--surface-800);
-}
-
-option {
-  background-color: var(--surface-800);
-  color: var(--surface-50);
-}
-
-select {
-  color: var(--surface-50);
-  background-color: var(--surface-800);
-}
-option {
-  background-color: var(--surface-800);
-  color: var(--surface-50);
+  opacity: 0.1;
 }
 
 /* ========== Scrollbar ========== */
@@ -89,4 +69,21 @@ option {
 ::-webkit-scrollbar-thumb {
   background: var(--surface-400);
   border-radius: 3px;
+}
+
+/* ========== Select / Option styling ========== */
+select {
+  color: var(--surface-50);
+  background-color: var(--surface-800);
+}
+option {
+  background-color: var(--surface-800);
+  color: var(--surface-50);
+}
+
+/* ========== Accessibility – focus ring ========== */
+*:focus-visible {
+  outline: 2px solid var(--accent-400, #b4a7d6);
+  outline-offset: 2px;
+  border-radius: 4px;
 }
