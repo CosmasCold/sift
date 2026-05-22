@@ -3,14 +3,12 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase/client';
-import { User, LogOut, Settings, Library, Rss, Users, Inbox, Flame, Tag, Compass } from 'lucide-react';
+import { Library, Compass, Flame } from 'lucide-react';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
-import ThemeToggle from '@/components/ThemeToggle';
+import UserMenu from '@/components/UserMenu';
 
 export default function Navbar() {
-  const router = useRouter();
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const [profile, setProfile] = useState<{
     username: string;
@@ -46,14 +44,10 @@ export default function Navbar() {
     return () => listener?.subscription.unsubscribe();
   }, []);
 
-  const handleSignOut = async () => {
-    await supabase.auth.signOut();
-    router.push('/');
-  };
-
   return (
     <nav className="border-b border-surface-700/50 bg-surface-800/60 backdrop-blur-xl px-4 py-3">
-      <div className="max-w-6xl mx-auto flex items-center justify-between flex-wrap gap-4">
+      <div className="max-w-6xl mx-auto flex items-center justify-between gap-4">
+        {/* Logo */}
         <Link href="/" className="flex items-center gap-2">
           <Image
             src="/sift-logo.png"
@@ -62,78 +56,49 @@ export default function Navbar() {
             height={32}
             className="w-8 h-8 object-contain"
           />
-          <span className="text-xl font-semibold text-surface-50">Sift</span>
+          <span className="text-xl font-semibold text-surface-50 hidden sm:inline">Sift</span>
         </Link>
-        {user ? (
-          <div className="flex items-center gap-4">
-            <Link href="/library" className="text-surface-300 hover:text-accent-400 transition flex items-center gap-1">
-              <Library className="w-4 h-4" /> Library
-            </Link>
-            <Link href="/queue" className="text-surface-300 hover:text-accent-400 transition flex items-center gap-1">
-              <Inbox className="w-4 h-4" /> Queue
-            </Link>
-            <Link href="/feeds" className="text-surface-300 hover:text-accent-400 transition flex items-center gap-1">
-              <Rss className="w-4 h-4" /> Feeds
-            </Link>
-            <Link href="/discover" className="text-surface-300 hover:text-accent-400 transition flex items-center gap-1">
-              <Compass className="w-4 h-4" /> Discover
-            </Link>
-            <Link href="/explore" className="text-surface-300 hover:text-accent-400 transition flex items-center gap-1">
-              <Users className="w-4 h-4" /> Explore
-            </Link>
-            <Link href="/following" className="text-surface-300 hover:text-accent-400 transition flex items-center gap-1">
-              <Users className="w-4 h-4" /> Following
-            </Link>
-            <Link href="/trending" className="text-surface-300 hover:text-accent-400 transition flex items-center gap-1">
-              <Flame className="w-4 h-4" /> Trending
-            </Link>
-            <Link href="/tags" className="text-surface-300 hover:text-accent-400 transition flex items-center gap-1">
-              <Tag className="w-4 h-4" /> Tags
-            </Link>
-            {profile?.username && profile?.public_profile && (
-              <Link href={`/profile/${profile.username}`} className="text-surface-300 hover:text-accent-400 transition flex items-center gap-1">
-                <User className="w-4 h-4" /> Profile
-              </Link>
-            )}
-            <Link href="/settings" className="text-surface-300 hover:text-accent-400 transition flex items-center gap-1">
-              <Settings className="w-4 h-4" /> Settings
-            </Link>
-            <div className="flex items-center gap-2 ml-2">
-              {profile?.avatar_url ? (
-                <Image
-                  src={profile.avatar_url}
-                  alt="avatar"
-                  width={24}
-                  height={24}
-                  unoptimized
-                  className="w-6 h-6 rounded-full object-cover"
-                />
-              ) : (
-                <div className="w-6 h-6 rounded-full bg-accent-400/10 flex items-center justify-center">
-                  <User className="w-4 h-4 text-accent-400" />
-                </div>
-              )}
-              <span className="text-sm text-surface-300">
-                {profile?.username || user.email?.split('@')[0] || 'User'}
-              </span>
-              <ThemeToggle />
-              <button
-                onClick={handleSignOut}
-                aria-label="Sign out"
-                className="text-surface-400 hover:text-red-400 transition ml-2"
-              >
-                <LogOut className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-        ) : (
+
+        {/* Core navigation */}
+        <div className="flex items-center gap-1 sm:gap-4">
           <Link
-            href="/auth"
-            className="text-sm bg-accent-500 text-white px-4 py-2 rounded-xl hover:bg-accent-600 transition"
+            href="/library"
+            className="text-surface-300 hover:text-accent-400 transition flex items-center gap-1 px-2 py-1"
           >
-            Sign In
+            <Library className="w-4 h-4" />
+            <span className="hidden sm:inline">Library</span>
           </Link>
-        )}
+
+          <Link
+            href="/explore"
+            className="text-surface-300 hover:text-accent-400 transition flex items-center gap-1 px-2 py-1"
+          >
+            <Compass className="w-4 h-4" />
+            <span className="hidden sm:inline">Explore</span>
+          </Link>
+
+          <Link
+            href="/trending"
+            className="text-surface-300 hover:text-accent-400 transition flex items-center gap-1 px-2 py-1"
+          >
+            <Flame className="w-4 h-4" />
+            <span className="hidden sm:inline">Trending</span>
+          </Link>
+        </div>
+
+        {/* Auth / User menu */}
+        <div className="flex items-center">
+          {user ? (
+            <UserMenu user={user} profile={profile} />
+          ) : (
+            <Link
+              href="/auth"
+              className="text-sm bg-accent-500 text-white px-4 py-2 rounded-xl hover:bg-accent-600 transition"
+            >
+              Sign In
+            </Link>
+          )}
+        </div>
       </div>
     </nav>
   );
