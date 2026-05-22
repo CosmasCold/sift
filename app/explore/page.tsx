@@ -129,19 +129,32 @@ export default function ExplorePage() {
               exit={{ opacity: 0 }}
               transition={{ duration: 0.3 }}
             >
-              <GlassCard className="p-10 text-center">
-                <Users className="w-12 h-12 text-surface-600 mx-auto mb-4" />
-                <p className="text-surface-300 text-lg font-medium mb-1">
-                  {query
-                    ? `No public profiles found ${searchMode === 'username' ? `for "${query}"` : `with the tag "${query}"`}.`
-                    : 'Enter a search term to find readers.'}
-                </p>
-                <p className="text-surface-400 text-sm">
-                  {query
-                    ? 'Try a different name or tag.'
-                    : 'You can search by username or by topic tag.'}
-                </p>
-              </GlassCard>
+                              <GlassCard className="p-10 text-center">
+                  <div className="mx-auto mb-6 w-20 h-20">
+                    <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
+                      {/* Magnifying glass */}
+                      <circle cx="34" cy="34" r="16" stroke="var(--surface-600)" strokeWidth="2.5" fill="var(--surface-800)" />
+                      <line x1="46" y1="46" x2="58" y2="58" stroke="var(--surface-500)" strokeWidth="2.5" strokeLinecap="round" />
+                      {/* Two small people silhouettes inside */}
+                      <circle cx="28" cy="28" r="3" fill="var(--accent-400)" />
+                      <path d="M24 34 Q28 38, 32 34" stroke="var(--accent-400)" strokeWidth="1.5" fill="none" />
+                      <circle cx="40" cy="30" r="2.5" fill="var(--accent-300)" />
+                      <path d="M37 35 Q40 38, 43 35" stroke="var(--accent-300)" strokeWidth="1.5" fill="none" />
+                      {/* Sparkle */}
+                      <circle cx="60" cy="56" r="1.5" fill="var(--accent-400)" opacity="0.8" />
+                    </svg>
+                  </div>
+                  <p className="text-surface-300 text-lg font-medium mb-1">
+                    {query
+                      ? `No public profiles found ${searchMode === 'username' ? `for "${query}"` : `with the tag "${query}"`}.`
+                      : 'Enter a search term to find readers.'}
+                  </p>
+                  <p className="text-surface-400 text-sm">
+                    {query
+                      ? 'Try a different name or tag.'
+                      : 'You can search by username or by topic tag.'}
+                  </p>
+                </GlassCard>
             </motion.div>
           ) : (
             <motion.div

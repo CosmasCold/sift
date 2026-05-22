@@ -2,10 +2,18 @@
 
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowRight, Loader2, Sparkles, ClipboardList, Search } from 'lucide-react';
+import {
+  ArrowRight,
+  Loader2,
+  Sparkles,
+  ClipboardList,
+  Search,
+  ImageOff,
+} from 'lucide-react';
 import toast from 'react-hot-toast';
 import { supabase } from '@/lib/supabase/client';
 import Link from 'next/link';
+import Image from 'next/image';
 import type { User } from '@supabase/supabase-js';
 import { GlassCard } from '@/components/ui/GlassCard';
 
@@ -14,7 +22,8 @@ interface SiftResult {
   insight: string;
   verdict: 'Worth a full read' | 'Skim this' | 'You can skip this';
   sourceUrl?: string;
-  readingTime?: number; // new
+  readingTime?: number;
+  thumbnailUrl?: string | null; // new
 }
 
 export default function HomePage() {
@@ -31,15 +40,23 @@ export default function HomePage() {
 
   useEffect(() => {
     let mounted = true;
-    supabase.auth.getUser().then(({ data }) => {
-      if (mounted) setUser(data.user ?? null);
-    }).finally(() => {
-      if (mounted) setLoadingAuth(false);
-    });
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    supabase.auth
+      .getUser()
+      .then(({ data }) => {
+        if (mounted) setUser(data.user ?? null);
+      })
+      .finally(() => {
+        if (mounted) setLoadingAuth(false);
+      });
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
       if (mounted) setUser(session?.user ?? null);
     });
-    return () => { mounted = false; subscription.unsubscribe(); };
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const handleListen = async () => {
@@ -57,7 +74,9 @@ export default function HomePage() {
         audio.onended = () => setAudioPlaying(false);
         audio.play();
       } else toast.error('Could not generate audio');
-    } catch { toast.error('Something went wrong'); }
+    } catch {
+      toast.error('Something went wrong');
+    }
   };
 
   const handleSift = async (e: React.FormEvent) => {
@@ -65,7 +84,7 @@ export default function HomePage() {
 
     // Batch mode
     if (batchMode) {
-      const lines = batchUrls.split('\n').filter(l => l.trim());
+      const lines = batchUrls.split('\n').filter((l) => l.trim());
       if (lines.length === 0) return;
       setLoading(true);
       const resultsArr: SiftResult[] = [];
@@ -89,7 +108,7 @@ export default function HomePage() {
                 insight: data.insight,
                 verdict: data.verdict,
                 readingTime: data.readingTime,
-                thumbnailUrl: data.thumbnailUrl // added
+                thumbnailUrl: data.thumbnailUrl, // added
               }),
             }).catch(() => {});
           }
@@ -98,8 +117,13 @@ export default function HomePage() {
       setLoading(false);
       if (resultsArr.length > 0) {
         setResult(resultsArr[0]);
-        toast.success(`Sifted ${resultsArr.length} article${resultsArr.length > 1 ? 's' : ''}`);
-        if (resultsArr.length > 1) toast(`The other ${resultsArr.length - 1} article(s) are in your Library.`);
+        toast.success(
+          `Sifted ${resultsArr.length} article${resultsArr.length > 1 ? 's' : ''}`
+        );
+        if (resultsArr.length > 1)
+          toast(
+            `The other ${resultsArr.length - 1} article(s) are in your Library.`
+          );
       } else toast.error('Could not sift any of the URLs');
       setBatchUrls('');
       return;
@@ -108,7 +132,10 @@ export default function HomePage() {
     // Single mode
     const textToSend = showManualFallback ? manualText.trim() : '';
     if (!showManualFallback && !url.trim()) return;
-    if (showManualFallback && !textToSend) { toast.error('Please paste the article text.'); return; }
+    if (showManualFallback && !textToSend) {
+      toast.error('Please paste the article text.');
+      return;
+    }
     setLoading(true);
     setResult(null);
     try {
@@ -135,26 +162,38 @@ export default function HomePage() {
             insight: data.insight,
             verdict: data.verdict,
             readingTime: data.readingTime,
-            thumbnailUrl: data.thumbnailUrl // added
+            thumbnailUrl: data.thumbnailUrl, // added
           }),
         }).catch(() => {});
       }
-    } catch { toast.error('Something went wrong'); } finally { setLoading(false); }
+    } catch {
+      toast.error('Something went wrong');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  if (loadingAuth) return (
-    <div className="flex justify-center items-center min-h-[60vh]">
-      <Loader2 className="animate-spin text-accent-400" size={32} />
-    </div>
-  );
+  if (loadingAuth)
+    return (
+      <div className="flex justify-center items-center min-h-[60vh]">
+        <Loader2 className="animate-spin text-accent-400" size={32} />
+      </div>
+    );
 
   if (!user) {
     return (
       <div className="min-h-[70vh] flex flex-col items-center justify-center gap-6 px-4">
         <GlassCard className="p-8 text-center max-w-md">
-          <h1 className="text-3xl font-semibold text-surface-50 mb-3">Save articles. Sift them. Keep what matters.</h1>
-          <p className="text-surface-400 mb-8">Sign in to start building your personal library.</p>
-          <Link href="/auth" className="inline-flex items-center gap-2 px-6 py-3 bg-accent-500 text-white rounded-xl font-medium hover:bg-accent-600 transition">
+          <h1 className="text-3xl font-semibold text-surface-50 mb-3">
+            Save articles. Sift them. Keep what matters.
+          </h1>
+          <p className="text-surface-400 mb-8">
+            Sign in to start building your personal library.
+          </p>
+          <Link
+            href="/auth"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-accent-500 text-white rounded-xl font-medium hover:bg-accent-600 transition"
+          >
             Sign In to Sift
           </Link>
         </GlassCard>
@@ -171,7 +210,11 @@ export default function HomePage() {
               <button
                 type="button"
                 onClick={() => setBatchMode(!batchMode)}
-                className={`text-sm font-medium ${batchMode ? 'text-accent-400' : 'text-surface-400 hover:text-surface-200'}`}
+                className={`text-sm font-medium ${
+                  batchMode
+                    ? 'text-accent-400'
+                    : 'text-surface-400 hover:text-surface-200'
+                }`}
               >
                 {batchMode ? 'Single URL' : 'Batch URLs'}
               </button>
@@ -206,43 +249,50 @@ export default function HomePage() {
               </GlassCard>
             )}
             <div className="flex items-center gap-2 mt-2">
-  <button
-    type="submit"
-    disabled={loading}
-    className="px-5 py-2.5 bg-accent-500 text-white rounded-xl font-medium hover:bg-accent-600 disabled:opacity-50 flex items-center gap-2 transition"
-  >
-    {loading ? (
-      <><Loader2 className="animate-spin w-4 h-4" /> Sifting…</>
-    ) : (
-      <>Sift <ArrowRight className="w-4 h-4" /></>
-    )}
-  </button>
-  <button
-    type="button"
-    disabled={loading || !url.trim()}
-    onClick={async () => {
-      const res = await fetch('/api/queue', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url }),
-      });
-      if (res.ok) {
-        toast.success('Saved to queue');
-        setUrl('');
-      } else {
-        toast.error('Could not save');
-      }
-    }}
-    className="px-5 py-2.5 bg-surface-800/60 border border-surface-700/50 text-surface-300 rounded-xl font-medium hover:bg-surface-700/60 disabled:opacity-50 flex items-center gap-2 transition"
-  >
-    Queue
-  </button>
-</div>
+              <button
+                type="submit"
+                disabled={loading}
+                className="px-5 py-2.5 bg-accent-500 text-white rounded-xl font-medium hover:bg-accent-600 disabled:opacity-50 flex items-center gap-2 transition"
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="animate-spin w-4 h-4" /> Sifting…
+                  </>
+                ) : (
+                  <>
+                    Sift <ArrowRight className="w-4 h-4" />
+                  </>
+                )}
+              </button>
+              <button
+                type="button"
+                disabled={loading || !url.trim()}
+                onClick={async () => {
+                  const res = await fetch('/api/queue', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url }),
+                  });
+                  if (res.ok) {
+                    toast.success('Saved to queue');
+                    setUrl('');
+                  } else {
+                    toast.error('Could not save');
+                  }
+                }}
+                className="px-5 py-2.5 bg-surface-800/60 border border-surface-700/50 text-surface-300 rounded-xl font-medium hover:bg-surface-700/60 disabled:opacity-50 flex items-center gap-2 transition"
+              >
+                Queue
+              </button>
+            </div>
           </>
         )}
         {showManualFallback && (
           <GlassCard className="flex flex-col gap-3 p-4">
-            <p className="text-sm text-surface-400">This article couldn&apos;t be fetched automatically. Paste the full text below.</p>
+            <p className="text-sm text-surface-400">
+              This article couldn&apos;t be fetched automatically. Paste the full text
+              below.
+            </p>
             <textarea
               value={manualText}
               onChange={(e) => setManualText(e.target.value)}
@@ -251,13 +301,27 @@ export default function HomePage() {
               disabled={loading}
             />
             <div className="flex justify-end gap-2">
-              <button type="button" onClick={() => setShowManualFallback(false)} className="px-4 py-2 text-sm text-surface-400 hover:text-surface-200">Cancel</button>
+              <button
+                type="button"
+                onClick={() => setShowManualFallback(false)}
+                className="px-4 py-2 text-sm text-surface-400 hover:text-surface-200"
+              >
+                Cancel
+              </button>
               <button
                 type="submit"
                 disabled={loading || !manualText.trim()}
                 className="px-5 py-2.5 bg-accent-500 text-white rounded-xl font-medium hover:bg-accent-600 disabled:opacity-50 flex items-center gap-2 transition"
               >
-                {loading ? <><Loader2 className="animate-spin w-4 h-4" /> Sifting…</> : <>Sift Text <ArrowRight className="w-4 h-4" /></>}
+                {loading ? (
+                  <>
+                    <Loader2 className="animate-spin w-4 h-4" /> Sifting…
+                  </>
+                ) : (
+                  <>
+                    Sift Text <ArrowRight className="w-4 h-4" />
+                  </>
+                )}
               </button>
             </div>
           </GlassCard>
@@ -275,9 +339,12 @@ export default function HomePage() {
               <div className="w-16 h-16 rounded-full bg-accent-400/10 flex items-center justify-center">
                 <Search className="w-8 h-8 text-accent-400" />
               </div>
-              <h2 className="text-xl font-semibold text-surface-50">Ready to sift through content</h2>
+              <h2 className="text-xl font-semibold text-surface-50">
+                Ready to sift through content
+              </h2>
               <p className="text-surface-400 max-w-md">
-                Paste a URL or text, or upload a batch file. Sift will analyze and deliver a clear verdict.
+                Paste a URL or text, or upload a batch file. Sift will analyze and
+                deliver a clear verdict.
               </p>
             </div>
           </GlassCard>
@@ -291,47 +358,81 @@ export default function HomePage() {
           transition={{ duration: 0.35, ease: 'easeOut' }}
         >
           <GlassCard className="w-full max-w-2xl p-6">
-            <div className="flex items-center gap-3 mb-5 pb-4 border-b border-surface-700/50">
-              <span
-                className={`w-3.5 h-3.5 rounded-full ${
-                  result.verdict === 'Worth a full read'
-                    ? 'bg-verdict-green'
-                    : result.verdict === 'Skim this'
-                    ? 'bg-verdict-amber'
-                    : 'bg-verdict-grey'
-                }`}
-              />
-              <span className="text-sm font-semibold text-surface-300">{result.verdict}</span>
-              <Sparkles className="w-4 h-4 text-accent-400 ml-auto" />
-            </div>
-            <div className="mb-5">
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-surface-500 mb-2">TL;DR</h3>
-              <p className="text-surface-200 leading-relaxed">{result.summary}</p>
-            </div>
-            {result.insight && (
-              <div className="bg-surface-800/60 rounded-xl p-4 border-l-4 border-accent-400 mb-5">
-                <h3 className="text-xs font-semibold uppercase tracking-wider text-surface-500 mb-2">Key Insight</h3>
-                <p className="text-surface-300 italic leading-relaxed">{result.insight}</p>
+            <div className="flex gap-4">
+              {/* Thumbnail */}
+              <div className="flex-shrink-0 w-20 h-20 rounded-xl overflow-hidden bg-surface-800/50">
+                {result.thumbnailUrl ? (
+                  <Image
+                    src={result.thumbnailUrl}
+                    alt=""
+                    width={80}
+                    height={80}
+                    className="object-cover w-full h-full"
+                    unoptimized
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-surface-500">
+                    <ImageOff className="w-6 h-6" />
+                  </div>
+                )}
               </div>
-            )}
-            <div className="flex items-center gap-4 mt-4">
-              <a
-                href={result.sourceUrl || url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 text-accent-400 hover:underline text-sm"
-              >
-                Read full article <ArrowRight className="w-3.5 h-3.5" />
-              </a>
-              <button
-                onClick={handleListen}
-                disabled={audioPlaying}
-                className={`inline-flex items-center gap-1.5 text-sm font-medium ${
-                  audioPlaying ? 'text-surface-500 cursor-not-allowed' : 'text-accent-400 hover:underline'
-                }`}
-              >
-                {audioPlaying ? '🔊 Playing…' : '🎧 Listen'}
-              </button>
+
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-3 mb-5 pb-4 border-b border-surface-700/50">
+                  <span
+                    className={`w-3.5 h-3.5 rounded-full ${
+                      result.verdict === 'Worth a full read'
+                        ? 'bg-verdict-green'
+                        : result.verdict === 'Skim this'
+                        ? 'bg-verdict-amber'
+                        : 'bg-verdict-grey'
+                    }`}
+                  />
+                  <span className="text-sm font-semibold text-surface-300">
+                    {result.verdict}
+                  </span>
+                  <Sparkles className="w-4 h-4 text-accent-400 ml-auto" />
+                </div>
+                <div className="mb-5">
+                  <h3 className="text-xs font-semibold uppercase tracking-wider text-surface-500 mb-2">
+                    TL;DR
+                  </h3>
+                  <p className="text-surface-200 leading-relaxed">
+                    {result.summary}
+                  </p>
+                </div>
+                {result.insight && (
+                  <div className="bg-surface-800/60 rounded-xl p-4 border-l-4 border-accent-400 mb-5">
+                    <h3 className="text-xs font-semibold uppercase tracking-wider text-surface-500 mb-2">
+                      Key Insight
+                    </h3>
+                    <p className="text-surface-300 italic leading-relaxed">
+                      {result.insight}
+                    </p>
+                  </div>
+                )}
+                <div className="flex items-center gap-4 mt-4">
+                  <a
+                    href={result.sourceUrl || url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 text-accent-400 hover:underline text-sm"
+                  >
+                    Read full article <ArrowRight className="w-3.5 h-3.5" />
+                  </a>
+                  <button
+                    onClick={handleListen}
+                    disabled={audioPlaying}
+                    className={`inline-flex items-center gap-1.5 text-sm font-medium ${
+                      audioPlaying
+                        ? 'text-surface-500 cursor-not-allowed'
+                        : 'text-accent-400 hover:underline'
+                    }`}
+                  >
+                    {audioPlaying ? '🔊 Playing…' : '🎧 Listen'}
+                  </button>
+                </div>
+              </div>
             </div>
           </GlassCard>
         </motion.div>

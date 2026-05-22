@@ -15,6 +15,7 @@ import {
   Clock,
   Sparkles,
   ImageOff,
+  Layers,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { GlassCard } from '@/components/ui/GlassCard';
@@ -42,6 +43,11 @@ interface SiftEntry {
   thumbnail_url: string | null;
 }
 
+interface Collection {
+  title: string;
+  articleIds: string[];
+}
+
 const getDateGroup = (date: Date) => {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -64,8 +70,11 @@ export default function LibraryClient() {
   const [filter, setFilter] = useState<'all' | 'kept' | 'discarded'>('kept');
   const [search, setSearch] = useState('');
   const [feedFilter, setFeedFilter] = useState<string>('all');
+  const [collections, setCollections] = useState<Collection[]>([]);
+  const [feedbackAnimation, setFeedbackAnimation] = useState<Record<string, number>>({});
 
   const tagFilter = searchParams.get('tag');
+  const collectionFilter = searchParams.get('collection');
 
   useEffect(() => {
     fetch('/api/library')
@@ -74,6 +83,25 @@ export default function LibraryClient() {
       .catch(() => toast.error('Failed to load library'))
       .finally(() => setLoading(false));
   }, []);
+
+  // Fetch AI collections
+  useEffect(() => {
+    if (articles.length >= 2) {
+      fetch('/api/collections')
+        .then(r => r.json())
+        .then(data => setCollections(data.collections || []))
+        .catch(() => {});
+    }
+  }, [articles]);
+
+  // Clear feedback animation after a short delay
+  useEffect(() => {
+    if (Object.keys(feedbackAnimation).length === 0) return;
+    const timeout = setTimeout(() => {
+      setFeedbackAnimation({});
+    }, 600);
+    return () => clearTimeout(timeout);
+  }, [feedbackAnimation]);
 
   const toggleKeep = async (id: string, kept: boolean) => {
     const newKept = !kept;
@@ -106,16 +134,17 @@ export default function LibraryClient() {
     const current = articles.find((a) => a.id === id);
     if (!current) return;
     const newFb = current.feedback === fb ? null : fb;
+
     setArticles((prev) => prev.map((a) => (a.id === id ? { ...a, feedback: newFb } : a)));
+    setFeedbackAnimation((prev) => ({ ...prev, [id]: Date.now() }));
+
     const res = await fetch('/api/feedback', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id, feedback: newFb }),
     });
     if (!res.ok) {
-      setArticles((prev) =>
-        prev.map((a) => (a.id === id ? { ...a, feedback: current.feedback } : a))
-      );
+      setArticles((prev) => prev.map((a) => (a.id === id ? { ...a, feedback: current.feedback } : a)));
       toast.error('Failed');
     }
   };
@@ -137,7 +166,12 @@ export default function LibraryClient() {
   const filtered = articles
     .filter((a) => (filter === 'kept' ? a.kept : filter === 'discarded' ? !a.kept : true))
     .filter((a) => a.summary.toLowerCase().includes(search.toLowerCase()))
-    .filter((a) => (tagFilter ? a.tags?.includes(tagFilter) : true));
+    .filter((a) => (tagFilter ? a.tags?.includes(tagFilter) : true))
+    .filter((a) => {
+      if (!collectionFilter) return true;
+      const collection = collections.find(c => c.title === collectionFilter);
+      return collection ? collection.articleIds.includes(a.id) : true;
+    });
 
   const final =
     feedFilter === 'all' ? filtered : filtered.filter((a) => a.feed?.id === feedFilter);
@@ -217,6 +251,51 @@ export default function LibraryClient() {
         </motion.div>
       )}
 
+      {/* AI Collections */}
+      {collections.length > 0 && !collectionFilter && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="mb-6"
+        >
+          <GlassCard className="p-4">
+            <div className="flex items-center gap-2 mb-3">
+              <Layers className="w-5 h-5 text-accent-400" />
+              <span className="text-sm font-semibold text-surface-300">Collections</span>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {collections.map((collection) => (
+                <button
+                  key={collection.title}
+                  onClick={() =>
+                    router.push(`/library?collection=${encodeURIComponent(collection.title)}`)
+                  }
+                  className="px-3 py-1.5 bg-accent-400/10 text-accent-400 rounded-full text-sm font-medium hover:bg-accent-400/20 transition"
+                >
+                  {collection.title} ({collection.articleIds.length})
+                </button>
+              ))}
+            </div>
+          </GlassCard>
+        </motion.div>
+      )}
+
+      {/* Active collection banner */}
+      {collectionFilter && (
+        <div className="mb-4 flex items-center gap-2">
+          <span className="text-sm text-surface-300">Collection:</span>
+          <span className="bg-accent-400/10 text-accent-400 px-2 py-1 rounded-full text-sm">
+            {collectionFilter}
+          </span>
+          <button
+            onClick={() => router.replace('/library')}
+            className="text-xs text-surface-400 underline"
+          >
+            Clear
+          </button>
+        </div>
+      )}
+
       {/* Header */}
       <GlassCard className="p-6 mb-6 flex flex-wrap items-center justify-between gap-4">
         <h1 className="text-2xl font-semibold text-surface-50">Your Library</h1>
@@ -255,9 +334,7 @@ export default function LibraryClient() {
             #{tagFilter}
           </span>
           <button
-            onClick={() => {
-              router.replace('/library');
-            }}
+            onClick={() => router.replace('/library')}
             className="text-xs text-surface-400 underline"
           >
             Clear
@@ -323,14 +400,24 @@ export default function LibraryClient() {
           transition={{ duration: 0.4, ease: 'easeOut' }}
         >
           <GlassCard className="p-10 text-center">
-            <BookOpen className="w-12 h-12 text-surface-600 mx-auto mb-4" />
-            {search || feedFilter !== 'all' || tagFilter ? (
+            <div className="mx-auto mb-6 w-20 h-20">
+              <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
+                <rect x="24" y="50" width="32" height="20" rx="4" fill="var(--surface-700)" />
+                <rect x="28" y="46" width="24" height="6" rx="3" fill="var(--surface-600)" />
+                <path d="M40 46 C40 30, 48 20, 48 20" stroke="var(--accent-400)" strokeWidth="2.5" strokeLinecap="round" fill="none" />
+                <ellipse cx="43" cy="28" rx="6" ry="10" transform="rotate(30 43 28)" fill="var(--accent-300)" opacity="0.9" />
+                <ellipse cx="33" cy="35" rx="5" ry="9" transform="rotate(-20 33 35)" fill="var(--accent-300)" opacity="0.8" />
+                <circle cx="52" cy="18" r="2" fill="var(--accent-400)" opacity="0.7" />
+                <circle cx="56" cy="22" r="1.5" fill="var(--accent-400)" opacity="0.5" />
+              </svg>
+            </div>
+            {search || feedFilter !== 'all' || tagFilter || collectionFilter ? (
               <>
                 <p className="text-surface-300 text-lg font-medium mb-1">
                   No articles match your current filters.
                 </p>
                 <p className="text-surface-400 text-sm">
-                  Try a different search term, source, or tag.
+                  Try a different search term, source, tag, or collection.
                 </p>
               </>
             ) : filter === 'kept' ? (
@@ -388,206 +475,246 @@ export default function LibraryClient() {
                 {groupName}
               </h2>
               <div className="grid gap-4">
-                {articles.map((article) => (
-                  <motion.div
-                    id={`article-${article.id}`}
-                    key={article.id}
-                    layout
-                    onClick={() =>
-                      setExpandedId(expandedId === article.id ? null : article.id)
-                    }
-                    className="bg-surface-800/60 backdrop-blur-xl border border-surface-700/50 shadow-glass rounded-2xl p-5 transition-shadow hover:shadow-glass cursor-pointer"
-                  >
-                    <div className="flex flex-col sm:flex-row items-start gap-3">
-                      {/* Thumbnail */}
-                      <div className="flex-shrink-0 w-14 h-14 rounded-lg overflow-hidden bg-surface-800/50">
-                        {article.thumbnail_url ? (
-                          <Image
-                            src={article.thumbnail_url}
-                            alt=""
-                            width={56}
-                            height={56}
-                            className="object-cover w-full h-full"
-                            unoptimized
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center text-surface-500">
-                            <ImageOff className="w-4 h-4" />
-                          </div>
-                        )}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-start gap-2">
-                          <span
-                            className={`w-3 h-3 rounded-full shrink-0 mt-0.5 ${
-                              article.verdict === 'Worth a full read'
-                                ? 'bg-verdict-green'
-                                : article.verdict === 'Skim this'
-                                ? 'bg-verdict-amber'
-                                : 'bg-verdict-grey'
-                            }`}
-                          />
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-surface-50 line-clamp-2">
-                              {article.summary}
-                            </p>
-                            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1">
-                              <p className="text-xs text-surface-400">
-                                {new Date(article.created_at).toLocaleDateString()}
-                                {article.feed?.title && ` · from ${article.feed.title}`}
+                {articles.map((article) => {
+                  const isAnimating = !!feedbackAnimation[article.id];
+                  return (
+                    <motion.div
+                      id={`article-${article.id}`}
+                      key={article.id}
+                      layout
+                      onClick={() =>
+                        setExpandedId(expandedId === article.id ? null : article.id)
+                      }
+                      className="bg-surface-800/60 backdrop-blur-xl border border-surface-700/50 shadow-glass rounded-2xl p-5 transition-shadow hover:shadow-glass cursor-pointer"
+                    >
+                      <div className="flex flex-col sm:flex-row items-start gap-3">
+                        {/* Thumbnail */}
+                        <div className="flex-shrink-0 w-14 h-14 rounded-lg overflow-hidden bg-surface-800/50">
+                          {article.thumbnail_url ? (
+                            <Image
+                              src={article.thumbnail_url}
+                              alt=""
+                              width={56}
+                              height={56}
+                              className="object-cover w-full h-full"
+                              unoptimized
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-surface-500">
+                              <ImageOff className="w-4 h-4" />
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-start gap-2">
+                            <span
+                              className={`w-3 h-3 rounded-full shrink-0 mt-0.5 ${
+                                article.verdict === 'Worth a full read'
+                                  ? 'bg-verdict-green'
+                                  : article.verdict === 'Skim this'
+                                  ? 'bg-verdict-amber'
+                                  : 'bg-verdict-grey'
+                              }`}
+                            />
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium text-surface-50 line-clamp-2">
+                                {article.summary}
                               </p>
-                              {article.reading_time ? (
-                                <span className="inline-flex items-center gap-1 text-xs text-surface-500">
-                                  <Clock className="w-3 h-3" />
-                                  ~{article.reading_time} min read
-                                </span>
-                              ) : (
-                                <span className="text-xs text-surface-500">—</span>
-                              )}
+                              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1">
+                                <p className="text-xs text-surface-400">
+                                  {new Date(article.created_at).toLocaleDateString()}
+                                  {article.feed?.title && ` · from ${article.feed.title}`}
+                                </p>
+                                {article.reading_time ? (
+                                  <span className="inline-flex items-center gap-1 text-xs text-surface-500">
+                                    <Clock className="w-3 h-3" />
+                                    ~{article.reading_time} min read
+                                  </span>
+                                ) : (
+                                  <span className="text-xs text-surface-500">—</span>
+                                )}
+                              </div>
                             </div>
                           </div>
-                        </div>
-                        {article.tags?.length > 0 && (
-                          <div className="flex flex-wrap gap-1 mt-2 ml-5">
-                            {article.tags.map((tag: string) => (
-                              <span
-                                key={tag}
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  router.push(`/library?tag=${encodeURIComponent(tag)}`);
-                                }}
-                                className="text-xs bg-surface-800/60 px-2 py-0.5 rounded-full text-surface-400 hover:bg-accent-400/10 hover:text-accent-400 cursor-pointer transition"
-                              >
-                                #{tag}
-                              </span>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                      <div
-                        className="flex items-center gap-2 shrink-0"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            toggleKeep(article.id, article.kept);
-                          }}
-                          className="p-1 rounded-md hover:bg-surface-800"
-                        >
-                          {article.kept ? (
-                            <CheckCircle className="w-4 h-4 text-verdict-green" />
-                          ) : (
-                            <Archive className="w-4 h-4 text-surface-400" />
+                          {article.tags?.length > 0 && (
+                            <div className="flex flex-wrap gap-1 mt-2 ml-5">
+                              {article.tags.map((tag: string) => (
+                                <span
+                                  key={tag}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    router.push(`/library?tag=${encodeURIComponent(tag)}`);
+                                  }}
+                                  className="text-xs bg-surface-800/60 px-2 py-0.5 rounded-full text-surface-400 hover:bg-accent-400/10 hover:text-accent-400 cursor-pointer transition"
+                                >
+                                  #{tag}
+                                </span>
+                              ))}
+                            </div>
                           )}
-                        </button>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleFeedback(article.id, 'agree');
-                          }}
-                          className={`p-1 rounded-md ${
-                            article.feedback === 'agree'
-                              ? 'text-verdict-green'
-                              : 'text-surface-400'
-                          }`}
-                        >
-                          <ThumbsUp className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleFeedback(article.id, 'disagree');
-                          }}
-                          className={`p-1 rounded-md ${
-                            article.feedback === 'disagree'
-                              ? 'text-verdict-amber'
-                              : 'text-surface-400'
-                          }`}
-                        >
-                          <ThumbsDown className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDelete(article.id);
-                          }}
-                          className="text-surface-400 hover:text-red-400"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </div>
-                    <AnimatePresence>
-                      {expandedId === article.id && (
-                        <motion.div
-                          initial={{ height: 0, opacity: 0 }}
-                          animate={{ height: 'auto', opacity: 1 }}
-                          exit={{ height: 0, opacity: 0 }}
-                          className="overflow-hidden"
+                        </div>
+                        <div
+                          className="flex items-center gap-2 shrink-0"
                           onClick={(e) => e.stopPropagation()}
                         >
-                          <div className="pt-4 mt-4 border-t border-surface-700/50 space-y-3">
-                            <p className="text-surface-200 text-sm leading-relaxed">
-                              {article.summary}
-                            </p>
-                            {article.insight && (
-                              <div className="bg-surface-800/60 rounded-xl p-3 border-l-4 border-accent-400">
-                                <p className="text-surface-300 italic text-sm">
-                                  {article.insight}
-                                </p>
-                              </div>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              toggleKeep(article.id, article.kept);
+                            }}
+                            className="p-1 rounded-md hover:bg-surface-800"
+                          >
+                            {article.kept ? (
+                              <CheckCircle className="w-4 h-4 text-verdict-green" />
+                            ) : (
+                              <Archive className="w-4 h-4 text-surface-400" />
                             )}
-                            {article.source_url && (
-                              <a
-                                href={article.source_url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="inline-flex items-center gap-1 text-accent-400 hover:underline text-sm"
-                                onClick={(e) => e.stopPropagation()}
+                          </button>
+
+                          <motion.button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleFeedback(article.id, 'agree');
+                            }}
+                            className={`p-1 rounded-md relative ${
+                              article.feedback === 'agree'
+                                ? 'text-verdict-green'
+                                : 'text-surface-400'
+                            }`}
+                            whileTap={{ scale: 0.9 }}
+                            animate={
+                              isAnimating && article.feedback === 'agree'
+                                ? { scale: [1, 1.3, 1] }
+                                : {}
+                            }
+                            transition={{ duration: 0.3 }}
+                          >
+                            <ThumbsUp className="w-4 h-4" />
+                            {isAnimating && article.feedback === 'agree' && (
+                              <motion.span
+                                className="absolute -top-1 -right-1 text-accent-400"
+                                initial={{ opacity: 0, scale: 0 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                exit={{ opacity: 0 }}
                               >
-                                Read original <ArrowRight className="w-3 h-3" />
-                              </a>
+                                <Sparkles className="w-3 h-3" />
+                              </motion.span>
                             )}
-                            <div onClick={(e) => e.stopPropagation()}>
-                              <label className="text-xs font-medium text-surface-400 block mb-1">
-                                Tags (comma separated)
-                              </label>
-                              <form
-                                onSubmit={async (e) => {
-                                  e.preventDefault();
-                                  const fd = new FormData(e.currentTarget);
-                                  const input = fd.get('tags')?.toString().trim();
-                                  const newTags = input
-                                    ? input
-                                        .split(',')
-                                        .map((t) => t.trim())
-                                        .filter((t) => t)
-                                    : [];
-                                  await updateTags(article.id, newTags);
-                                }}
-                                className="flex gap-2"
+                          </motion.button>
+
+                          <motion.button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleFeedback(article.id, 'disagree');
+                            }}
+                            className={`p-1 rounded-md relative ${
+                              article.feedback === 'disagree'
+                                ? 'text-verdict-amber'
+                                : 'text-surface-400'
+                            }`}
+                            whileTap={{ scale: 0.9 }}
+                            animate={
+                              isAnimating && article.feedback === 'disagree'
+                                ? { scale: [1, 1.3, 1] }
+                                : {}
+                            }
+                            transition={{ duration: 0.3 }}
+                          >
+                            <ThumbsDown className="w-4 h-4" />
+                            {isAnimating && article.feedback === 'disagree' && (
+                              <motion.span
+                                className="absolute -top-1 -right-1 text-accent-400"
+                                initial={{ opacity: 0, scale: 0 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                exit={{ opacity: 0 }}
                               >
-                                <input
-                                  name="tags"
-                                  defaultValue={(article.tags || []).join(', ')}
-                                  placeholder="e.g., AI, design"
-                                  className="flex-1 px-2 py-1 text-sm border border-surface-600 rounded-lg bg-surface-800 text-surface-50 placeholder-surface-400 focus:ring-2 focus:ring-accent-400/50 outline-none"
-                                />
-                                <button
-                                  type="submit"
-                                  className="px-3 py-1 text-sm bg-accent-400/10 text-accent-400 rounded-lg hover:bg-accent-400/20 transition"
+                                <Sparkles className="w-3 h-3" />
+                              </motion.span>
+                            )}
+                          </motion.button>
+
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDelete(article.id);
+                            }}
+                            className="text-surface-400 hover:text-red-400"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                      <AnimatePresence>
+                        {expandedId === article.id && (
+                          <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: 'auto', opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            className="overflow-hidden"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <div className="pt-4 mt-4 border-t border-surface-700/50 space-y-3">
+                              <p className="text-surface-200 text-sm leading-relaxed">
+                                {article.summary}
+                              </p>
+                              {article.insight && (
+                                <div className="bg-surface-800/60 rounded-xl p-3 border-l-4 border-accent-400">
+                                  <p className="text-surface-300 italic text-sm">
+                                    {article.insight}
+                                  </p>
+                                </div>
+                              )}
+                              {article.source_url && (
+                                <a
+                                  href={article.source_url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-1 text-accent-400 hover:underline text-sm"
+                                  onClick={(e) => e.stopPropagation()}
                                 >
-                                  Save
-                                </button>
-                              </form>
+                                  Read original <ArrowRight className="w-3 h-3" />
+                                </a>
+                              )}
+                              <div onClick={(e) => e.stopPropagation()}>
+                                <label className="text-xs font-medium text-surface-400 block mb-1">
+                                  Tags (comma separated)
+                                </label>
+                                <form
+                                  onSubmit={async (e) => {
+                                    e.preventDefault();
+                                    const fd = new FormData(e.currentTarget);
+                                    const input = fd.get('tags')?.toString().trim();
+                                    const newTags = input
+                                      ? input
+                                          .split(',')
+                                          .map((t) => t.trim())
+                                          .filter((t) => t)
+                                      : [];
+                                    await updateTags(article.id, newTags);
+                                  }}
+                                  className="flex gap-2"
+                                >
+                                  <input
+                                    name="tags"
+                                    defaultValue={(article.tags || []).join(', ')}
+                                    placeholder="e.g., AI, design"
+                                    className="flex-1 px-2 py-1 text-sm border border-surface-600 rounded-lg bg-surface-800 text-surface-50 placeholder-surface-400 focus:ring-2 focus:ring-accent-400/50 outline-none"
+                                  />
+                                  <button
+                                    type="submit"
+                                    className="px-3 py-1 text-sm bg-accent-400/10 text-accent-400 rounded-lg hover:bg-accent-400/20 transition"
+                                  >
+                                    Save
+                                  </button>
+                                </form>
+                              </div>
                             </div>
-                          </div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </motion.div>
-                ))}
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </motion.div>
+                  );
+                })}
               </div>
             </motion.div>
           ))}

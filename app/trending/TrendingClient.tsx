@@ -51,15 +51,31 @@ export default function TrendingClient() {
       </div>
 
       {articles.length === 0 ? (
-        <GlassCard className="p-10 text-center">
-          <Users className="w-12 h-12 text-surface-600 mx-auto mb-4" />
-          <p className="text-surface-300 text-lg font-medium mb-1">
-            Nothing trending yet.
-          </p>
-          <p className="text-surface-400 text-sm">
-            When public readers start keeping articles, they&apos;ll appear here.
-          </p>
-        </GlassCard>
+                  <GlassCard className="p-10 text-center">
+            <div className="mx-auto mb-6 w-20 h-20">
+              <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
+                {/* Small flame */}
+                <path d="M40 58 Q28 48, 36 30 Q44 38, 52 30 Q60 48, 40 58Z" fill="var(--accent-400)" opacity="0.9" />
+                <path d="M40 58 Q32 48, 38 34 Q42 40, 48 34 Q54 48, 40 58Z" fill="var(--accent-300)" opacity="0.7" />
+                {/* People around */}
+                <circle cx="22" cy="28" r="3" fill="var(--surface-300)" />
+                <path d="M18 33 Q22 36, 26 33" stroke="var(--surface-300)" strokeWidth="1.5" fill="none" />
+                <circle cx="58" cy="28" r="3" fill="var(--surface-300)" />
+                <path d="M54 33 Q58 36, 62 33" stroke="var(--surface-300)" strokeWidth="1.5" fill="none" />
+                <circle cx="40" cy="20" r="2.5" fill="var(--surface-400)" />
+                <path d="M37 24 Q40 26, 43 24" stroke="var(--surface-400)" strokeWidth="1.5" fill="none" />
+                {/* Sparkles around flame */}
+                <circle cx="30" cy="24" r="1" fill="var(--accent-400)" />
+                <circle cx="50" cy="22" r="1" fill="var(--accent-300)" />
+              </svg>
+            </div>
+            <p className="text-surface-300 text-lg font-medium mb-1">
+              Nothing trending yet.
+            </p>
+            <p className="text-surface-400 text-sm">
+              When public readers start keeping articles, they&apos;ll appear here.
+            </p>
+          </GlassCard>
       ) : (
         <motion.div
           initial="hidden"

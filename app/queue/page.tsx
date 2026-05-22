@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { Trash2, Play, PlayCircle, Clock, Inbox } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { GlassCard } from '@/components/ui/GlassCard';
@@ -141,13 +141,26 @@ export default function QueuePage() {
       </div>
 
       {queue.length === 0 ? (
-        <motion.div
+                <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
         >
           <GlassCard className="p-10 text-center">
-            <Inbox className="w-12 h-12 text-surface-600 mx-auto mb-4" />
+            <div className="mx-auto mb-6 w-20 h-20">
+              <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
+                {/* Envelope body */}
+                <rect x="18" y="28" width="44" height="30" rx="4" fill="var(--surface-700)" />
+                <path d="M18 28 L40 44 L62 28" stroke="var(--surface-500)" strokeWidth="2" fill="none" />
+                {/* Clock circle */}
+                <circle cx="50" cy="18" r="14" fill="var(--surface-800)" stroke="var(--surface-600)" strokeWidth="2" />
+                {/* Clock hands */}
+                <path d="M50 18 L50 11" stroke="var(--surface-300)" strokeWidth="2" strokeLinecap="round" />
+                <path d="M50 18 L57 18" stroke="var(--surface-300)" strokeWidth="2" strokeLinecap="round" />
+                {/* Small sparkle */}
+                <circle cx="62" cy="11" r="1.5" fill="var(--accent-400)" opacity="0.7" />
+              </svg>
+            </div>
             <p className="text-surface-300 text-lg font-medium mb-1">
               Your queue is empty
             </p>

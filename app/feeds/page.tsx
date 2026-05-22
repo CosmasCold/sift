@@ -73,7 +73,7 @@ export default function FeedsPage() {
 
       <AnimatePresence mode="wait">
         {feeds.length === 0 ? (
-          <motion.div
+                    <motion.div
             key="empty"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -81,7 +81,19 @@ export default function FeedsPage() {
             transition={{ duration: 0.3 }}
           >
             <GlassCard className="p-10 text-center">
-              <Rss className="w-12 h-12 text-surface-600 mx-auto mb-4" />
+              <div className="mx-auto mb-6 w-20 h-20">
+                <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
+                  {/* Satellite dish */}
+                  <ellipse cx="40" cy="44" rx="10" ry="24" fill="var(--surface-700)" />
+                  <path d="M30 44 Q40 24, 50 44" stroke="var(--surface-500)" strokeWidth="2" fill="none" />
+                  <line x1="40" y1="20" x2="40" y2="44" stroke="var(--surface-500)" strokeWidth="2" />
+                  {/* Signal waves */}
+                  <path d="M20 44 Q10 36, 20 28" stroke="var(--accent-400)" strokeWidth="2" fill="none" opacity="0.7" />
+                  <path d="M14 44 Q4 36, 14 22" stroke="var(--accent-300)" strokeWidth="1.5" fill="none" opacity="0.5" />
+                  {/* Sparkles */}
+                  <circle cx="22" cy="24" r="1.5" fill="var(--accent-400)" opacity="0.8" />
+                </svg>
+              </div>
               <p className="text-surface-300 text-lg font-medium mb-1">No feeds connected yet.</p>
               <p className="text-surface-400 text-sm">
                 Add an RSS or Substack URL to automatically sift new posts and keep what matters.
