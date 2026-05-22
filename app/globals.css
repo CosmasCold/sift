@@ -2,66 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Base */
 body {
-  background: linear-gradient(135deg, #0a0a12 0%, #14142a 100%);
-  color: #e5e5e5;
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background: #030712; /* gray-950 */
 }
-
-/* Cards, modals, inputs */
-.card {
-  background-color: #1e1e2a;
-  border-radius: 1rem;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-  padding: 1.25rem;
-}
-
-input, textarea, select {
-  background-color: #2a2a35 !important;
-  border: 1px solid #3a3a45;
-  border-radius: 0.75rem;
-  padding: 0.5rem 0.75rem;
-  color: #f0f0f0;
-}
-
-button, a.button {
-  background-color: #8b5cf6;
-  color: white;
-  border-radius: 0.75rem;
-  padding: 0.5rem 1rem;
-  transition: background 0.2s;
-}
-button:hover, a.button:hover {
-  background-color: #7c3aed;
-}
-
-/* Nav & footer */
-nav, footer {
-  background-color: #14141ecc;
-  backdrop-filter: blur(8px);
-  border-bottom: 1px solid #2a2a35;
-}
-nav a, footer a {
-  color: #c0c0c0;
-}
-nav a:hover, footer a:hover {
-  color: #a78bfa;
-}
-
-/* Accent text / borders */
-.text-accent {
-  color: #8b5cf6;
-}
-.border-accent {
-  border-color: #8b5cf6;
-}
-
-/* Focus rings */
-*:focus {
-  outline: none;
-  box-shadow: 0 0 0 2px #8b5cf6;
-  border-radius: 0.25rem;
-}
-
-/* No more .dark prefixes anywhere */
