@@ -9,7 +9,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { sourceUrl, summary, insight, verdict, tags, readingTime, thumbnailUrl } = await request.json();
+    const { sourceUrl, summary, insight, verdict, tags, readingTime, thumbnailUrl, fullText } = await request.json();
     if (!summary || !verdict) {
       return NextResponse.json({ error: 'Missing fields' }, { status: 400 });
     }
@@ -25,7 +25,8 @@ export async function POST(request: NextRequest) {
       kept,
       tags: tags || [],
       reading_time: readingTime ?? null,
-      thumbnail_url: thumbnailUrl || null, // <-- new
+      thumbnail_url: thumbnailUrl || null,
+      full_text: fullText || null, // <-- new
     });
 
     if (error) {

@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
+import { ArrowRight, ExternalLink } from 'lucide-react';
 import CopyRssButton from './CopyRssButton';
 import ShareButton from './ShareButton';
 
@@ -108,7 +109,6 @@ export default async function PublicProfilePage({
         )}
         <div className="absolute inset-0 bg-surface-950/20" />
         <div className="absolute bottom-0 left-0 right-0 p-6">
-          {/* Solid header card */}
           <div className="max-w-4xl mx-auto bg-surface-800 rounded-2xl border border-surface-700/50 p-4 flex flex-col md:flex-row items-center gap-4 shadow-card">
             <div className="w-24 h-24 rounded-full border-4 border-surface-700 bg-surface-800 overflow-hidden shadow-lg">
               {profile.avatar_url ? (
@@ -142,7 +142,7 @@ export default async function PublicProfilePage({
       </div>
 
       <div className="max-w-4xl mx-auto px-4 mt-8">
-        {/* Stats cards – solid */}
+        {/* Stats cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           <div className="bg-surface-800 rounded-2xl border border-surface-700/50 p-4 text-center">
             <div className="text-2xl font-bold text-accent-400">{totalArticles}</div>
@@ -237,6 +237,25 @@ export default async function PublicProfilePage({
                     </div>
                   )}
                 </a>
+                {/* Action links row */}
+                <div className="flex items-center gap-3 mt-3 pt-3 border-t border-surface-700/50">
+                  {article.source_url && (
+                    <a
+                      href={article.source_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-accent-400 hover:underline text-sm"
+                    >
+                      Read original <ExternalLink className="w-3 h-3" />
+                    </a>
+                  )}
+                  <Link
+                    href={`/read/${article.id}`}
+                    className="inline-flex items-center gap-1 text-accent-400 hover:underline text-sm"
+                  >
+                    Read in Sift <ArrowRight className="w-3 h-3" />
+                  </Link>
+                </div>
               </div>
             ))}
           </div>

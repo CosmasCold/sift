@@ -182,7 +182,8 @@ export async function POST(request: NextRequest) {
       ...result,
       sourceUrl: url,
       readingTime,
-      thumbnailUrl, // <-- new
+      thumbnailUrl,
+      fullText: articleText, // <-- the full article text
     });
   } catch (error) {
     console.error('Sift error:', error);
