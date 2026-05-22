@@ -9,6 +9,7 @@ import { User, LogOut, Settings, Library, Rss, Users, Inbox } from 'lucide-react
 import type { User as SupabaseUser } from '@supabase/supabase-js';
 import ThemeToggle from '@/components/ThemeToggle';
 import { Tag } from 'lucide-react';
+import { Flame } from 'lucide-react';
 
 export default function Navbar() {
   const router = useRouter();
@@ -73,6 +74,12 @@ export default function Navbar() {
             >
               <Library className="w-4 h-4" /> Library
             </Link>
+            <Link
+  href="/trending"
+  className="text-surface-300 hover:text-accent-400 transition flex items-center gap-1"
+>
+  <Flame className="w-4 h-4" /> Trending
+</Link>
             <Link
   href="/tags"
   className="text-surface-300 hover:text-accent-400 transition flex items-center gap-1"

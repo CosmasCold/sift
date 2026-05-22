@@ -70,6 +70,15 @@ option {
   color: var(--surface-50);
 }
 
+select {
+  color: var(--surface-50);
+  background-color: var(--surface-800);
+}
+option {
+  background-color: var(--surface-800);
+  color: var(--surface-50);
+}
+
 /* ========== Scrollbar ========== */
 ::-webkit-scrollbar {
   width: 6px;
