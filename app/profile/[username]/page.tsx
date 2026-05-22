@@ -67,10 +67,10 @@ export default async function PublicProfilePage({
     );
   }
 
-  // Fetch articles and tag data
+  // Fetch articles with thumbnail
   const { data: allArticles } = await supabase
     .from('sifted_articles')
-    .select('id, summary, verdict, created_at, tags, source_url')
+    .select('id, summary, verdict, created_at, tags, source_url, thumbnail_url, reading_time')
     .eq('user_id', profile.id)
     .eq('kept', true)
     .order('created_at', { ascending: false })
@@ -83,6 +83,35 @@ export default async function PublicProfilePage({
   const uniqueTags = Object.keys(tagFreq).length;
   const dates = allArticles?.map(a => new Date(a.created_at)).filter(d => !isNaN(d.getTime())) || [];
   const streak = calculateStreak(dates);
+
+  // Currently sifting (queue)
+  const { data: queueItem } = await supabase
+    .from('queued_articles')
+    .select('url')
+    .eq('user_id', profile.id)
+    .order('created_at', { ascending: true })
+    .limit(1)
+    .single();
+
+  // Reading stats: articles per month for last 6 months
+  const stats: { month: string; count: number }[] = [];
+  const now = new Date();
+  for (let i = 5; i >= 0; i--) {
+    const monthDate = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const monthKey = monthDate.toLocaleString('en-US', { month: 'short', year: 'numeric' });
+    stats.push({ month: monthKey, count: 0 });
+  }
+  allArticles?.forEach(article => {
+    const d = new Date(article.created_at);
+    if (isNaN(d.getTime())) return;
+    const articleMonth = new Date(d.getFullYear(), d.getMonth(), 1);
+    const stat = stats.find(s => {
+      const [m, y] = s.month.split(' ');
+      const statMonth = new Date(parseInt(y), new Date(`${m} 1, 2000`).getMonth(), 1);
+      return statMonth.getTime() === articleMonth.getTime();
+    });
+    if (stat) stat.count++;
+  });
 
   // Follower / following counts
   const { count: followingCount } = await supabase
@@ -133,6 +162,12 @@ export default async function PublicProfilePage({
               <div className="flex flex-wrap gap-3 mt-1 text-sm text-surface-300">
                 <span>📅 Reader since {joinDate}</span>
                 {streak > 0 && <span>🔥 {streak} day streak</span>}
+                {queueItem && (
+                  <span className="flex items-center gap-1 text-accent-400">
+                    <span className="w-2 h-2 rounded-full bg-accent-400 animate-pulse" />
+                    Currently sifting
+                  </span>
+                )}
               </div>
             </div>
             <div className="md:ml-auto flex gap-2">
@@ -144,7 +179,7 @@ export default async function PublicProfilePage({
         </div>
       </div>
 
-      {/* Tabbed content */}
+      {/* Tabbed content with highlight handled client-side */}
       <ProfileTabs
         username={username}
         articles={allArticles || []}
@@ -156,6 +191,9 @@ export default async function PublicProfilePage({
         followingCount={followingCount || 0}
         followerCount={followerCount || 0}
         activeTag={activeTag}
+        stats={stats}
+        queueItem={queueItem}
+        allArticles={allArticles || []}
       />
     </main>
   );
