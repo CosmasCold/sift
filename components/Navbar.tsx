@@ -45,7 +45,7 @@ export default function Navbar() {
   }, []);
 
   return (
-    <nav className="border-b border-surface-700/50 bg-surface-800/60 backdrop-blur-xl px-4 py-3 z-20 relative">
+    <nav className="border-b border-surface-700/50 bg-surface-800/60 backdrop-blur-xl px-4 py-3 z-30 relative">
       <div className="max-w-6xl mx-auto flex items-center justify-between gap-4">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2">

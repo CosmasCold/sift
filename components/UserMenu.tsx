@@ -96,7 +96,8 @@ export default function UserMenu({ user, profile }: UserMenuProps) {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 8, scale: 0.96 }}
             transition={{ duration: 0.15 }}
-            className="absolute right-0 mt-2 w-56 bg-surface-800/90 backdrop-blur-xl border border-surface-700/50 shadow-glass rounded-2xl p-2 z-50"
+            className="absolute right-0 mt-2 w-56 bg-surface-800 border border-surface-600/60 shadow-glass rounded-2xl p-2 z-[100]"
+            style={{ backgroundColor: 'var(--surface-800)', backdropFilter: 'none' }}
           >
             {/* Profile link (only if public) */}
             {profile?.username && profile?.public_profile && (
