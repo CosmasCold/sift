@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { ArrowRight, ExternalLink } from 'lucide-react';
 import CopyRssButton from './CopyRssButton';
 import ShareButton from './ShareButton';
+import FollowButton from '@/components/FollowButton';
 
 function calculateStreak(dates: Date[]): number {
   if (!dates.length) return 0;
@@ -134,6 +135,7 @@ export default async function PublicProfilePage({
               </div>
             </div>
             <div className="md:ml-auto flex gap-2">
+              <FollowButton followingId={profile.id} />
               <CopyRssButton username={username} />
               <ShareButton username={username} />
             </div>

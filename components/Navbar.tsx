@@ -76,6 +76,12 @@ export default function Navbar() {
               <Library className="w-4 h-4" /> Library
             </Link>
             <Link
+  href="/following"
+  className="text-surface-300 hover:text-accent-400 transition flex items-center gap-1"
+>
+  <Users className="w-4 h-4" /> Following
+</Link>
+            <Link
   href="/discover"
   className="text-surface-300 hover:text-accent-400 transition flex items-center gap-1"
 >
