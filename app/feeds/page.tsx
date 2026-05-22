@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
-import { Trash2, Plus } from 'lucide-react';
+import { Trash2, Plus, Rss } from 'lucide-react';
 import { GlassCard } from '@/components/ui/GlassCard';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface Feed {
   id: string;
@@ -70,32 +71,61 @@ export default function FeedsPage() {
         </div>
       </GlassCard>
 
-      <div className="space-y-3">
-        {feeds.map((feed) => (
-          <GlassCard
-            key={feed.id}
-            variant="interactive"
-            className="flex items-center justify-between p-4"
+      <AnimatePresence mode="wait">
+        {feeds.length === 0 ? (
+          <motion.div
+            key="empty"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
           >
-            <span className="text-sm text-surface-200">
-              {feed.title || feed.feed_url}
-            </span>
-            <button
-              onClick={() => removeFeed(feed.id)}
-              className="text-surface-400 hover:text-red-400 transition"
-            >
-              <Trash2 className="w-4 h-4" />
-            </button>
-          </GlassCard>
-        ))}
-        {feeds.length === 0 && (
-          <GlassCard className="p-8 text-center">
-            <p className="text-surface-400 text-sm">
-              No feeds yet. Add an RSS or Substack URL to auto‑sift new posts.
-            </p>
-          </GlassCard>
+            <GlassCard className="p-10 text-center">
+              <Rss className="w-12 h-12 text-surface-600 mx-auto mb-4" />
+              <p className="text-surface-300 text-lg font-medium mb-1">No feeds connected yet.</p>
+              <p className="text-surface-400 text-sm">
+                Add an RSS or Substack URL to automatically sift new posts and keep what matters.
+              </p>
+            </GlassCard>
+          </motion.div>
+        ) : (
+          <motion.div
+            key="list"
+            initial="hidden"
+            animate="visible"
+            variants={{
+              hidden: { opacity: 0 },
+              visible: { opacity: 1, transition: { staggerChildren: 0.06 } },
+            }}
+            className="space-y-3"
+          >
+            {feeds.map((feed) => (
+              <motion.div
+                key={feed.id}
+                variants={{
+                  hidden: { opacity: 0, x: -10 },
+                  visible: { opacity: 1, x: 0 },
+                }}
+              >
+                <GlassCard
+                  variant="interactive"
+                  className="flex items-center justify-between p-4"
+                >
+                  <span className="text-sm text-surface-200">
+                    {feed.title || feed.feed_url}
+                  </span>
+                  <button
+                    onClick={() => removeFeed(feed.id)}
+                    className="text-surface-400 hover:text-red-400 transition"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </GlassCard>
+              </motion.div>
+            ))}
+          </motion.div>
         )}
-      </div>
+      </AnimatePresence>
     </main>
   );
 }

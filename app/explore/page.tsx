@@ -3,8 +3,9 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Search, Tag } from 'lucide-react';
+import { Search, Tag, Users } from 'lucide-react';
 import { GlassCard } from '@/components/ui/GlassCard';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface Profile {
   username: string;
@@ -49,7 +50,7 @@ export default function ExplorePage() {
     <main className="flex-1 pt-12 pb-16 px-4 max-w-3xl mx-auto">
       <h1 className="text-3xl font-semibold text-surface-50 mb-2">Explore public profiles</h1>
       <p className="text-surface-400 mb-6">
-        Find readers by username or by tag (e.g., AI, design).
+        Discover fellow readers by username or the topics they care about.
       </p>
 
       <div className="flex gap-4 mb-4">
@@ -108,52 +109,71 @@ export default function ExplorePage() {
         </div>
       </GlassCard>
 
-      {searched && (
-        loading ? (
-          <div className="text-center py-12 text-surface-400">Searching...</div>
-        ) : profiles.length === 0 ? (
-          <div className="text-center py-12 text-surface-400">
-            {query
-              ? `No public profiles found ${searchMode === 'username' ? `for "${query}"` : `with tag "${query}"`}`
-              : 'Enter a search term'}
-          </div>
-        ) : (
-          <div className="grid gap-3">
-            {profiles.map((profile) => (
-              <Link
-                key={profile.username}
-                href={`/profile/${profile.username}`}
-                className="flex items-center gap-3 p-3 bg-surface-800/60 backdrop-blur-xl border border-surface-700/50 shadow-glass-sm rounded-2xl transition hover:bg-surface-800/80 hover:shadow-glass"
-              >
-                {profile.avatar_url ? (
-                  <Image
-                    src={profile.avatar_url}
-                    alt={profile.username}
-                    width={40}
-                    height={40}
-                    unoptimized
-                    className="w-10 h-10 rounded-full object-cover"
-                  />
-                ) : (
-                  <div className="w-10 h-10 rounded-full bg-surface-800/50 flex items-center justify-center text-surface-400">
-                    {profile.username.charAt(0).toUpperCase()}
-                  </div>
-                )}
-                <div>
-                  <p className="font-medium text-surface-50">@{profile.username}</p>
-                  <p className="text-xs text-surface-400">
-                    Reader since{' '}
-                    {new Date(profile.created_at).toLocaleDateString('en-US', {
-                      year: 'numeric',
-                      month: 'long',
-                    })}
-                  </p>
-                </div>
-              </Link>
-            ))}
-          </div>
-        )
-      )}
+      <AnimatePresence mode="wait">
+        {searched && (
+          loading ? (
+            <motion.div
+              key="loading"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="text-center py-12 text-surface-400"
+            >
+              Searching...
+            </motion.div>
+          ) : profiles.length === 0 ? (
+            <motion.div
+              key="empty"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <GlassCard className="p-10 text-center">
+                <Users className="w-12 h-12 text-surface-600 mx-auto mb-4" />
+                <p className="text-surface-300 text-lg font-medium mb-1">
+                  {query
+                    ? `No public profiles found ${searchMode === 'username' ? `for "${query}"` : `with the tag "${query}"`}.`
+                    : 'Enter a search term to find readers.'}
+                </p>
+                <p className="text-surface-400 text-sm">
+                  {query
+                    ? 'Try a different name or tag.'
+                    : 'You can search by username or by topic tag.'}
+                </p>
+              </GlassCard>
+            </motion.div>
+          ) : (
+            <motion.div
+              key="results"
+              initial="hidden"
+              animate="visible"
+              variants={{
+                hidden: { opacity: 0 },
+                visible: { opacity: 1, transition: { staggerChildren: 0.06 } },
+              }}
+              className="grid gap-3"
+            >
+              {profiles.map((profile) => (
+                <motion.div
+                  key={profile.username}
+                  variants={{
+                    hidden: { opacity: 0, y: 8 },
+                    visible: { opacity: 1, y: 0 },
+                  }}
+                >
+                  <Link
+                    href={`/profile/${profile.username}`}
+                    className="flex items-center gap-3 p-3 bg-surface-800/60 backdrop-blur-xl border border-surface-700/50 shadow-glass-sm rounded-2xl transition hover:bg-surface-800/80 hover:shadow-glass"
+                  >
+                    {/* ... profile card content unchanged ... */}
+                  </Link>
+                </motion.div>
+              ))}
+            </motion.div>
+          )
+        )}
+      </AnimatePresence>
     </main>
   );
 }

@@ -1,13 +1,13 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { ArrowRight, Loader2, Sparkles, ClipboardList, Search } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { supabase } from '@/lib/supabase/client';
 import Link from 'next/link';
 import type { User } from '@supabase/supabase-js';
 import { GlassCard } from '@/components/ui/GlassCard';
+import { motion } from 'framer-motion';
 
 interface SiftResult {
   summary: string;
@@ -238,21 +238,32 @@ export default function HomePage() {
       </form>
 
       {!result && !loading && (
-        <GlassCard className="p-6 text-center">
-          <div className="flex flex-col items-center gap-4">
-            <div className="w-16 h-16 rounded-full bg-accent-400/10 flex items-center justify-center">
-              <Search className="w-8 h-8 text-accent-400" />
-            </div>
-            <h2 className="text-xl font-semibold text-surface-50">Ready to sift through content</h2>
-            <p className="text-surface-400 max-w-md">
-              Paste a URL or text, or upload a batch file. Sift will analyze and deliver a clear verdict.
-            </p>
-          </div>
-        </GlassCard>
-      )}
+  <motion.div
+    initial={{ opacity: 0, scale: 0.96 }}
+    animate={{ opacity: 1, scale: 1 }}
+    transition={{ duration: 0.3 }}
+  >
+    <GlassCard className="p-6 text-center">
+      <div className="flex flex-col items-center gap-4">
+        <div className="w-16 h-16 rounded-full bg-accent-400/10 flex items-center justify-center">
+          <Search className="w-8 h-8 text-accent-400" />
+        </div>
+        <h2 className="text-xl font-semibold text-surface-50">Ready to sift through content</h2>
+        <p className="text-surface-400 max-w-md">
+          Paste a URL or text, or upload a batch file. Sift will analyze and deliver a clear verdict.
+        </p>
+      </div>
+    </GlassCard>
+  </motion.div>
+)}
 
       {result && (
-        <GlassCard className="w-full max-w-2xl p-6">
+  <motion.div
+    initial={{ opacity: 0, y: 12 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.35, ease: 'easeOut' }}
+  >
+    <GlassCard className="w-full max-w-2xl p-6">
           <div className="flex items-center gap-3 mb-5 pb-4 border-b border-surface-700/50">
             <span
               className={`w-3.5 h-3.5 rounded-full ${
@@ -296,6 +307,7 @@ export default function HomePage() {
             </button>
           </div>
         </GlassCard>
+        </motion.div>
       )}
     </div>
   );
