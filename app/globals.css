@@ -3,5 +3,6 @@
 @tailwind utilities;
 
 body {
-  background: #030712; /* gray-950 */
+  background: #2a2624; /* surface-900 — warm dark background */
+  color: #faf9f7; /* surface-50 — soft white text */
 }

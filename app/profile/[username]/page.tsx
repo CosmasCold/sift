@@ -4,6 +4,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import CopyRssButton from './CopyRssButton';
 import ShareButton from './ShareButton';
+import { GlassCard } from '@/components/ui/GlassCard';
 
 function calculateStreak(dates: Date[]): number {
   if (!dates.length) return 0;
@@ -43,8 +44,8 @@ export default async function PublicProfilePage({
   if (error || !profile) {
     return (
       <div className="pt-16 text-center">
-        <h1 className="text-2xl font-bold text-white">Profile not found</h1>
-        <Link href="/library" className="mt-4 inline-block text-accent underline">
+        <h1 className="text-2xl font-semibold text-surface-50">Profile not found</h1>
+        <Link href="/library" className="mt-4 inline-block text-accent-400 underline">
           Go to Library
         </Link>
       </div>
@@ -54,13 +55,13 @@ export default async function PublicProfilePage({
   if (!profile.public_profile) {
     return (
       <main className="flex-1 pt-12 pb-16 px-4 max-w-3xl mx-auto text-center">
-        <h1 className="text-3xl font-bold text-white mb-2">@{profile.username}</h1>
-        <div className="card">
-          <p className="text-stone-300">This profile is private.</p>
-          <Link href="/" className="inline-block mt-4 text-accent underline">
+        <h1 className="text-3xl font-semibold text-surface-50 mb-2">@{profile.username}</h1>
+        <GlassCard className="p-6">
+          <p className="text-surface-400">This profile is private.</p>
+          <Link href="/" className="inline-block mt-4 text-accent-400 underline">
             Back to Sift
           </Link>
-        </div>
+        </GlassCard>
       </main>
     );
   }
@@ -95,7 +96,7 @@ export default async function PublicProfilePage({
   const joinDate = profile.created_at
     ? new Date(profile.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long' })
     : 'recently';
-  const defaultCover = 'bg-gradient-to-r from-purple-800/50 via-purple-700/50 to-purple-600/50';
+  const defaultCover = 'bg-gradient-to-r from-accent-800/40 via-accent-700/30 to-accent-600/20';
 
   return (
     <main className="flex-1 pb-16">
@@ -106,10 +107,10 @@ export default async function PublicProfilePage({
         ) : (
           <div className={`w-full h-full ${defaultCover}`} />
         )}
-        <div className="absolute inset-0 bg-black/20" />
+        <div className="absolute inset-0 bg-surface-950/20" />
         <div className="absolute bottom-0 left-0 right-0 p-6">
-          <div className="max-w-4xl mx-auto bg-black/50 backdrop-blur-md rounded-xl p-4 flex flex-col md:flex-row items-center gap-4 shadow-lg">
-            <div className="w-24 h-24 rounded-full border-4 border-white bg-stone-800 overflow-hidden shadow-lg">
+          <div className="max-w-4xl mx-auto bg-surface-950/60 backdrop-blur-xl rounded-2xl p-4 flex flex-col md:flex-row items-center gap-4 shadow-glass">
+            <div className="w-24 h-24 rounded-full border-4 border-white/10 bg-surface-800 overflow-hidden shadow-lg">
               {profile.avatar_url ? (
                 <Image
                   src={profile.avatar_url}
@@ -120,14 +121,14 @@ export default async function PublicProfilePage({
                   unoptimized
                 />
               ) : (
-                <div className="w-full h-full flex items-center justify-center text-4xl font-bold text-white">
+                <div className="w-full h-full flex items-center justify-center text-4xl font-bold text-surface-50">
                   {profile.username[0].toUpperCase()}
                 </div>
               )}
             </div>
             <div className="text-center md:text-left">
-              <h1 className="text-3xl font-bold text-white">@{profile.username}</h1>
-              <div className="flex flex-wrap gap-3 mt-1 text-sm text-stone-200">
+              <h1 className="text-3xl font-semibold text-surface-50">@{profile.username}</h1>
+              <div className="flex flex-wrap gap-3 mt-1 text-sm text-surface-300">
                 <span>📅 Reader since {joinDate}</span>
                 {streak > 0 && <span>🔥 {streak} day streak</span>}
               </div>
@@ -143,28 +144,28 @@ export default async function PublicProfilePage({
       <div className="max-w-4xl mx-auto px-4 mt-8">
         {/* Stats cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          <div className="card text-center">
-            <div className="text-2xl font-bold text-accent">{totalArticles}</div>
-            <div className="text-xs text-stone-400">articles kept</div>
-          </div>
-          <div className="card text-center">
-            <div className="text-2xl font-bold text-accent">{uniqueTags}</div>
-            <div className="text-xs text-stone-400">unique tags</div>
-          </div>
-          <div className="card text-center">
-            <div className="text-2xl font-bold text-accent">{streak}</div>
-            <div className="text-xs text-stone-400">current streak</div>
-          </div>
-          <div className="card text-center">
-            <div className="text-2xl font-bold text-accent">∞</div>
-            <div className="text-xs text-stone-400">curiosity</div>
-          </div>
+          <GlassCard className="text-center p-4">
+            <div className="text-2xl font-bold text-accent-400">{totalArticles}</div>
+            <div className="text-xs text-surface-400">articles kept</div>
+          </GlassCard>
+          <GlassCard className="text-center p-4">
+            <div className="text-2xl font-bold text-accent-400">{uniqueTags}</div>
+            <div className="text-xs text-surface-400">unique tags</div>
+          </GlassCard>
+          <GlassCard className="text-center p-4">
+            <div className="text-2xl font-bold text-accent-400">{streak}</div>
+            <div className="text-xs text-surface-400">current streak</div>
+          </GlassCard>
+          <GlassCard className="text-center p-4">
+            <div className="text-2xl font-bold text-accent-400">∞</div>
+            <div className="text-xs text-surface-400">curiosity</div>
+          </GlassCard>
         </div>
 
         {/* Tag cloud */}
         {uniqueTags > 0 && (
           <div className="mb-8">
-            <h2 className="text-lg font-semibold text-white mb-3">📌 Tags I follow</h2>
+            <h2 className="text-lg font-semibold text-surface-50 mb-3">📌 Tags I follow</h2>
             <div className="flex flex-wrap gap-2">
               {Object.entries(tagFreq)
                 .sort((a, b) => b[1] - a[1])
@@ -173,7 +174,7 @@ export default async function PublicProfilePage({
                   <Link
                     key={tag}
                     href={`/profile/${username}?tag=${encodeURIComponent(tag)}`}
-                    className="px-3 py-1 rounded-full bg-stone-800 hover:bg-accent/20 transition-all text-stone-300 text-sm"
+                    className="px-3 py-1 rounded-full bg-surface-800/60 hover:bg-accent-400/10 transition-all text-surface-300 text-sm"
                     style={{ fontSize: `${Math.max(12, 12 + count * 1.5)}px` }}
                   >
                     #{tag} ({count})
@@ -186,50 +187,50 @@ export default async function PublicProfilePage({
         {/* Active filter indicator */}
         {activeTag && (
           <div className="mb-4 flex items-center gap-2">
-            <span className="text-sm text-stone-300">Filtering by tag:</span>
-            <span className="bg-accent/10 text-accent px-2 py-1 rounded-full text-sm">#{activeTag}</span>
-            <Link href={`/profile/${username}`} className="text-xs text-stone-400 underline">
+            <span className="text-sm text-surface-300">Filtering by tag:</span>
+            <span className="bg-accent-400/10 text-accent-400 px-2 py-1 rounded-full text-sm">#{activeTag}</span>
+            <Link href={`/profile/${username}`} className="text-xs text-surface-400 underline">
               Clear
             </Link>
           </div>
         )}
 
-        <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+        <h2 className="text-xl font-semibold text-surface-50 mb-4 flex items-center gap-2">
           <span>📖 Reading list</span>
         </h2>
 
         {articles?.length ? (
           <div className="grid gap-5">
             {articles.map(article => (
-              <div key={article.id} className="card transition-all">
+              <GlassCard key={article.id} variant="interactive" className="p-5">
                 <a href={article.source_url || '#'} target="_blank" rel="noopener noreferrer" className="block">
-                  <p className="text-stone-100 leading-relaxed">{article.summary}</p>
+                  <p className="text-surface-200 leading-relaxed">{article.summary}</p>
                   <div className="flex flex-wrap items-center gap-2 mt-3">
-                    <span className="text-xs font-medium text-stone-400">{article.verdict}</span>
-                    <span className="text-xs text-stone-500">·</span>
-                    <span className="text-xs text-stone-400">
+                    <span className="text-xs font-medium text-surface-400">{article.verdict}</span>
+                    <span className="text-xs text-surface-500">·</span>
+                    <span className="text-xs text-surface-400">
                       {new Date(article.created_at).toLocaleDateString()}
                     </span>
                   </div>
                   {article.tags && article.tags.length > 0 && (
                     <div className="flex flex-wrap gap-1 mt-3">
                       {article.tags.map((tag: string) => (
-                        <span key={tag} className="text-xs bg-stone-800 px-2 py-0.5 rounded-full text-stone-400">
+                        <span key={tag} className="text-xs bg-surface-800/60 px-2 py-0.5 rounded-full text-surface-400">
                           #{tag}
                         </span>
                       ))}
                     </div>
                   )}
                 </a>
-              </div>
+              </GlassCard>
             ))}
           </div>
         ) : (
-          <div className="card text-center py-12">
-            <p className="text-stone-400">
+          <GlassCard className="text-center py-12">
+            <p className="text-surface-400">
               {activeTag ? `No articles tagged with "${activeTag}".` : 'No public articles yet.'}
             </p>
-          </div>
+          </GlassCard>
         )}
       </div>
     </main>

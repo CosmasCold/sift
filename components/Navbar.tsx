@@ -11,7 +11,11 @@ import type { User as SupabaseUser } from '@supabase/supabase-js';
 export default function Navbar() {
   const router = useRouter();
   const [user, setUser] = useState<SupabaseUser | null>(null);
-  const [profile, setProfile] = useState<{ username: string; avatar_url: string | null; public_profile: boolean } | null>(null);
+  const [profile, setProfile] = useState<{
+    username: string;
+    avatar_url: string | null;
+    public_profile: boolean;
+  } | null>(null);
 
   useEffect(() => {
     const getUser = async () => {
@@ -47,33 +51,85 @@ export default function Navbar() {
   };
 
   return (
-    <nav className="border-b border-gray-800 bg-gray-900/80 backdrop-blur-sm px-4 py-3">
+    <nav className="border-b border-surface-700/50 bg-surface-800/60 backdrop-blur-xl px-4 py-3">
       <div className="max-w-6xl mx-auto flex items-center justify-between flex-wrap gap-4">
         <Link href="/" className="flex items-center gap-2">
-          <Image src="/sift-logo.png" alt="Sift logo" width={32} height={32} className="w-8 h-8 object-contain" />
-          <span className="text-xl font-bold text-white">Sift</span>
+          <Image
+            src="/sift-logo.png"
+            alt="Sift logo"
+            width={32}
+            height={32}
+            className="w-8 h-8 object-contain"
+          />
+          <span className="text-xl font-semibold text-surface-50">Sift</span>
         </Link>
         {user ? (
           <div className="flex items-center gap-4">
-            <Link href="/library" className="text-gray-300 hover:text-purple-500 transition flex items-center gap-1"><Library className="w-4 h-4" /> Library</Link>
-            <Link href="/feeds" className="text-gray-300 hover:text-purple-500 transition flex items-center gap-1"><Rss className="w-4 h-4" /> Feeds</Link>
-            <Link href="/explore" className="text-gray-300 hover:text-purple-500 transition flex items-center gap-1"><Users className="w-4 h-4" /> Explore</Link>
+            <Link
+              href="/library"
+              className="text-surface-300 hover:text-accent-400 transition flex items-center gap-1"
+            >
+              <Library className="w-4 h-4" /> Library
+            </Link>
+            <Link
+              href="/feeds"
+              className="text-surface-300 hover:text-accent-400 transition flex items-center gap-1"
+            >
+              <Rss className="w-4 h-4" /> Feeds
+            </Link>
+            <Link
+              href="/explore"
+              className="text-surface-300 hover:text-accent-400 transition flex items-center gap-1"
+            >
+              <Users className="w-4 h-4" /> Explore
+            </Link>
             {profile?.username && profile?.public_profile && (
-              <Link href={`/profile/${profile.username}`} className="text-gray-300 hover:text-purple-500 transition flex items-center gap-1"><User className="w-4 h-4" /> Profile</Link>
+              <Link
+                href={`/profile/${profile.username}`}
+                className="text-surface-300 hover:text-accent-400 transition flex items-center gap-1"
+              >
+                <User className="w-4 h-4" /> Profile
+              </Link>
             )}
-            <Link href="/settings" className="text-gray-300 hover:text-purple-500 transition flex items-center gap-1"><Settings className="w-4 h-4" /> Settings</Link>
+            <Link
+              href="/settings"
+              className="text-surface-300 hover:text-accent-400 transition flex items-center gap-1"
+            >
+              <Settings className="w-4 h-4" /> Settings
+            </Link>
             <div className="flex items-center gap-2 ml-2">
               {profile?.avatar_url ? (
-                <Image src={profile.avatar_url} alt="avatar" width={24} height={24} unoptimized className="w-6 h-6 rounded-full object-cover" />
+                <Image
+                  src={profile.avatar_url}
+                  alt="avatar"
+                  width={24}
+                  height={24}
+                  unoptimized
+                  className="w-6 h-6 rounded-full object-cover"
+                />
               ) : (
-                <div className="w-6 h-6 rounded-full bg-purple-600/20 flex items-center justify-center"><User className="w-4 h-4 text-purple-500" /></div>
+                <div className="w-6 h-6 rounded-full bg-accent-400/10 flex items-center justify-center">
+                  <User className="w-4 h-4 text-accent-400" />
+                </div>
               )}
-              <span className="text-sm text-gray-300">{profile?.username || user.email?.split('@')[0] || 'User'}</span>
-              <button onClick={handleSignOut} className="text-gray-400 hover:text-red-500 transition ml-2"><LogOut className="w-4 h-4" /></button>
+              <span className="text-sm text-surface-300">
+                {profile?.username || user.email?.split('@')[0] || 'User'}
+              </span>
+              <button
+                onClick={handleSignOut}
+                className="text-surface-400 hover:text-red-400 transition ml-2"
+              >
+                <LogOut className="w-4 h-4" />
+              </button>
             </div>
           </div>
         ) : (
-          <Link href="/auth" className="text-sm bg-purple-600 text-white px-4 py-2 rounded-xl hover:bg-purple-700">Sign In</Link>
+          <Link
+            href="/auth"
+            className="text-sm bg-accent-500 text-white px-4 py-2 rounded-xl hover:bg-accent-600 transition"
+          >
+            Sign In
+          </Link>
         )}
       </div>
     </nav>
