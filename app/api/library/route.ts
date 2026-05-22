@@ -8,7 +8,7 @@ export async function GET() {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  // Fetch articles with feed data and tags
+  // Fetch articles with feed data, tags, and reading_time
   const { data, error } = await supabase
     .from('sifted_articles')
     .select(`
@@ -22,6 +22,7 @@ export async function GET() {
       kept,
       created_at,
       tags,
+      reading_time,
       feed:sift_feeds(id, title)
     `)
     .eq('user_id', user.id)

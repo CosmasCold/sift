@@ -338,14 +338,17 @@ export default function LibraryPage() {
                               {article.feed?.title && ` · from ${article.feed.title}`}
                             </p>
                             {/* Real reading time from DB, fallback to dash */}
-                            {article.reading_time ? (
-                              <span className="inline-flex items-center gap-1 text-xs text-surface-500">
-                                <Clock className="w-3 h-3" />
-                                ~{article.reading_time} min read
-                              </span>
-                            ) : (
-                              <span className="text-xs text-surface-500">—</span>
-                            )}
+                            {(() => {
+  const readingTime =
+    article.reading_time ??
+    Math.max(1, Math.ceil(article.summary.split(/\s+/).length / 200));
+  return (
+    <span className="inline-flex items-center gap-1 text-xs text-surface-500">
+      <Clock className="w-3 h-3" />
+      ~{readingTime} min read
+    </span>
+  );
+})()}
                           </div>
                           {article.tags?.length > 0 && (
                             <div className="flex flex-wrap gap-1 mt-2">
