@@ -6,6 +6,8 @@ import { supabase } from '@/lib/supabase/client';
 import { Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
+export const dynamic = 'force-dynamic';
+
 export default function AuthCallbackPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
