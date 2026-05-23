@@ -336,7 +336,7 @@ function LibraryInner() {
           <button
             onClick={handleExport}
             disabled={final.length === 0}
-            className="px-4 py-2 bg-surface-800/60 border border-surface-700/50 text-surface-300 rounded-xl text-sm font-medium hover:bg-surface-700/60 disabled:opacity-50 flex items-center gap-1 transition"
+            className="px-4 py-2 bg-surface-800/60 border border-surface-600/40 text-surface-300 rounded-xl text-sm font-medium hover:bg-surface-700/60 disabled:opacity-50 flex items-center gap-1 transition"
             aria-label="Export visible articles as Markdown"
           >
             <Download className="w-4 h-4" /> Export
@@ -508,9 +508,9 @@ function LibraryInner() {
                 visible: { opacity: 1, y: 0, transition: { duration: 0.4 } },
               }}
             >
-              <h2 className="text-sm font-semibold text-surface-400 mb-3 px-1">
-                {groupName}
-              </h2>
+              <h2 className="text-sm font-semibold text-surface-400 mb-3 px-1 border-b border-surface-600/30 pb-2">
+  {groupName}
+</h2>
               <div className="grid gap-4">
                 {articles.map((article) => {
                   const isAnimating = !!feedbackAnimation[article.id];
@@ -532,23 +532,23 @@ function LibraryInner() {
                       onClick={() =>
                         setExpandedId(expandedId === article.id ? null : article.id)
                       }
-                      className="bg-surface-800/60 backdrop-blur-xl border border-surface-700/50 shadow-glass rounded-2xl p-5 transition-shadow hover:shadow-glass cursor-pointer"
+                      className="bg-surface-800/60 backdrop-blur-xl border border-surface-600/40 shadow-glass rounded-2xl p-6 transition-shadow hover:shadow-glass cursor-pointer"
                     >
                       <div className="flex flex-col sm:flex-row items-start gap-3">
                         {/* Thumbnail */}
-                        <div className="flex-shrink-0 w-14 h-14 rounded-lg overflow-hidden bg-surface-800/50">
+                        <div className="flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden bg-surface-800/50">
                           {article.thumbnail_url ? (
                             <Image
                               src={article.thumbnail_url}
                               alt=""
-                              width={56}
-                              height={56}
+                              width={80}
+                              height={80}
                               className="object-cover w-full h-full"
                               unoptimized
                             />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center text-surface-500">
-                              <ImageOff className="w-4 h-4" />
+                              <ImageOff className="w-6 h-6" />
                             </div>
                           )}
                         </div>
@@ -704,7 +704,7 @@ function LibraryInner() {
                             className="overflow-hidden"
                             onClick={(e) => e.stopPropagation()}
                           >
-                            <div className="pt-4 mt-4 border-t border-surface-700/50 space-y-3">
+                            <div className="pt-4 mt-4 border-t border-surface-600/40 space-y-3">
                               <p className="text-surface-200 text-sm leading-relaxed">
                                 {article.summary}
                               </p>

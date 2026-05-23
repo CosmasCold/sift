@@ -700,7 +700,7 @@ export default function HomeClient() {
             >
               <GlassCard className="p-4">
                 <p className="text-xs text-surface-400 uppercase tracking-wider mb-2 flex items-center gap-1">
-                  <Users className="w-3 h-3" /> From your network
+                  <Users className="w-4 h-4" /> From your network
                 </p>
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-lg overflow-hidden bg-surface-700 flex-shrink-0">
@@ -748,7 +748,9 @@ export default function HomeClient() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3, delay: 0.2 }}
             >
-              <h3 className="text-sm font-semibold text-surface-400 mb-3 px-1">Recently sifted</h3>
+              <h3 className="text-sm font-semibold text-surface-400 mb-3 px-1 flex items-center gap-2">
+  <Clock className="w-4 h-4" /> Recently sifted
+</h3>
               <div className="space-y-3">
                 {recentSifts.map(sift => (
                   <GlassCard key={sift.id} variant="interactive" className="p-4">
