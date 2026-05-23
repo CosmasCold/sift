@@ -439,14 +439,13 @@ export default function LibraryClient() {
           <GlassCard className="p-10 text-center">
             <div className="mx-auto mb-6 w-20 h-20">
               <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
-                <rect x="24" y="50" width="32" height="20" rx="4" fill="var(--surface-700)" />
-                <rect x="28" y="46" width="24" height="6" rx="3" fill="var(--surface-600)" />
-                <path d="M40 46 C40 30, 48 20, 48 20" stroke="var(--accent-400)" strokeWidth="2.5" strokeLinecap="round" fill="none" />
-                <ellipse cx="43" cy="28" rx="6" ry="10" transform="rotate(30 43 28)" fill="var(--accent-300)" opacity="0.9" />
-                <ellipse cx="33" cy="35" rx="5" ry="9" transform="rotate(-20 33 35)" fill="var(--accent-300)" opacity="0.8" />
-                <circle cx="52" cy="18" r="2" fill="var(--accent-400)" opacity="0.7" />
-                <circle cx="56" cy="22" r="1.5" fill="var(--accent-400)" opacity="0.5" />
-              </svg>
+  <rect x="22" y="12" width="36" height="56" rx="4" fill="var(--surface-700)" />
+  <rect x="26" y="16" width="28" height="8" rx="2" fill="var(--surface-500)" />
+  <line x1="40" y1="16" x2="40" y2="64" stroke="var(--surface-900)" strokeWidth="2" />
+  <path d="M28 32h24" stroke="var(--surface-400)" strokeWidth="1.5" strokeLinecap="round" />
+  <path d="M28 40h24" stroke="var(--surface-400)" strokeWidth="1.5" strokeLinecap="round" />
+  <path d="M28 48h16" stroke="var(--surface-400)" strokeWidth="1.5" strokeLinecap="round" />
+</svg>
             </div>
             {search || feedFilter !== 'all' || tagFilter || collectionFilter ? (
               <>

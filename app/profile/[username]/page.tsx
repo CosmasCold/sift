@@ -1,11 +1,26 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
-import Image from 'next/image';
 import CopyRssButton from './CopyRssButton';
 import ShareButton from './ShareButton';
 import FollowButton from '@/components/FollowButton';
 import ProfileTabs from '@/components/ProfileTabs';
+import UserAvatar from '@/components/UserAvatar';
+
+const COVERS: Record<string, string> = {
+  'lavender-charcoal':
+    'bg-gradient-to-r from-accent-800/40 via-accent-700/30 to-accent-600/20',
+  'charcoal-lavender':
+    'bg-gradient-to-r from-surface-800 via-surface-700 to-accent-800/40',
+  'sage-charcoal':
+    'bg-gradient-to-r from-emerald-800/30 via-surface-800 to-surface-700',
+  'rose-gold':
+    'bg-gradient-to-r from-rose-800/30 via-amber-700/20 to-surface-800',
+  'sky-charcoal':
+    'bg-gradient-to-r from-sky-800/30 via-surface-800 to-accent-800/40',
+  midnight:
+    'bg-gradient-to-r from-surface-950 via-surface-900 to-surface-800',
+};
 
 function calculateStreak(dates: Date[]): number {
   if (!dates.length) return 0;
@@ -113,7 +128,7 @@ export default async function PublicProfilePage({
     if (stat) stat.count++;
   });
 
-  // Follower / following counts
+  // Follower / following counts and lists
   const { count: followingCount } = await supabase
     .from('follows')
     .select('*', { count: 'exact', head: true })
@@ -124,7 +139,7 @@ export default async function PublicProfilePage({
     .select('*', { count: 'exact', head: true })
     .eq('following_id', profile.id);
 
-    // Followers list (who follows this profile)
+  // Followers list (who follows this profile)
   const { data: followersRaw } = await supabase
     .from('follows')
     .select('follower_id, user_profiles!follower_id(username, avatar_url)')
@@ -138,63 +153,54 @@ export default async function PublicProfilePage({
     .eq('follower_id', profile.id)
     .limit(10);
 
-  // Helper: Supabase returns user_profiles as an array; extract first element
-  const unwrapProfile = (row: Record<string, unknown>) => {
-    const profiles = row.user_profiles as { username: string; avatar_url: string | null }[] | undefined;
-    return {
-      username: profiles?.[0]?.username ?? '',
-      avatar_url: profiles?.[0]?.avatar_url ?? null,
-    };
+  // Map to clean, type-safe arrays
+  type RawFollow = {
+    follower_id?: string;
+    following_id?: string;
+    user_profiles: { username: string; avatar_url: string | null };
   };
 
-  const followers = (followersRaw || []).map((f) => ({
-    follower_id: f.follower_id as string,
-    username: unwrapProfile(f).username,
-    avatar_url: unwrapProfile(f).avatar_url,
+  const followers = ((followersRaw || []) as unknown as RawFollow[]).map((f) => ({
+    follower_id: f.follower_id!,
+    username: f.user_profiles.username,
+    avatar_url: f.user_profiles.avatar_url,
   }));
 
-  const following = (followingRaw || []).map((f) => ({
-    following_id: f.following_id as string,
-    username: unwrapProfile(f).username,
-    avatar_url: unwrapProfile(f).avatar_url,
+  const following = ((followingRaw || []) as unknown as RawFollow[]).map((f) => ({
+    following_id: f.following_id!,
+    username: f.user_profiles.username,
+    avatar_url: f.user_profiles.avatar_url,
   }));
 
   const joinDate = profile.created_at
     ? new Date(profile.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long' })
     : 'recently';
-  const defaultCover = 'bg-gradient-to-r from-accent-800/40 via-accent-700/30 to-accent-600/20';
+
+  const coverClass = COVERS[profile.cover_url || 'charcoal-lavender'] || COVERS['charcoal-lavender'];
 
   return (
     <main className="flex-1 pb-16">
-      {/* Cover section */}
-      <div className="relative h-48 md:h-64 w-full overflow-hidden">
-        {profile.cover_url ? (
-          <Image src={profile.cover_url} alt="Cover" fill className="object-cover" unoptimized />
-        ) : (
-          <div className={`w-full h-full ${defaultCover}`} />
-        )}
-        <div className="absolute inset-0 bg-surface-950/20" />
-        <div className="absolute bottom-0 left-0 right-0 p-6">
-          <div className="max-w-4xl mx-auto bg-surface-800 rounded-2xl border border-surface-700/50 p-4 flex flex-col md:flex-row items-center gap-4 shadow-card">
-            <div className="w-24 h-24 rounded-full border-4 border-surface-700 bg-surface-800 overflow-hidden shadow-lg">
-              {profile.avatar_url ? (
-                <Image
-                  src={profile.avatar_url}
-                  alt={profile.username}
-                  width={96}
-                  height={96}
-                  className="object-cover"
-                  unoptimized
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center text-4xl font-bold text-surface-50">
-                  {profile.username[0].toUpperCase()}
-                </div>
-              )}
-            </div>
-            <div className="text-center md:text-left">
-              <h1 className="text-3xl font-semibold text-surface-50">@{profile.username}</h1>
-              <div className="flex flex-wrap gap-3 mt-1 text-sm text-surface-300">
+      
+            {/* Cover section */}
+      <div className="relative w-full">
+        <div className="h-48 md:h-64 w-full overflow-hidden">
+          <div className={`w-full h-full ${coverClass}`} />
+          <div className="absolute inset-0 bg-surface-950/20" />
+        </div>
+
+        {/* Profile card – overlaps the cover, always fully visible */}
+        <div className="max-w-4xl mx-auto px-4 -mt-20 md:-mt-24 relative z-10">
+          <div className="bg-surface-800 rounded-2xl border border-surface-700/50 p-4 shadow-card flex flex-col md:flex-row items-center gap-4">
+            <UserAvatar
+              username={profile.username}
+              avatarKey={profile.avatar_url}
+              size={96}
+            />
+            <div className="text-center md:text-left flex-1 min-w-0">
+              <h1 className="text-3xl font-semibold text-surface-50 leading-tight truncate">
+                @{profile.username}
+              </h1>
+              <div className="flex flex-wrap justify-center md:justify-start gap-3 mt-1 text-sm text-surface-300">
                 <span>📅 Reader since {joinDate}</span>
                 {streak > 0 && <span>🔥 {streak} day streak</span>}
                 {queueItem && (
@@ -205,7 +211,7 @@ export default async function PublicProfilePage({
                 )}
               </div>
             </div>
-            <div className="md:ml-auto flex gap-2">
+            <div className="flex items-center gap-2 shrink-0">
               <FollowButton followingId={profile.id} />
               <CopyRssButton username={username} />
               <ShareButton username={username} />

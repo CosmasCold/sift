@@ -2,7 +2,6 @@
 
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   User,
@@ -17,6 +16,7 @@ import {
 import { supabase } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
 import ThemeToggle from '@/components/ThemeToggle';
+import UserAvatar from '@/components/UserAvatar';
 
 interface UserMenuProps {
   user: {
@@ -39,7 +39,6 @@ export default function UserMenu({ user, profile }: UserMenuProps) {
     router.push('/');
   };
 
-  // Close on outside click – uses "click" so link clicks still navigate
   useEffect(() => {
     if (!open) return;
     const handler = (e: MouseEvent) => {
@@ -51,7 +50,6 @@ export default function UserMenu({ user, profile }: UserMenuProps) {
     return () => document.removeEventListener('click', handler);
   }, [open]);
 
-  // Close on Escape
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (e.key === 'Escape') setOpen(false);
@@ -69,20 +67,11 @@ export default function UserMenu({ user, profile }: UserMenuProps) {
         aria-label="User menu"
         className="flex items-center gap-2 p-1 rounded-xl hover:bg-surface-700/50 transition-colors"
       >
-        {profile?.avatar_url ? (
-          <Image
-            src={profile.avatar_url}
-            alt="avatar"
-            width={28}
-            height={28}
-            unoptimized
-            className="w-7 h-7 rounded-full object-cover"
-          />
-        ) : (
-          <div className="w-7 h-7 rounded-full bg-accent-400/10 flex items-center justify-center">
-            <User className="w-4 h-4 text-accent-400" />
-          </div>
-        )}
+        <UserAvatar
+          username={profile?.username || user.email?.split('@')[0] || '?'}
+          avatarKey={profile?.avatar_url}
+          size={28}
+        />
         <span className="text-sm text-surface-300 hidden sm:inline">
           {profile?.username || user.email?.split('@')[0] || 'User'}
         </span>
@@ -99,7 +88,6 @@ export default function UserMenu({ user, profile }: UserMenuProps) {
             className="absolute right-0 mt-2 w-56 bg-surface-800 border border-surface-600/60 shadow-glass rounded-2xl p-2 z-[100]"
             style={{ backgroundColor: 'var(--surface-800)', backdropFilter: 'none' }}
           >
-            {/* Profile link (only if public) */}
             {profile?.username && profile?.public_profile && (
               <Link
                 href={`/profile/${profile.username}`}

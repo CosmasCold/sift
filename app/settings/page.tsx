@@ -1,22 +1,46 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import Image from 'next/image';
 import { supabase } from '@/lib/supabase/client';
 import toast from 'react-hot-toast';
-import { ArrowLeft, Upload, User, Mail } from 'lucide-react';
+import { ArrowLeft, User, Mail, Palette } from 'lucide-react';
 import Link from 'next/link';
 import { GlassCard } from '@/components/ui/GlassCard';
+
+const AVATARS = [
+  { key: 'lavender', bg: 'bg-accent-400', text: 'text-white' },
+  { key: 'charcoal', bg: 'bg-surface-700', text: 'text-surface-200' },
+  { key: 'sage', bg: 'bg-emerald-400', text: 'text-white' },
+  { key: 'rose', bg: 'bg-rose-300', text: 'text-white' },
+  { key: 'sky', bg: 'bg-sky-400', text: 'text-white' },
+  { key: 'amber', bg: 'bg-amber-400', text: 'text-white' },
+  { key: 'indigo', bg: 'bg-indigo-400', text: 'text-white' },
+  { key: 'coral', bg: 'bg-coral-400', text: 'text-white' },
+];
+
+const COVERS = [
+  { key: 'lavender-charcoal', style: 'bg-gradient-to-r from-accent-800/40 via-accent-700/30 to-accent-600/20' },
+  { key: 'charcoal-lavender', style: 'bg-gradient-to-r from-surface-800 via-surface-700 to-accent-800/40' },
+  { key: 'sage-charcoal', style: 'bg-gradient-to-r from-emerald-800/30 via-surface-800 to-surface-700' },
+  { key: 'rose-gold', style: 'bg-gradient-to-r from-rose-800/30 via-amber-700/20 to-surface-800' },
+  { key: 'sky-charcoal', style: 'bg-gradient-to-r from-sky-800/30 via-surface-800 to-accent-800/40' },
+  { key: 'midnight', style: 'bg-gradient-to-r from-surface-950 via-surface-900 to-surface-800' },
+];
+
+const ACCENTS = [
+  { key: 'copper', label: 'Copper', color: '#c77d5a' },
+  { key: 'teal', label: 'Quiet Teal', color: '#7fb3b3' },
+  { key: 'slate', label: 'Warm Slate', color: '#9b9b9b' },
+];
 
 export default function SettingsPage() {
   const [username, setUsername] = useState('');
   const [publicProfile, setPublicProfile] = useState(false);
   const [weeklyDigest, setWeeklyDigest] = useState(false);
-  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
-  const [coverUrl, setCoverUrl] = useState<string | null>(null);
+  const [avatarKey, setAvatarKey] = useState('lavender');
+  const [coverKey, setCoverKey] = useState('charcoal-lavender');
+  const [accentKey, setAccentKey] = useState('copper');
   const [loading, setLoading] = useState(true);
-  const [uploadingAvatar, setUploadingAvatar] = useState(false);
-  const [uploadingCover, setUploadingCover] = useState(false);
 
   useEffect(() => {
     const load = async () => {
@@ -24,15 +48,16 @@ export default function SettingsPage() {
       if (user) {
         const { data } = await supabase
           .from('user_profiles')
-          .select('username, public_profile, weekly_digest, avatar_url, cover_url')
+          .select('username, public_profile, weekly_digest, avatar_url, cover_url, accent_color')
           .eq('id', user.id)
           .single();
         if (data) {
           setUsername(data.username || '');
           setPublicProfile(data.public_profile || false);
           setWeeklyDigest(data.weekly_digest || false);
-          setAvatarUrl(data.avatar_url);
-          setCoverUrl(data.cover_url);
+          setAvatarKey(data.avatar_url || 'lavender');
+          setCoverKey(data.cover_url || 'charcoal-lavender');
+          setAccentKey(data.accent_color || 'copper');
         }
       }
       setLoading(false);
@@ -53,6 +78,9 @@ export default function SettingsPage() {
         username: username.trim(),
         public_profile: publicProfile,
         weekly_digest: weeklyDigest,
+        avatar_url: avatarKey,
+        cover_url: coverKey,
+        accent_color: accentKey,
       })
       .eq('id', user.id);
 
@@ -61,96 +89,15 @@ export default function SettingsPage() {
       else toast.error('Failed to save');
     } else {
       toast.success('Settings saved');
-    }
-  };
-
-  const uploadFile = async (file: File, type: 'avatar' | 'cover') => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error('Not signed in');
-
-    const fileExt = file.name.split('.').pop();
-    const filePath = type === 'avatar'
-      ? `${user.id}/avatar-${Date.now()}.${fileExt}`
-      : `${user.id}/cover-${Date.now()}.${fileExt}`;
-
-    const { error: uploadError } = await supabase.storage
-      .from('avatars')
-      .upload(filePath, file);
-
-    if (uploadError) throw uploadError;
-
-    const { data: { publicUrl } } = supabase.storage
-      .from('avatars')
-      .getPublicUrl(filePath);
-
-    return publicUrl;
-  };
-
-  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (!file.type.startsWith('image/')) {
-      toast.error('Please upload an image');
-      return;
-    }
-    if (file.size > 2 * 1024 * 1024) {
-      toast.error('File too large (max 2MB)');
-      return;
-    }
-
-    setUploadingAvatar(true);
-    try {
-      const publicUrl = await uploadFile(file, 'avatar');
-      const { error: updateError } = await supabase
-        .from('user_profiles')
-        .update({ avatar_url: publicUrl })
-        .eq('id', (await supabase.auth.getUser()).data.user?.id);
-      if (updateError) throw updateError;
-      setAvatarUrl(publicUrl);
-      toast.success('Avatar updated');
-    } catch (err) {
-      console.error('Avatar upload error:', err);
-      toast.error('Failed to upload avatar');
-    } finally {
-      setUploadingAvatar(false);
-    }
-  };
-
-  const handleCoverUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (!file.type.startsWith('image/')) {
-      toast.error('Please upload an image');
-      return;
-    }
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error('File too large (max 5MB)');
-      return;
-    }
-
-    setUploadingCover(true);
-    try {
-      const publicUrl = await uploadFile(file, 'cover');
-      const { error: updateError } = await supabase
-        .from('user_profiles')
-        .update({ cover_url: publicUrl })
-        .eq('id', (await supabase.auth.getUser()).data.user?.id);
-      if (updateError) throw updateError;
-      setCoverUrl(publicUrl);
-      toast.success('Cover image updated');
-    } catch (err) {
-      console.error('Cover upload error:', err);
-      toast.error('Failed to upload cover');
-    } finally {
-      setUploadingCover(false);
+      // Apply accent immediately
+      document.documentElement.setAttribute('data-accent', accentKey);
+      localStorage.setItem('accent', accentKey);
     }
   };
 
   if (loading) {
     return <div className="flex-1 pt-16 text-center text-surface-400">Loading…</div>;
   }
-
-  const siteUrl = process.env.NEXT_PUBLIC_URL || 'https://sift-lac.vercel.app';
 
   return (
     <main className="flex-1 pt-12 pb-16 px-4 max-w-lg mx-auto">
@@ -162,50 +109,69 @@ export default function SettingsPage() {
       <h1 className="text-2xl font-semibold text-surface-50 mb-6">Settings</h1>
 
       <GlassCard className="p-6 space-y-6">
-        {/* Avatar upload */}
+        {/* Avatar picker */}
         <div>
           <label className="text-sm font-medium text-surface-300">Profile picture</label>
-          <div className="flex items-center gap-4 mt-1">
-            {avatarUrl ? (
-              <Image
-                src={avatarUrl}
-                alt="avatar"
-                width={64}
-                height={64}
-                unoptimized
-                className="w-16 h-16 rounded-full object-cover border border-surface-700"
-              />
-            ) : (
-              <div className="w-16 h-16 rounded-full bg-surface-800/60 flex items-center justify-center text-surface-400">
-                <User className="w-8 h-8" />
-              </div>
-            )}
-            <label className="cursor-pointer bg-surface-800/60 hover:bg-surface-700/60 px-3 py-2 rounded-xl text-sm flex items-center gap-2 text-surface-200 transition-colors">
-              <Upload className="w-4 h-4" />
-              {uploadingAvatar ? 'Uploading...' : 'Upload'}
-              <input type="file" accept="image/*" onChange={handleAvatarUpload} disabled={uploadingAvatar} className="hidden" />
-            </label>
+          <div className="flex items-center gap-3 mt-2">
+            <div
+              className={`w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold ${
+                AVATARS.find(a => a.key === avatarKey)?.bg
+              } ${AVATARS.find(a => a.key === avatarKey)?.text}`}
+            >
+              {username ? username[0].toUpperCase() : <User className="w-8 h-8" />}
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {AVATARS.map(a => (
+                <button
+                  key={a.key}
+                  onClick={() => setAvatarKey(a.key)}
+                  className={`w-8 h-8 rounded-full ${a.bg} ${
+                    avatarKey === a.key ? 'ring-2 ring-white ring-offset-2 ring-offset-surface-800' : ''
+                  }`}
+                  aria-label={`Avatar ${a.key}`}
+                />
+              ))}
+            </div>
           </div>
         </div>
 
-        {/* Cover image upload */}
+        {/* Cover picker */}
         <div>
           <label className="text-sm font-medium text-surface-300">Cover image</label>
-          <div className="mt-1">
-            {coverUrl ? (
-              <div className="relative w-full h-32 rounded-xl overflow-hidden border border-surface-700">
-                <Image src={coverUrl} alt="Cover" fill className="object-cover" unoptimized />
-              </div>
-            ) : (
-              <div className="w-full h-32 rounded-xl bg-gradient-to-r from-surface-800 to-surface-800/50 flex items-center justify-center text-surface-400 text-sm">
-                No cover image
-              </div>
-            )}
-            <label className="cursor-pointer bg-surface-800/60 hover:bg-surface-700/60 px-3 py-2 rounded-xl text-sm flex items-center gap-2 mt-2 w-fit text-surface-200 transition-colors">
-              <Upload className="w-4 h-4" />
-              {uploadingCover ? 'Uploading...' : 'Upload cover'}
-              <input type="file" accept="image/*" onChange={handleCoverUpload} disabled={uploadingCover} className="hidden" />
-            </label>
+          <div className="grid grid-cols-3 gap-3 mt-2">
+            {COVERS.map(c => (
+              <button
+                key={c.key}
+                onClick={() => setCoverKey(c.key)}
+                className={`h-16 rounded-xl ${c.style} ${
+                  coverKey === c.key ? 'ring-2 ring-accent-400 ring-offset-2 ring-offset-surface-800' : ''
+                }`}
+                aria-label={`Cover ${c.key}`}
+              />
+            ))}
+          </div>
+        </div>
+
+        {/* Accent picker */}
+        <div>
+          <label className="text-sm font-medium text-surface-300 flex items-center gap-2">
+            <Palette className="w-4 h-4" /> Accent colour
+          </label>
+          <div className="flex items-center gap-3 mt-2">
+            {ACCENTS.map(a => (
+              <button
+                key={a.key}
+                onClick={() => setAccentKey(a.key)}
+                className={`w-10 h-10 rounded-full border-2 ${
+                  accentKey === a.key ? 'border-white ring-2 ring-surface-400' : 'border-transparent'
+                }`}
+                style={{ backgroundColor: a.color }}
+                aria-label={a.label}
+              />
+            ))}
+            <span className="text-sm text-surface-400 ml-2">
+              {ACCENTS.find(a => a.key === accentKey)?.label}
+            </span>
           </div>
         </div>
 
@@ -215,7 +181,7 @@ export default function SettingsPage() {
           <input
             type="text"
             value={username}
-            onChange={(e) => setUsername(e.target.value)}
+            onChange={e => setUsername(e.target.value)}
             className="w-full mt-1 px-3 py-2 border border-surface-700 rounded-xl bg-surface-800/50 text-surface-50 placeholder-surface-500 focus:outline-none focus:ring-2 focus:ring-accent-400/50"
             placeholder="yourname"
           />
@@ -235,7 +201,7 @@ export default function SettingsPage() {
           </button>
         </div>
 
-        {/* Weekly digest toggle – NEW */}
+        {/* Weekly digest toggle */}
         <div className="flex items-center justify-between">
           <div>
             <p className="text-sm font-medium text-surface-300 flex items-center gap-2">
@@ -250,17 +216,6 @@ export default function SettingsPage() {
             <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition-transform ${weeklyDigest ? 'translate-x-5' : ''}`} />
           </button>
         </div>
-
-        {/* Embed widget section */}
-        {publicProfile && username && (
-          <div className="border-t border-surface-700/50 pt-4 mt-2">
-            <h3 className="font-medium text-surface-200 mb-2">📦 Embed your reading list</h3>
-            <p className="text-xs text-surface-400 mb-2">Copy this code into your website, blog, or Notion:</p>
-            <pre className="bg-surface-800/50 p-3 rounded-xl text-xs overflow-x-auto whitespace-pre-wrap break-all text-surface-200 border border-surface-700/50">
-              {`<script src="${siteUrl}/embed/${username}"></script>`}
-            </pre>
-          </div>
-        )}
 
         <button onClick={handleSave} className="w-full py-2.5 bg-accent-500 text-white rounded-xl font-medium hover:bg-accent-600 transition-colors">
           Save Settings

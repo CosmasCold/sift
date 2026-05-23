@@ -61,6 +61,20 @@ export default function RootLayout({
             `,
           }}
         />
+        <script
+  dangerouslySetInnerHTML={{
+    __html: `
+      (function() {
+        try {
+          const accent = localStorage.getItem('accent');
+          if (accent) {
+            document.documentElement.setAttribute('data-accent', accent);
+          }
+        } catch(e) {}
+      })();
+    `,
+  }}
+/>
       </head>
       <body className={`${inter.className} min-h-screen flex flex-col bg-surface-900 text-surface-50 transition-colors`}>
         <a

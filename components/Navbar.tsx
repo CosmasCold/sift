@@ -59,7 +59,7 @@ export default function Navbar() {
           <span className="text-xl font-semibold text-surface-50 hidden sm:inline">Sift</span>
         </Link>
 
-        {/* Core navigation – clean and minimal */}
+        {/* Core navigation */}
         <div className="flex items-center gap-1 sm:gap-4">
           <Link
             href="/library"

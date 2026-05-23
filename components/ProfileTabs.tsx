@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { ArrowRight, ExternalLink, Clock, BarChart3 } from 'lucide-react';
 import { GlassCard } from '@/components/ui/GlassCard';
+import UserAvatar from '@/components/UserAvatar';
 
 interface TagFrequency {
   [tag: string]: number;
@@ -66,7 +67,6 @@ export default function ProfileTabs({
 }: ProfileTabsProps) {
   const [activeTab, setActiveTab] = useState('reading');
 
-  // Pick a random highlight once on mount (lazy initializer, no effect)
   const [highlight] = useState<Article | null>(() => {
     if (allArticles && allArticles.length > 0) {
       const randomIndex = Math.floor(Math.random() * allArticles.length);
@@ -198,7 +198,6 @@ export default function ProfileTabs({
                     className="bg-surface-800 rounded-2xl border border-surface-700/50 p-5 transition-shadow hover:shadow-card"
                   >
                     <div className="flex gap-4">
-                      {/* Thumbnail */}
                       <div className="flex-shrink-0 w-14 h-14 rounded-lg overflow-hidden bg-surface-700/50">
                         {article.thumbnail_url ? (
                           <Image
@@ -307,7 +306,6 @@ export default function ProfileTabs({
         {/* Network Tab */}
         {activeTab === 'network' && (
           <div className="grid gap-6 sm:grid-cols-2">
-            {/* Following list */}
             <GlassCard className="p-4">
               <h3 className="text-sm font-semibold text-surface-300 mb-3">
                 Following ({followingCount})
@@ -322,22 +320,7 @@ export default function ProfileTabs({
                       href={`/profile/${f.username}`}
                       className="flex items-center gap-2 p-1.5 rounded-lg hover:bg-surface-700/50 transition"
                     >
-                      <div className="w-7 h-7 rounded-full bg-surface-700 overflow-hidden flex-shrink-0">
-                        {f.avatar_url ? (
-                          <Image
-                            src={f.avatar_url}
-                            alt=""
-                            width={28}
-                            height={28}
-                            className="object-cover w-full h-full"
-                            unoptimized
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center text-xs text-surface-400">
-                            {f.username[0].toUpperCase()}
-                          </div>
-                        )}
-                      </div>
+                      <UserAvatar username={f.username} avatarKey={f.avatar_url} size={28} />
                       <span className="text-sm text-surface-200">@{f.username}</span>
                     </Link>
                   ))}
@@ -353,7 +336,6 @@ export default function ProfileTabs({
               )}
             </GlassCard>
 
-            {/* Followers list */}
             <GlassCard className="p-4">
               <h3 className="text-sm font-semibold text-surface-300 mb-3">
                 Followers ({followerCount})
@@ -368,28 +350,12 @@ export default function ProfileTabs({
                       href={`/profile/${f.username}`}
                       className="flex items-center gap-2 p-1.5 rounded-lg hover:bg-surface-700/50 transition"
                     >
-                      <div className="w-7 h-7 rounded-full bg-surface-700 overflow-hidden flex-shrink-0">
-                        {f.avatar_url ? (
-                          <Image
-                            src={f.avatar_url}
-                            alt=""
-                            width={28}
-                            height={28}
-                            className="object-cover w-full h-full"
-                            unoptimized
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center text-xs text-surface-400">
-                            {f.username[0].toUpperCase()}
-                          </div>
-                        )}
-                      </div>
+                      <UserAvatar username={f.username} avatarKey={f.avatar_url} size={28} />
                       <span className="text-sm text-surface-200">@{f.username}</span>
                     </Link>
                   ))}
                 </div>
               )}
-              {/* No View all for followers yet */}
             </GlassCard>
           </div>
         )}
@@ -416,7 +382,6 @@ export default function ProfileTabs({
               </GlassCard>
             </div>
 
-            {/* Monthly chart */}
             <GlassCard className="p-6">
               <h3 className="text-sm font-semibold text-surface-300 mb-4 flex items-center gap-2">
                 <BarChart3 className="w-4 h-4" /> Articles kept per month
