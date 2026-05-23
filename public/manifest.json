@@ -4,8 +4,8 @@
   "description": "AI-powered reading triage. Sift articles and keep what matters.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#1f1c2e",
-  "theme_color": "#b4a7d6",
+  "background_color": "#1a1714",
+  "theme_color": "#c77d5a",
   "icons": [
     {
       "src": "/favicon.png",

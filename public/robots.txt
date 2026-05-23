@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://sift-lac.vercel.app/sitemap.xml

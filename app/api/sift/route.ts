@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import * as cheerio from 'cheerio';
 import { createClient } from '@/lib/supabase/server';
+import { rateLimit } from '@/lib/rate-limit';
 
 interface FeedbackRow {
   summary: string | null;
@@ -23,8 +24,6 @@ Return ONLY valid JSON. No markdown, no extra text.`;
 export async function POST(request: NextRequest) {
   try {
     const { url, manualText } = await request.json();
-    let articleText = manualText?.trim();
-    let thumbnailUrl: string | null = null;
 
     // --------------------------------------------------
     // 1. Get the current user (if signed in) and their feedback history
@@ -32,7 +31,15 @@ export async function POST(request: NextRequest) {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
+    // Rate limit: 10 sifts per 60 seconds per user (or IP)
+    const key = user?.id ?? request.headers.get('x-forwarded-for') ?? 'unknown';
+    const limitResponse = rateLimit(key, 10, 60_000);
+    if (limitResponse) return limitResponse;
+
+    let articleText = manualText?.trim();
+    let thumbnailUrl: string | null = null;
     let feedbackContext = '';
+
     if (user) {
       const { data: feedbackData } = await supabase
         .from('sifted_articles')
@@ -183,7 +190,7 @@ export async function POST(request: NextRequest) {
       sourceUrl: url,
       readingTime,
       thumbnailUrl,
-      fullText: articleText, // <-- the full article text
+      fullText: articleText,
     });
   } catch (error) {
     console.error('Sift error:', error);

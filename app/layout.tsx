@@ -77,6 +77,40 @@ export default function RootLayout({
             `,
           }}
         />
+        <script
+  type="application/ld+json"
+  dangerouslySetInnerHTML={{
+    __html: JSON.stringify({
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "WebApplication",
+          name: "Sift",
+          description:
+            "AI-powered reading triage. Save articles, let AI sift them, and keep what matters.",
+          url: "https://sift-lac.vercel.app",
+          applicationCategory: "EducationalApplication",
+          operatingSystem: "All",
+          offers: {
+            "@type": "Offer",
+            price: "0",
+            priceCurrency: "USD",
+          },
+        },
+        {
+          "@type": "Organization",
+          name: "Sift",
+          url: "https://sift-lac.vercel.app",
+          logo: "https://sift-lac.vercel.app/og-image.png",
+          sameAs: [
+            "https://twitter.com/yourhandle",
+            "https://github.com/yourrepo",
+          ],
+        },
+      ],
+    }),
+  }}
+/>
       </head>
       <body className={`${inter.className} min-h-screen flex flex-col bg-surface-900 text-surface-50 transition-colors`}>
         <a
