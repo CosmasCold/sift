@@ -180,8 +180,7 @@ export default async function PublicProfilePage({
 
   return (
     <main className="flex-1 pb-16">
-      
-            {/* Cover section */}
+      {/* Cover section with overlapping profile card */}
       <div className="relative w-full">
         <div className="h-48 md:h-64 w-full overflow-hidden">
           <div className={`w-full h-full ${coverClass}`} />

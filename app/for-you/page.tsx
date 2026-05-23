@@ -7,6 +7,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import toast from 'react-hot-toast';
 import { GlassCard } from '@/components/ui/GlassCard';
+import UserAvatar from '@/components/UserAvatar';
 
 interface RecommendedArticle {
   id: string;
@@ -117,8 +118,13 @@ export default function ForYouPage() {
                           <span>·</span>
                           <Link
                             href={`/profile/${article.user_profiles.username}`}
-                            className="text-accent-400 hover:underline"
+                            className="flex items-center gap-1 text-accent-400 hover:underline"
                           >
+                            <UserAvatar
+                              username={article.user_profiles.username}
+                              avatarKey={article.user_profiles.avatar_url}
+                              size={16}
+                            />
                             @{article.user_profiles.username}
                           </Link>
                         </>
