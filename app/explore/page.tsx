@@ -2,8 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
-import { Search, Tag, Users } from 'lucide-react';
+import { Search, Tag } from 'lucide-react';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { motion, AnimatePresence } from 'framer-motion';
 

@@ -7,10 +7,12 @@ import {
   Loader2,
   Sparkles,
   ClipboardList,
-  Search,
   ImageOff,
   Zap,
   Rss,
+  Clock,
+  Users,
+  BookOpen,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { supabase } from '@/lib/supabase/client';
@@ -30,6 +32,32 @@ interface SiftResult {
   fullText?: string;
 }
 
+interface RecentSift {
+  id: string;
+  summary: string;
+  verdict: string;
+  created_at: string;
+  thumbnail_url: string | null;
+  source_url: string | null;
+  reading_time: number | null;
+}
+
+interface WeeklyStats {
+  kept: number;
+  skimmed: number;
+  skipped: number;
+}
+
+interface NetworkRecommendation {
+  id: string;
+  summary: string;
+  verdict: string;
+  source_url: string | null;
+  thumbnail_url: string | null;
+  username: string;
+  avatar_url: string | null;
+}
+
 export default function HomeClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -47,6 +75,11 @@ export default function HomeClient() {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [articleCount, setArticleCount] = useState<number | null>(null);
 
+  // Dashboard state
+  const [recentSifts, setRecentSifts] = useState<RecentSift[]>([]);
+  const [weeklyStats, setWeeklyStats] = useState<WeeklyStats | null>(null);
+  const [networkRecommendation, setNetworkRecommendation] = useState<NetworkRecommendation | null>(null);
+
   // ---- Auth ----
   useEffect(() => {
     let mounted = true;
@@ -61,20 +94,121 @@ export default function HomeClient() {
     return () => { mounted = false; subscription.unsubscribe(); };
   }, []);
 
-  // ---- Onboarding check ----
+  // ---- Dashboard refresh ----
+  const refreshDashboard = useCallback(async () => {
+    if (!user) return;
+    try {
+      const { data: recent } = await supabase
+        .from('sifted_articles')
+        .select('id, summary, verdict, created_at, thumbnail_url, source_url, reading_time')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(5);
+      setRecentSifts(recent || []);
+    } catch {
+      // Silently fail; dashboard is optional
+    }
+  }, [user]);
+
+  const refreshDashboardRef = useRef(refreshDashboard);
+  useEffect(() => {
+    refreshDashboardRef.current = refreshDashboard;
+  }, [refreshDashboard]);
+
+  // ---- Onboarding check & dashboard fetch ----
   useEffect(() => {
     if (!user) return;
-    const checkArticles = async () => {
+    const checkAndFetch = async () => {
       const { count, error } = await supabase
         .from('sifted_articles')
         .select('*', { count: 'exact', head: true })
         .eq('user_id', user.id);
+
       if (!error && count !== null) {
         setArticleCount(count);
-        if (count === 0) setShowOnboarding(true);
+        if (count === 0) {
+          setShowOnboarding(true);
+        } else {
+          setShowOnboarding(false);
+          try {
+            // Recent sifts
+            const { data: recent } = await supabase
+              .from('sifted_articles')
+              .select('id, summary, verdict, created_at, thumbnail_url, source_url, reading_time')
+              .eq('user_id', user.id)
+              .order('created_at', { ascending: false })
+              .limit(5);
+            setRecentSifts(recent || []);
+
+            // Weekly stats
+            const weekAgo = new Date();
+            weekAgo.setDate(weekAgo.getDate() - 7);
+            const { data: weekly } = await supabase
+              .from('sifted_articles')
+              .select('verdict')
+              .eq('user_id', user.id)
+              .gte('created_at', weekAgo.toISOString());
+            const stats: WeeklyStats = { kept: 0, skimmed: 0, skipped: 0 };
+            (weekly || []).forEach(a => {
+              if (a.verdict === 'Worth a full read') stats.kept++;
+              else if (a.verdict === 'Skim this') stats.skimmed++;
+              else stats.skipped++;
+            });
+            setWeeklyStats(stats);
+
+            // Network recommendation
+            const { data: follows } = await supabase
+              .from('follows')
+              .select('following_id')
+              .eq('follower_id', user.id);
+            const followedIds = (follows || []).map(f => f.following_id);
+            if (followedIds.length > 0) {
+              const { data: existing } = await supabase
+                .from('sifted_articles')
+                .select('source_url')
+                .eq('user_id', user.id);
+              const existingUrls = new Set((existing || []).map(a => a.source_url).filter(Boolean));
+
+              const { data: network } = await supabase
+                .from('sifted_articles')
+                .select('id, summary, verdict, source_url, thumbnail_url, user_id, user_profiles!user_id(username, avatar_url)')
+                .in('user_id', followedIds)
+                .eq('kept', true)
+                .order('created_at', { ascending: false })
+                .limit(10);
+
+              if (network) {
+                interface NetworkRow {
+                  id: string;
+                  summary: string;
+                  verdict: string;
+                  source_url: string | null;
+                  thumbnail_url: string | null;
+                  user_id: string;
+                  user_profiles: { username: string; avatar_url: string | null } | null;
+                }
+                const typedNetwork = network as unknown as NetworkRow[];
+                const rec = typedNetwork.find(a => !existingUrls.has(a.source_url));
+                if (rec) {
+                  setNetworkRecommendation({
+                    id: rec.id,
+                    summary: rec.summary,
+                    verdict: rec.verdict,
+                    source_url: rec.source_url,
+                    thumbnail_url: rec.thumbnail_url,
+                    username: rec.user_profiles?.username || 'reader',
+                    avatar_url: rec.user_profiles?.avatar_url || null,
+                  });
+                }
+              }
+            }
+          } catch {
+            // Silently fail; dashboard is optional
+          }
+        }
       }
     };
-    checkArticles();
+    checkAndFetch();
   }, [user]);
 
   // ---- Sift logic ----
@@ -114,7 +248,9 @@ export default function HomeClient() {
               }),
             }).catch(() => {});
           }
-        } catch {}
+        } catch {
+          // Continue to next URL
+        }
       }
       setLoading(false);
       if (resultsArr.length > 0) {
@@ -123,7 +259,8 @@ export default function HomeClient() {
         if (resultsArr.length > 1)
           toast(`The other ${resultsArr.length - 1} article(s) are in your Library.`);
         setShowOnboarding(false);
-        setArticleCount(prev => (prev === 0 ? 1 : prev));
+        setArticleCount(prev => (prev === 0 ? 1 : (prev ?? 0) + 1));
+        refreshDashboardRef.current();
       } else toast.error('Could not sift any of the URLs');
       setBatchUrls('');
       return;
@@ -168,7 +305,8 @@ export default function HomeClient() {
           }),
         }).catch(() => {});
         setShowOnboarding(false);
-        setArticleCount(prev => (prev === 0 ? 1 : prev));
+        setArticleCount(prev => (prev === 0 ? 1 : (prev ?? 0) + 1));
+        refreshDashboardRef.current();
       }
     } catch {
       toast.error('Something went wrong');
@@ -227,7 +365,9 @@ export default function HomeClient() {
         audio.onended = () => setAudioPlaying(false);
         audio.play();
       } else toast.error('Could not generate audio');
-    } catch { toast.error('Something went wrong'); }
+    } catch {
+      toast.error('Something went wrong');
+    }
   };
 
   // ---- Demo sift ----
@@ -316,6 +456,7 @@ export default function HomeClient() {
         )}
       </AnimatePresence>
 
+      {/* Sift input – always visible */}
       <form onSubmit={(e) => handleSift(e)} className="w-full max-w-2xl flex flex-col gap-3">
         {!showManualFallback && (
           <>
@@ -431,33 +572,15 @@ export default function HomeClient() {
         )}
       </form>
 
-      {!result && !loading && !showOnboarding && (
-        <motion.div
-          initial={{ opacity: 0, scale: 0.96 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.3 }}
-        >
-          <GlassCard className="p-6 text-center">
-            <div className="flex flex-col items-center gap-4">
-              <div className="w-16 h-16 rounded-full bg-accent-400/10 flex items-center justify-center">
-                <Search className="w-8 h-8 text-accent-400" />
-              </div>
-              <h2 className="text-xl font-semibold text-surface-50">Ready to sift through content</h2>
-              <p className="text-surface-400 max-w-md">
-                Paste a URL or text, or upload a batch file. Sift will analyze and deliver a clear verdict.
-              </p>
-            </div>
-          </GlassCard>
-        </motion.div>
-      )}
-
+      {/* Active result card */}
       {result && (
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.35, ease: 'easeOut' }}
+          className="w-full max-w-2xl"
         >
-          <GlassCard className="w-full max-w-2xl p-6">
+          <GlassCard className="p-6">
             <div className="flex gap-4">
               <div className="flex-shrink-0 w-20 h-20 rounded-xl overflow-hidden bg-surface-800/50">
                 {result.thumbnailUrl ? (
@@ -475,7 +598,6 @@ export default function HomeClient() {
                   </div>
                 )}
               </div>
-
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-3 mb-5 pb-4 border-b border-surface-700/50">
                   <span
@@ -527,6 +649,148 @@ export default function HomeClient() {
             </div>
           </GlassCard>
         </motion.div>
+      )}
+
+      {/* Dashboard – personal reading journal */}
+      {!showOnboarding && articleCount !== null && articleCount > 0 && !result && (
+        <div className="w-full max-w-2xl space-y-6 mt-4">
+          <div className="flex items-center gap-2 px-1">
+            <BookOpen className="w-5 h-5 text-accent-400" />
+            <h2 className="text-lg font-semibold text-surface-50">Your reading journal</h2>
+          </div>
+
+          {weeklyStats && (
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <GlassCard className="p-4">
+                <p className="text-sm text-surface-300">
+                  This week you&apos;ve{' '}
+                  <span className="text-verdict-green font-medium">kept {weeklyStats.kept}</span>
+                  {weeklyStats.skimmed > 0 && (
+                    <>, <span className="text-verdict-amber font-medium">skimmed {weeklyStats.skimmed}</span></>
+                  )}
+                  {weeklyStats.skipped > 0 && (
+                    <>, <span className="text-surface-400 font-medium">skipped {weeklyStats.skipped}</span></>
+                  )}
+                  {' '}article{weeklyStats.kept + weeklyStats.skimmed + weeklyStats.skipped !== 1 ? 's' : ''}.
+                </p>
+              </GlassCard>
+            </motion.div>
+          )}
+
+          {networkRecommendation && (
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: 0.1 }}
+            >
+              <GlassCard className="p-4">
+                <p className="text-xs text-surface-400 uppercase tracking-wider mb-2 flex items-center gap-1">
+                  <Users className="w-3 h-3" /> From your network
+                </p>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg overflow-hidden bg-surface-700 flex-shrink-0">
+                    {networkRecommendation.thumbnail_url ? (
+                      <Image
+                        src={networkRecommendation.thumbnail_url}
+                        alt=""
+                        width={40}
+                        height={40}
+                        className="object-cover w-full h-full"
+                        unoptimized
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-surface-400 text-xs">📄</div>
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm text-surface-200 line-clamp-2">{networkRecommendation.summary}</p>
+                    <div className="flex items-center gap-2 mt-1 text-xs text-surface-400">
+                      <span>{networkRecommendation.verdict}</span>
+                      <span>·</span>
+                      <Link href={`/profile/${networkRecommendation.username}`} className="text-accent-400 hover:underline">
+                        @{networkRecommendation.username}
+                      </Link>
+                    </div>
+                  </div>
+                  {networkRecommendation.source_url && (
+                    <a
+                      href={networkRecommendation.source_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-accent-400 hover:underline text-sm flex-shrink-0"
+                    >
+                      Read
+                    </a>
+                  )}
+                </div>
+              </GlassCard>
+            </motion.div>
+          )}
+
+          {recentSifts.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: 0.2 }}
+            >
+              <h3 className="text-sm font-semibold text-surface-400 mb-3 px-1">Recently sifted</h3>
+              <div className="space-y-3">
+                {recentSifts.map(sift => (
+                  <GlassCard key={sift.id} variant="interactive" className="p-4">
+                    <div className="flex items-center gap-3">
+                      <span
+                        className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${
+                          sift.verdict === 'Worth a full read'
+                            ? 'bg-verdict-green'
+                            : sift.verdict === 'Skim this'
+                            ? 'bg-verdict-amber'
+                            : 'bg-verdict-grey'
+                        }`}
+                      />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm text-surface-200 line-clamp-1">{sift.summary}</p>
+                        <div className="flex items-center gap-2 mt-1 text-xs text-surface-400">
+                          <span>{new Date(sift.created_at).toLocaleDateString()}</span>
+                          {sift.reading_time && (
+                            <>
+                              <span>·</span>
+                              <span className="flex items-center gap-1">
+                                <Clock className="w-3 h-3" /> {sift.reading_time} min
+                              </span>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                      {sift.source_url && (
+                        <a
+                          href={sift.source_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-accent-400 hover:underline text-sm flex-shrink-0"
+                        >
+                          Read
+                        </a>
+                      )}
+                    </div>
+                  </GlassCard>
+                ))}
+              </div>
+            </motion.div>
+          )}
+
+          <div className="text-center pt-2">
+            <Link
+              href="/library"
+              className="inline-flex items-center gap-1 text-sm text-surface-400 hover:text-accent-400 transition"
+            >
+              View full library <ArrowRight className="w-3 h-3" />
+            </Link>
+          </div>
+        </div>
       )}
     </div>
   );

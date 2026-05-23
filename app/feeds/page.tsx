@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
-import { Trash2, Plus, Rss } from 'lucide-react';
+import { Trash2, Plus } from 'lucide-react';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { motion, AnimatePresence } from 'framer-motion';
 

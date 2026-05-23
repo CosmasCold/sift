@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Sparkles, ArrowRight, ExternalLink } from 'lucide-react';
+import { Sparkles, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import toast from 'react-hot-toast';

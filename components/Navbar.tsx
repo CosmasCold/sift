@@ -4,11 +4,9 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { supabase } from '@/lib/supabase/client';
-import { Library, Compass, Flame } from 'lucide-react';
+import { Library, Compass, Sparkles, Layers } from 'lucide-react';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
 import UserMenu from '@/components/UserMenu';
-import { Layers } from 'lucide-react';
-import { Sparkles } from 'lucide-react';
 
 export default function Navbar() {
   const [user, setUser] = useState<SupabaseUser | null>(null);
@@ -61,7 +59,7 @@ export default function Navbar() {
           <span className="text-xl font-semibold text-surface-50 hidden sm:inline">Sift</span>
         </Link>
 
-        {/* Core navigation */}
+        {/* Core navigation – clean and minimal */}
         <div className="flex items-center gap-1 sm:gap-4">
           <Link
             href="/library"
@@ -69,6 +67,14 @@ export default function Navbar() {
           >
             <Library className="w-4 h-4" />
             <span className="hidden sm:inline">Library</span>
+          </Link>
+
+          <Link
+            href="/for-you"
+            className="text-surface-300 hover:text-accent-400 transition flex items-center gap-1 px-2 py-1"
+          >
+            <Sparkles className="w-4 h-4" />
+            <span className="hidden sm:inline">For You</span>
           </Link>
 
           <Link
@@ -80,30 +86,13 @@ export default function Navbar() {
           </Link>
 
           <Link
-            href="/trending"
+            href="/collections"
             className="text-surface-300 hover:text-accent-400 transition flex items-center gap-1 px-2 py-1"
           >
-            <Flame className="w-4 h-4" />
-            <span className="hidden sm:inline">Trending</span>
+            <Layers className="w-4 h-4" />
+            <span className="hidden sm:inline">Collections</span>
           </Link>
         </div>
-
-
- <Link
-  href="/for-you"
-  className="text-surface-300 hover:text-accent-400 transition flex items-center gap-1 px-2 py-1"
->
-  <Sparkles className="w-4 h-4" />
-  <span className="hidden sm:inline">For You</span>
-</Link>
-
-<Link
-  href="/collections"
-  className="text-surface-300 hover:text-accent-400 transition flex items-center gap-1 px-2 py-1"
->
-  <Layers className="w-4 h-4" />
-  <span className="hidden sm:inline">Collections</span>
-</Link>
 
         {/* Auth / User menu */}
         <div className="flex items-center">
