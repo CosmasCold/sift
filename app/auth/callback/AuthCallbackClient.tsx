@@ -13,18 +13,30 @@ export default function AuthCallbackClient() {
   useEffect(() => {
     const code = searchParams.get('code');
 
-    if (code) {
-      supabase.auth.exchangeCodeForSession(code).then(({ error }) => {
+    const handleCallback = async () => {
+      if (code) {
+        const { error } = await supabase.auth.exchangeCodeForSession(code);
         if (error) {
+          console.error('Exchange error:', error);
+          // Even if exchange fails, check if we have a session
+          const { data: { session } } = await supabase.auth.getSession();
+          if (session) {
+            // Already logged in (perhaps from a previous session), go home
+            router.push('/');
+            return;
+          }
           toast.error('Sign in failed');
           router.push('/auth');
-        } else {
-          router.push('/');
+          return;
         }
-      });
-    } else {
-      router.push('/auth');
-    }
+        // Success – go home
+        router.push('/');
+      } else {
+        router.push('/auth');
+      }
+    };
+
+    handleCallback();
   }, [searchParams, router]);
 
   return (
