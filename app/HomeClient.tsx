@@ -94,6 +94,17 @@ export default function HomeClient() {
     return () => { mounted = false; subscription.unsubscribe(); };
   }, []);
 
+  // ---- Exchange code from Supabase redirect (Google / Magic Link) ----
+  useEffect(() => {
+    const code = searchParams.get('code');
+    if (code && user) {
+      supabase.auth.exchangeCodeForSession(code).then(() => {
+        // Clean the URL so the code parameter doesn't stay visible
+        router.replace('/');
+      });
+    }
+  }, [searchParams, user, router]);
+
   // ---- Dashboard refresh ----
   const refreshDashboard = useCallback(async () => {
     if (!user) return;
