@@ -99,11 +99,11 @@ body {
   background-position: center;
   background-repeat: no-repeat;
   pointer-events: none;
-  opacity: 0.18;
+  opacity: 0.2;
 }
 
 .dark .noise-overlay {
-  opacity: 0.1;
+  opacity: 0.2;
 }
 
 /* ========== Scrollbar ========== */
@@ -133,4 +133,16 @@ option {
   outline: 2px solid var(--accent-400, #b4a7d6);
   outline-offset: 2px;
   border-radius: 4px;
+}
+
+/* ========== Dark mode input contrast fix ========== */
+.dark input::placeholder,
+.dark textarea::placeholder {
+  color: #8a8178; /* surface-400 – lighter and more readable */
+  opacity: 1;
+}
+
+.dark input,
+.dark textarea {
+  color: #f0ede8; /* surface-50 – bright white */
 }

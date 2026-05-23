@@ -3,36 +3,28 @@
 <head>
   <meta charset="UTF-8">
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       width: 240px;
       padding: 16px;
       font-family: 'Inter', system-ui, -apple-system, sans-serif;
-      background: linear-gradient(135deg, #1f1c2e 0%, #171322 100%);
-      color: #f6f4f9;
+      background: linear-gradient(135deg, #1a1714 0%, #131110 100%);
+      color: #f0ede8;
       text-align: center;
       border-radius: 16px;
       overflow: hidden;
     }
-
     .title {
       font-size: 20px;
       font-weight: 600;
       margin-bottom: 4px;
-      color: #f6f4f9;
+      color: #f0ede8;
     }
-
     .subtitle {
       font-size: 11px;
-      color: #a595bc;
+      color: #a39a90;
       margin-bottom: 14px;
     }
-
     button {
       width: 100%;
       margin: 5px 0;
@@ -47,50 +39,31 @@
       align-items: center;
       justify-content: center;
       gap: 6px;
-      background: #2e2839;
-      color: #f6f4f9;
-      border: 1px solid #5c5070;
+      background: #24211d;
+      color: #f0ede8;
+      border: 1px solid #3e3a35;
     }
-
-    button:active {
-      transform: scale(0.97);
-    }
-
+    button:active { transform: scale(0.97); }
     .sift-btn {
-      background: #b4a7d6;
-      color: #1f1c2e;
+      background: #c77d5a;
+      color: #1a1714;
       border: none;
     }
-
-    .sift-btn:hover {
-      background: #9b8ac4;
-    }
-
-    .queue-btn:hover {
-      background: #3a3447;
-    }
-
-    /* Lucide-style icons (Zap and Inbox) */
-    .icon {
-      width: 16px;
-      height: 16px;
-      display: inline-block;
-      vertical-align: middle;
-    }
+    .sift-btn:hover { background: #b56a47; }
+    .queue-btn:hover { background: #2a2723; }
+    .icon { width: 16px; height: 16px; display: inline-block; vertical-align: middle; }
   </style>
 </head>
 <body>
   <div class="title">Sift</div>
   <div class="subtitle">AI reading triage</div>
   <button id="siftNow" class="sift-btn">
-    <!-- Lucide Zap icon -->
     <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
       <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
     </svg>
     Sift this page
   </button>
   <button id="queueLater" class="queue-btn">
-    <!-- Lucide Inbox icon -->
     <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
       <polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/>
       <path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/>
