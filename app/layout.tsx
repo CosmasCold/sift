@@ -45,6 +45,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        {/* Theme script */}
         <script
           dangerouslySetInnerHTML={{
             __html: `
@@ -61,20 +62,21 @@ export default function RootLayout({
             `,
           }}
         />
+        {/* Accent script */}
         <script
-  dangerouslySetInnerHTML={{
-    __html: `
-      (function() {
-        try {
-          const accent = localStorage.getItem('accent');
-          if (accent) {
-            document.documentElement.setAttribute('data-accent', accent);
-          }
-        } catch(e) {}
-      })();
-    `,
-  }}
-/>
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  const accent = localStorage.getItem('accent');
+                  if (accent) {
+                    document.documentElement.setAttribute('data-accent', accent);
+                  }
+                } catch(e) {}
+              })();
+            `,
+          }}
+        />
       </head>
       <body className={`${inter.className} min-h-screen flex flex-col bg-surface-900 text-surface-50 transition-colors`}>
         <a
@@ -121,6 +123,9 @@ export default function RootLayout({
             },
           }}
         />
+
+        {/* Service worker registration temporarily disabled */}
+        {/* 
         <script
           dangerouslySetInnerHTML={{
             __html: `
@@ -130,6 +135,22 @@ export default function RootLayout({
                     () => console.log('Service Worker registered'),
                     (err) => console.error('Service Worker registration failed:', err)
                   );
+                });
+              }
+            `,
+          }}
+        />
+        */}
+
+        {/* Clear any existing service worker cache */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.getRegistrations().then(registrations => {
+                  registrations.forEach(registration => registration.unregister());
+                }).then(() => {
+                  console.log('Service workers unregistered');
                 });
               }
             `,
