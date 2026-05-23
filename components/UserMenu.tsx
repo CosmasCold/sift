@@ -88,7 +88,7 @@ export default function UserMenu({ user, profile }: UserMenuProps) {
             className="absolute right-0 mt-2 w-56 bg-surface-800 border border-surface-600/60 shadow-glass rounded-2xl p-2 z-[100]"
             style={{ backgroundColor: 'var(--surface-800)', backdropFilter: 'none' }}
           >
-            {profile?.username && profile?.public_profile && (
+            {profile?.username && (
               <Link
                 href={`/profile/${profile.username}`}
                 onClick={() => setOpen(false)}

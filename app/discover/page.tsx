@@ -6,6 +6,7 @@ import { Copy, Check, ExternalLink, Rss, Sparkles } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { GlassCard } from '@/components/ui/GlassCard';
 import Link from 'next/link';
+import AuthGuard from '@/components/AuthGuard';
 
 interface FeedSuggestion {
   title: string;
@@ -113,7 +114,7 @@ const categories: { name: string; icon: string; feeds: FeedSuggestion[] }[] = [
   },
 ];
 
-export default function DiscoverPage() {
+function DiscoverInner() {
   const [copiedUrl, setCopiedUrl] = useState<string | null>(null);
 
   const copyToClipboard = async (url: string) => {
@@ -199,5 +200,13 @@ export default function DiscoverPage() {
         ))}
       </div>
     </main>
+  );
+}
+
+export default function DiscoverPage() {
+  return (
+    <AuthGuard>
+      <DiscoverInner />
+    </AuthGuard>
   );
 }

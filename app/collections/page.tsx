@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { Layers, Plus, User } from 'lucide-react';
 import Link from 'next/link';
 import { GlassCard } from '@/components/ui/GlassCard';
+import AuthGuard from '@/components/AuthGuard';
 import toast from 'react-hot-toast';
 
 interface Collection {
@@ -16,7 +17,7 @@ interface Collection {
   curator: string;
 }
 
-export default function CollectionsPage() {
+function CollectionsInner() {
   const [collections, setCollections] = useState<Collection[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -44,14 +45,9 @@ export default function CollectionsPage() {
             <Layers className="w-6 h-6 text-accent-400" />
             Collections
           </h1>
-          <p className="text-surface-400 mt-2">
-            Themed reading lists curated by the Sift community.
-          </p>
+          <p className="text-surface-400 mt-2">Themed reading lists curated by the Sift community.</p>
         </div>
-        <Link
-          href="/collections/new"
-          className="px-4 py-2 bg-accent-500 text-white rounded-xl text-sm font-medium hover:bg-accent-600 transition flex items-center gap-1"
-        >
+        <Link href="/collections/new" className="px-4 py-2 bg-accent-500 text-white rounded-xl text-sm font-medium hover:bg-accent-600 transition flex items-center gap-1">
           <Plus className="w-4 h-4" /> Create
         </Link>
       </div>
@@ -59,50 +55,24 @@ export default function CollectionsPage() {
       {collections.length === 0 ? (
         <GlassCard className="p-10 text-center">
           <Layers className="w-12 h-12 text-surface-600 mx-auto mb-4" />
-          <p className="text-surface-300 text-lg font-medium mb-1">
-            No collections yet.
-          </p>
-          <p className="text-surface-400 text-sm mb-4">
-            Be the first to create a themed reading list.
-          </p>
-          <Link
-            href="/collections/new"
-            className="inline-flex items-center gap-2 px-4 py-2 bg-accent-400/10 text-accent-400 rounded-xl text-sm font-medium hover:bg-accent-400/20 transition"
-          >
+          <p className="text-surface-300 text-lg font-medium mb-1">No collections yet.</p>
+          <p className="text-surface-400 text-sm mb-4">Be the first to create a themed reading list.</p>
+          <Link href="/collections/new" className="inline-flex items-center gap-2 px-4 py-2 bg-accent-400/10 text-accent-400 rounded-xl text-sm font-medium hover:bg-accent-400/20 transition">
             <Plus className="w-4 h-4" /> Create a collection
           </Link>
         </GlassCard>
       ) : (
-        <motion.div
-          initial="hidden"
-          animate="visible"
-          variants={{
-            hidden: { opacity: 0 },
-            visible: { opacity: 1, transition: { staggerChildren: 0.06 } },
-          }}
-          className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
-        >
+        <motion.div initial="hidden" animate="visible" variants={{ hidden: { opacity: 0 }, visible: { opacity: 1, transition: { staggerChildren: 0.06 } } }} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {collections.map(collection => (
-            <motion.div
-              key={collection.id}
-              variants={{
-                hidden: { opacity: 0, y: 8 },
-                visible: { opacity: 1, y: 0 },
-              }}
-            >
+            <motion.div key={collection.id} variants={{ hidden: { opacity: 0, y: 8 }, visible: { opacity: 1, y: 0 } }}>
               <Link href={`/collections/${collection.id}`}>
                 <GlassCard variant="interactive" className="p-5 h-full">
-                  <h3 className="text-sm font-semibold text-surface-50 mb-1">
-                    {collection.title}
-                  </h3>
+                  <h3 className="text-sm font-semibold text-surface-50 mb-1">{collection.title}</h3>
                   {collection.description && (
-                    <p className="text-xs text-surface-400 line-clamp-2 mb-2">
-                      {collection.description}
-                    </p>
+                    <p className="text-xs text-surface-400 line-clamp-2 mb-2">{collection.description}</p>
                   )}
                   <p className="text-xs text-surface-500 flex items-center gap-1 mt-2">
-                    <User className="w-3 h-3" />
-                    @{collection.curator}
+                    <User className="w-3 h-3" /> @{collection.curator}
                   </p>
                 </GlassCard>
               </Link>
@@ -111,5 +81,13 @@ export default function CollectionsPage() {
         </motion.div>
       )}
     </main>
+  );
+}
+
+export default function CollectionsPage() {
+  return (
+    <AuthGuard>
+      <CollectionsInner />
+    </AuthGuard>
   );
 }

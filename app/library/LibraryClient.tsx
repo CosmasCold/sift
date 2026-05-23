@@ -22,6 +22,7 @@ import { GlassCard } from '@/components/ui/GlassCard';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
+import AuthGuard from '@/components/AuthGuard';
 
 interface Feed {
   id: string;
@@ -62,7 +63,7 @@ const getDateGroup = (date: Date) => {
   return 'Earlier';
 };
 
-export default function LibraryClient() {
+function LibraryInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [articles, setArticles] = useState<SiftEntry[]>([]);
@@ -439,13 +440,13 @@ export default function LibraryClient() {
           <GlassCard className="p-10 text-center">
             <div className="mx-auto mb-6 w-20 h-20">
               <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
-  <rect x="22" y="12" width="36" height="56" rx="4" fill="var(--surface-700)" />
-  <rect x="26" y="16" width="28" height="8" rx="2" fill="var(--surface-500)" />
-  <line x1="40" y1="16" x2="40" y2="64" stroke="var(--surface-900)" strokeWidth="2" />
-  <path d="M28 32h24" stroke="var(--surface-400)" strokeWidth="1.5" strokeLinecap="round" />
-  <path d="M28 40h24" stroke="var(--surface-400)" strokeWidth="1.5" strokeLinecap="round" />
-  <path d="M28 48h16" stroke="var(--surface-400)" strokeWidth="1.5" strokeLinecap="round" />
-</svg>
+                <rect x="22" y="12" width="36" height="56" rx="4" fill="var(--surface-700)" />
+                <rect x="26" y="16" width="28" height="8" rx="2" fill="var(--surface-500)" />
+                <line x1="40" y1="16" x2="40" y2="64" stroke="var(--surface-900)" strokeWidth="2" />
+                <path d="M28 32h24" stroke="var(--surface-400)" strokeWidth="1.5" strokeLinecap="round" />
+                <path d="M28 40h24" stroke="var(--surface-400)" strokeWidth="1.5" strokeLinecap="round" />
+                <path d="M28 48h16" stroke="var(--surface-400)" strokeWidth="1.5" strokeLinecap="round" />
+              </svg>
             </div>
             {search || feedFilter !== 'all' || tagFilter || collectionFilter ? (
               <>
@@ -459,7 +460,7 @@ export default function LibraryClient() {
             ) : filter === 'kept' ? (
               <>
                 <p className="text-surface-300 text-lg font-medium mb-1">
-                  Your reading garden is empty.
+                  Your library is empty.
                 </p>
                 <p className="text-surface-400 text-sm">
                   Sift an article and keep it to start growing your collection.
@@ -771,5 +772,13 @@ export default function LibraryClient() {
         </motion.div>
       )}
     </main>
+  );
+}
+
+export default function LibraryClient() {
+  return (
+    <AuthGuard>
+      <LibraryInner />
+    </AuthGuard>
   );
 }

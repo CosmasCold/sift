@@ -7,6 +7,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import toast from 'react-hot-toast';
 import { GlassCard } from '@/components/ui/GlassCard';
+import AuthGuard from '@/components/AuthGuard';
 import UserAvatar from '@/components/UserAvatar';
 
 interface RecommendedArticle {
@@ -20,7 +21,7 @@ interface RecommendedArticle {
   user_profiles: { username: string; avatar_url: string | null };
 }
 
-export default function ForYouPage() {
+function ForYouInner() {
   const [articles, setArticles] = useState<RecommendedArticle[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -148,5 +149,13 @@ export default function ForYouPage() {
         </motion.div>
       )}
     </main>
+  );
+}
+
+export default function ForYouPage() {
+  return (
+    <AuthGuard>
+      <ForYouInner />
+    </AuthGuard>
   );
 }
