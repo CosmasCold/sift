@@ -87,7 +87,6 @@ function TrendingInner() {
                       Read <ArrowRight className="w-3 h-3" />
                     </a>
                   )}
-                  <ReportButton contentType="article" contentId={article.id} className="self-start" />
                 </div>
               </GlassCard>
             </motion.div>
