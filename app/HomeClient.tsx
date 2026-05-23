@@ -126,6 +126,7 @@ export default function HomeClient() {
 
       if (!error && count !== null) {
         setArticleCount(count);
+        if (count !== null && count !== articleCount) {
         if (count === 0) {
           setShowOnboarding(true);
         } else {
