@@ -5,12 +5,14 @@ interface GlassCardProps {
   children: React.ReactNode;
   className?: string;
   variant?: 'default' | 'interactive';
+  onClick?: React.MouseEventHandler<HTMLDivElement>; // new
 }
 
 export const GlassCard: React.FC<GlassCardProps> = ({
   children,
   className = '',
   variant = 'default',
+  onClick,
 }) => {
   const base =
     'bg-surface-800/60 backdrop-blur-xl border border-surface-700/50 shadow-glass rounded-2xl';
@@ -19,6 +21,7 @@ export const GlassCard: React.FC<GlassCardProps> = ({
   return (
     <div
       className={`${base} ${variant === 'interactive' ? interactive : ''} ${className}`}
+      onClick={onClick}
     >
       {children}
     </div>

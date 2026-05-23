@@ -3,57 +3,100 @@
 <head>
   <meta charset="UTF-8">
   <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
     body {
-      width: 220px;
+      width: 240px;
       padding: 16px;
-      font-family: 'Inter', system-ui, sans-serif;
-      background: #1f1c2e;
-      color: #faf9f7;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: linear-gradient(135deg, #1f1c2e 0%, #171322 100%);
+      color: #f6f4f9;
       text-align: center;
+      border-radius: 16px;
+      overflow: hidden;
     }
-    button {
-      width: 100%;
-      margin: 6px 0;
-      padding: 10px;
-      border: none;
-      border-radius: 12px;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-    .sift-btn {
-      background: #b4a7d6;
-      color: #1f1c2e;
-    }
-    .sift-btn:hover {
-      background: #9b8ac4;
-    }
-    .queue-btn {
-      background: #2e2839;
-      color: #faf9f7;
-      border: 1px solid #5c5070;
-    }
-    .queue-btn:hover {
-      background: #3a3447;
-    }
+
     .title {
-      font-size: 18px;
+      font-size: 20px;
       font-weight: 600;
-      margin-bottom: 12px;
+      margin-bottom: 4px;
+      color: #f6f4f9;
     }
+
     .subtitle {
       font-size: 11px;
       color: #a595bc;
-      margin-bottom: 16px;
+      margin-bottom: 14px;
+    }
+
+    button {
+      width: 100%;
+      margin: 5px 0;
+      padding: 10px 12px;
+      border: none;
+      border-radius: 12px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      background: #2e2839;
+      color: #f6f4f9;
+      border: 1px solid #5c5070;
+    }
+
+    button:active {
+      transform: scale(0.97);
+    }
+
+    .sift-btn {
+      background: #b4a7d6;
+      color: #1f1c2e;
+      border: none;
+    }
+
+    .sift-btn:hover {
+      background: #9b8ac4;
+    }
+
+    .queue-btn:hover {
+      background: #3a3447;
+    }
+
+    /* Lucide-style icons (Zap and Inbox) */
+    .icon {
+      width: 16px;
+      height: 16px;
+      display: inline-block;
+      vertical-align: middle;
     }
   </style>
 </head>
 <body>
-  <div class="title">🧠 Sift</div>
+  <div class="title">Sift</div>
   <div class="subtitle">AI reading triage</div>
-  <button id="siftNow" class="sift-btn">⚡ Sift this page</button>
-  <button id="queueLater" class="queue-btn">📥 Queue for later</button>
+  <button id="siftNow" class="sift-btn">
+    <!-- Lucide Zap icon -->
+    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+    </svg>
+    Sift this page
+  </button>
+  <button id="queueLater" class="queue-btn">
+    <!-- Lucide Inbox icon -->
+    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/>
+      <path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/>
+    </svg>
+    Queue for later
+  </button>
   <script src="popup.js"></script>
 </body>
 </html>

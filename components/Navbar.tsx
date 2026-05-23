@@ -7,6 +7,8 @@ import { supabase } from '@/lib/supabase/client';
 import { Library, Compass, Flame } from 'lucide-react';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
 import UserMenu from '@/components/UserMenu';
+import { Layers } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 
 export default function Navbar() {
   const [user, setUser] = useState<SupabaseUser | null>(null);
@@ -85,6 +87,23 @@ export default function Navbar() {
             <span className="hidden sm:inline">Trending</span>
           </Link>
         </div>
+
+
+ <Link
+  href="/for-you"
+  className="text-surface-300 hover:text-accent-400 transition flex items-center gap-1 px-2 py-1"
+>
+  <Sparkles className="w-4 h-4" />
+  <span className="hidden sm:inline">For You</span>
+</Link>
+
+<Link
+  href="/collections"
+  className="text-surface-300 hover:text-accent-400 transition flex items-center gap-1 px-2 py-1"
+>
+  <Layers className="w-4 h-4" />
+  <span className="hidden sm:inline">Collections</span>
+</Link>
 
         {/* Auth / User menu */}
         <div className="flex items-center">
