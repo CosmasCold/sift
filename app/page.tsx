@@ -1,17 +1,8 @@
-// app/page.tsx
-import { Suspense } from 'react';
-import HomeClient from './HomeClient';
-
 export default function HomePage() {
   return (
-    <Suspense
-      fallback={
-        <div className="flex justify-center items-center min-h-[60vh]">
-          <div className="animate-spin w-6 h-6 border-2 border-accent-400 border-t-transparent rounded-full" />
-        </div>
-      }
-    >
-      <HomeClient />
-    </Suspense>
+    <main className="flex-1 pt-12 pb-16 px-4 text-center">
+      <h1 className="text-3xl font-bold text-surface-50">Hello Sift</h1>
+      <p className="text-surface-400 mt-4">Temporary test page.</p>
+    </main>
   );
 }
