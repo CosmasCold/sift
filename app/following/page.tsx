@@ -105,12 +105,14 @@ export default function FollowingPage() {
                     </div>
                   </div>
                   {article.source_url && (
-                    <Link
-                      href={`/read/${article.id}`}
+                    <a
+                      href={article.source_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
                       className="self-start flex-shrink-0 text-accent-400 hover:underline text-sm flex items-center gap-1"
                     >
                       Read <ArrowRight className="w-3 h-3" />
-                    </Link>
+                    </a>
                   )}
                 </div>
               </GlassCard>
