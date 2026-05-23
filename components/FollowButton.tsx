@@ -11,6 +11,9 @@ export default function FollowButton({ followingId }: { followingId: string }) {
   const router = useRouter();
 
   useEffect(() => {
+    // Only run on the client
+    if (typeof window === 'undefined') return;
+
     const check = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
@@ -22,10 +25,12 @@ export default function FollowButton({ followingId }: { followingId: string }) {
         .select('*')
         .eq('follower_id', user.id)
         .eq('following_id', followingId)
-        .single();
+        .maybeSingle();
+
       setFollowing(!!data);
       setLoading(false);
     };
+
     check();
   }, [followingId]);
 
@@ -50,6 +55,10 @@ export default function FollowButton({ followingId }: { followingId: string }) {
     }
     setLoading(false);
   };
+
+  if (loading) {
+    return <div className="w-20 h-8 rounded-full bg-surface-700 animate-pulse" />;
+  }
 
   return (
     <button

@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ========== Light mode ========== */
+/* ========== Light mode (no .dark) ========== */
 :root {
   --surface-50: #1c1b18;
   --surface-100: #2a2622;
@@ -77,4 +77,60 @@
   --accent-800: #494949;
   --accent-900: #363636;
   --accent-950: #242424;
+}
+
+/* ========== Body ========== */
+body {
+  margin: 0;
+  min-height: 100vh;
+  position: relative;
+  background: linear-gradient(135deg, var(--surface-950) 0%, var(--surface-900) 100%);
+  color: var(--surface-50);
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+/* ========== Noise overlay ========== */
+.noise-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  background-image: url('/reading-bg.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  pointer-events: none;
+  opacity: 0.18;
+}
+
+.dark .noise-overlay {
+  opacity: 0.1;
+}
+
+/* ========== Scrollbar ========== */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--surface-400);
+  border-radius: 3px;
+}
+
+/* ========== Select / Option styling ========== */
+select {
+  color: var(--surface-50);
+  background-color: var(--surface-800);
+}
+option {
+  background-color: var(--surface-800);
+  color: var(--surface-50);
+}
+
+/* ========== Accessibility – focus ring ========== */
+*:focus-visible {
+  outline: 2px solid var(--accent-400, #b4a7d6);
+  outline-offset: 2px;
+  border-radius: 4px;
 }
