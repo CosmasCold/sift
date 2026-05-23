@@ -6,6 +6,7 @@ import { ArrowLeft, ExternalLink, User } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { GlassCard } from '@/components/ui/GlassCard';
+import StarButton from '@/components/StarButton';
 import toast from 'react-hot-toast';
 
 interface Article {
@@ -74,10 +75,13 @@ export default function CollectionPage() {
         {collection.description && (
           <p className="text-surface-400 text-sm mb-2">{collection.description}</p>
         )}
-        <p className="text-xs text-surface-500 flex items-center gap-1">
-          <User className="w-3 h-3" />
-          Curated by @{collection.curator}
-        </p>
+        <div className="flex items-center justify-between">
+          <p className="text-xs text-surface-500 flex items-center gap-1">
+            <User className="w-3 h-3" />
+            Curated by @{collection.curator}
+          </p>
+          <StarButton collectionId={collection.id} />
+        </div>
       </GlassCard>
 
       {articles.length === 0 ? (

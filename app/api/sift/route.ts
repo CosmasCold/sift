@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import * as cheerio from 'cheerio';
 import { createClient } from '@/lib/supabase/server';
 import { rateLimit } from '@/lib/rate-limit';
+import { isUrlBlocked, hasBlockedKeywords } from '@/lib/blocklist';
 
 interface FeedbackRow {
   summary: string | null;
@@ -35,6 +36,22 @@ export async function POST(request: NextRequest) {
     const key = user?.id ?? request.headers.get('x-forwarded-for') ?? 'unknown';
     const limitResponse = rateLimit(key, 10, 60_000);
     if (limitResponse) return limitResponse;
+
+    // ---- Domain blocklist (for URLs) ----
+    if (url && isUrlBlocked(url)) {
+      return NextResponse.json(
+        { error: 'This content is not supported.' },
+        { status: 400 }
+      );
+    }
+
+    // ---- Keyword blocklist (for manually pasted text) ----
+    if (manualText && hasBlockedKeywords(manualText)) {
+      return NextResponse.json(
+        { error: 'This content is not supported.' },
+        { status: 400 }
+      );
+    }
 
     let articleText = manualText?.trim();
     let thumbnailUrl: string | null = null;
@@ -132,6 +149,14 @@ export async function POST(request: NextRequest) {
         );
       }
 
+      // ---- Keyword blocklist (for scraped text) ----
+      if (hasBlockedKeywords(articleText)) {
+        return NextResponse.json(
+          { error: 'This content is not supported.' },
+          { status: 400 }
+        );
+      }
+
       articleText = articleText.substring(0, 4000);
     }
 
@@ -177,12 +202,28 @@ export async function POST(request: NextRequest) {
 
     const data = await response.json();
     const content = data.choices[0].message.content.trim();
+
+    // ---- AI safety flag: if the model refused to generate (empty or error) ----
+    if (!content || content.length < 10) {
+      return NextResponse.json(
+        { error: 'This content could not be processed.' },
+        { status: 400 }
+      );
+    }
+
     let result;
     try {
       result = JSON.parse(content);
     } catch {
       const cleaned = content.replace(/```json\n?|```/g, '').trim();
-      result = JSON.parse(cleaned);
+      try {
+        result = JSON.parse(cleaned);
+      } catch {
+        return NextResponse.json(
+          { error: 'This content could not be processed.' },
+          { status: 400 }
+        );
+      }
     }
 
     return NextResponse.json({

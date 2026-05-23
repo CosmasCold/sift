@@ -23,6 +23,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import AuthGuard from '@/components/AuthGuard';
+import ReportButton from '@/components/ReportButton';
 
 interface Feed {
   id: string;
@@ -759,6 +760,9 @@ function LibraryInner() {
                                   </button>
                                 </form>
                               </div>
+                              <div className="flex items-center gap-2 mt-2" onClick={(e) => e.stopPropagation()}>
+  <ReportButton contentType="article" contentId={article.id} />
+</div>
                             </div>
                           </motion.div>
                         )}

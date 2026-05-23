@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
-import { ArrowRight, ExternalLink, Clock, BarChart3 } from 'lucide-react';
+import { ArrowRight, ExternalLink, Clock, BarChart3, Star } from 'lucide-react';
 import { GlassCard } from '@/components/ui/GlassCard';
 import UserAvatar from '@/components/UserAvatar';
 
@@ -39,11 +39,13 @@ interface ProfileTabsProps {
   allArticles: Article[];
   followers: { follower_id: string; username: string; avatar_url: string | null }[];
   following: { following_id: string; username: string; avatar_url: string | null }[];
+  starredCollections: { id: string; title: string; description: string; cover_url: string | null; created_at: string }[];
 }
 
 const tabs = [
   { key: 'reading', label: 'Reading List' },
   { key: 'tags', label: 'Tags' },
+  { key: 'starred', label: 'Starred' },
   { key: 'network', label: 'Network' },
   { key: 'stats', label: 'Stats' },
 ];
@@ -64,6 +66,7 @@ export default function ProfileTabs({
   allArticles,
   followers,
   following,
+  starredCollections,
 }: ProfileTabsProps) {
   const [activeTab, setActiveTab] = useState('reading');
 
@@ -299,6 +302,34 @@ export default function ProfileTabs({
                   ))}
                 </div>
               </GlassCard>
+            )}
+          </div>
+        )}
+
+        {/* Starred Tab */}
+        {activeTab === 'starred' && (
+          <div>
+            {starredCollections.length === 0 ? (
+              <GlassCard className="p-10 text-center">
+                <Star className="w-12 h-12 text-surface-600 mx-auto mb-4" />
+                <p className="text-surface-400">No starred collections yet.</p>
+              </GlassCard>
+            ) : (
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {starredCollections.map(collection => (
+                  <Link
+                    key={collection.id}
+                    href={`/collections/${collection.id}`}
+                  >
+                    <GlassCard variant="interactive" className="p-4 h-full">
+                      <h3 className="text-sm font-semibold text-surface-50 mb-1">{collection.title}</h3>
+                      {collection.description && (
+                        <p className="text-xs text-surface-400 line-clamp-2">{collection.description}</p>
+                      )}
+                    </GlassCard>
+                  </Link>
+                ))}
+              </div>
             )}
           </div>
         )}

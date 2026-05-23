@@ -139,21 +139,18 @@ export default async function PublicProfilePage({
     .select('*', { count: 'exact', head: true })
     .eq('following_id', profile.id);
 
-  // Followers list (who follows this profile)
   const { data: followersRaw } = await supabase
     .from('follows')
     .select('follower_id, user_profiles!follower_id(username, avatar_url)')
     .eq('following_id', profile.id)
     .limit(10);
 
-  // Following list (who this profile follows)
   const { data: followingRaw } = await supabase
     .from('follows')
     .select('following_id, user_profiles!following_id(username, avatar_url)')
     .eq('follower_id', profile.id)
     .limit(10);
 
-  // Map to clean, type-safe arrays
   type RawFollow = {
     follower_id?: string;
     following_id?: string;
@@ -172,6 +169,28 @@ export default async function PublicProfilePage({
     avatar_url: f.user_profiles.avatar_url,
   }));
 
+  // ** NEW: Fetch starred collections **
+interface StarredRow {
+  collection_id: string;
+  public_collections: {
+    id: string;
+    title: string;
+    description: string;
+    cover_url: string | null;
+    created_at: string;
+  } | null; // Supabase returns a single object, not an array
+}
+
+const { data: starred } = await supabase
+  .from('collection_stars')
+  .select('collection_id, public_collections(id, title, description, cover_url, created_at)')
+  .eq('user_id', profile.id)
+  .order('created_at', { ascending: false });
+
+const starredCollections = ((starred || []) as unknown as StarredRow[])
+  .map(s => s.public_collections)
+  .filter((c): c is NonNullable<typeof c> => Boolean(c));
+
   const joinDate = profile.created_at
     ? new Date(profile.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long' })
     : 'recently';
@@ -187,7 +206,6 @@ export default async function PublicProfilePage({
           <div className="absolute inset-0 bg-surface-950/20" />
         </div>
 
-        {/* Profile card – overlaps the cover, always fully visible */}
         <div className="max-w-4xl mx-auto px-4 -mt-20 md:-mt-24 relative z-10">
           <div className="bg-surface-800 rounded-2xl border border-surface-700/50 p-4 shadow-card flex flex-col md:flex-row items-center gap-4">
             <UserAvatar
@@ -236,6 +254,7 @@ export default async function PublicProfilePage({
         allArticles={allArticles || []}
         followers={followers}
         following={following}
+        starredCollections={starredCollections || []}
       />
     </main>
   );

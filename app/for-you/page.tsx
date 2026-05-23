@@ -9,6 +9,7 @@ import toast from 'react-hot-toast';
 import { GlassCard } from '@/components/ui/GlassCard';
 import AuthGuard from '@/components/AuthGuard';
 import UserAvatar from '@/components/UserAvatar';
+import ReportButton from '@/components/ReportButton';
 
 interface RecommendedArticle {
   id: string;
@@ -142,6 +143,7 @@ function ForYouInner() {
                       Read <ArrowRight className="w-3 h-3" />
                     </a>
                   )}
+                  <ReportButton contentType="article" contentId={article.id} className="self-start" />
                 </div>
               </GlassCard>
             </motion.div>

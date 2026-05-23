@@ -7,6 +7,7 @@ import Image from 'next/image';
 import toast from 'react-hot-toast';
 import { GlassCard } from '@/components/ui/GlassCard';
 import AuthGuard from '@/components/AuthGuard';
+import ReportButton from '@/components/ReportButton';
 
 interface TrendingArticle {
   source_url: string | null;
@@ -86,6 +87,7 @@ function TrendingInner() {
                       Read <ArrowRight className="w-3 h-3" />
                     </a>
                   )}
+                  <ReportButton contentType="article" contentId={article.id} className="self-start" />
                 </div>
               </GlassCard>
             </motion.div>
