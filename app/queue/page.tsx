@@ -193,7 +193,7 @@ export default function QueuePage() {
                 visible: { opacity: 1, x: 0 },
               }}
             >
-              <GlassCard variant="interactive" className="flex items-center justify-between p-4">
+              <GlassCard variant="interactive" className="p-5 h-full flex flex-col hover:-translate-y-0.5 transition-transform">
                 <div className="flex-1 min-w-0 mr-3">
                   <a
                     href={item.url}

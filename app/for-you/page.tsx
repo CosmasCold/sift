@@ -87,7 +87,7 @@ export default function ForYouPage() {
               }}
               className="hover:-translate-y-0.5 transition-transform"
             >
-              <GlassCard variant="interactive" className="p-5 h-full flex flex-col">
+              <GlassCard variant="interactive" className="p-5 h-full flex flex-col hover:-translate-y-0.5 transition-transform">
                 <div className="flex-1">
                   <p className="text-sm text-surface-200 leading-relaxed line-clamp-4 mb-3">
                     {article.summary}

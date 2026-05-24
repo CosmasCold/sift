@@ -87,7 +87,7 @@ export default function CollectionsPage() {
                 visible: { opacity: 1, y: 0 },
               }}
             >
-              <GlassCard variant="interactive" className="p-5 h-full">
+              <GlassCard variant="interactive" className="p-5 h-full flex flex-col hover:-translate-y-0.5 transition-transform">
                 <div className="flex flex-col h-full">
                   <div className="flex-1">
                     <h3 className="text-sm font-semibold text-surface-50 mb-1">{collection.title}</h3>

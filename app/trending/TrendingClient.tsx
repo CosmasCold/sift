@@ -77,7 +77,7 @@ export default function TrendingClient() {
               }}
               className="hover:-translate-y-0.5 transition-transform"
             >
-              <GlassCard variant="interactive" className="p-5 h-full flex flex-col">
+              <GlassCard variant="interactive" className="p-5 h-full flex flex-col hover:-translate-y-0.5 transition-transform">
                 <div className="flex items-start gap-4 flex-1">
                   {/* Rank badge */}
                   <div className="flex-shrink-0 w-8 h-8 rounded-full bg-accent-400/10 flex items-center justify-center text-sm font-bold text-accent-400">

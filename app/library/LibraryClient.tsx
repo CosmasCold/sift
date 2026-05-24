@@ -13,14 +13,13 @@ import {
   Filter,
   Clock,
   Sparkles,
-  ImageOff,
   Layers,
   Download,
+  X,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { useRouter, useSearchParams } from 'next/navigation';
-import Image from 'next/image';
 import Link from 'next/link';
 import AuthGuard from '@/components/AuthGuard';
 import Thumbnail from '@/components/Thumbnail';
@@ -69,7 +68,7 @@ function LibraryInner() {
   const searchParams = useSearchParams();
   const [articles, setArticles] = useState<SiftEntry[]>([]);
   const [loading, setLoading] = useState(true);
-  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [expandedArticle, setExpandedArticle] = useState<SiftEntry | null>(null);
   const [filter, setFilter] = useState<'all' | 'kept' | 'discarded'>('kept');
   const [search, setSearch] = useState('');
   const [feedFilter, setFeedFilter] = useState<string>('all');
@@ -107,6 +106,9 @@ function LibraryInner() {
   const toggleKeep = async (id: string, kept: boolean) => {
     const newKept = !kept;
     setArticles((prev) => prev.map((a) => (a.id === id ? { ...a, kept: newKept } : a)));
+    if (expandedArticle?.id === id) {
+      setExpandedArticle(prev => prev ? { ...prev, kept: newKept } : null);
+    }
     try {
       await fetch('/api/toggle-keep', {
         method: 'POST',
@@ -115,6 +117,9 @@ function LibraryInner() {
       });
     } catch {
       setArticles((prev) => prev.map((a) => (a.id === id ? { ...a, kept: kept } : a)));
+      if (expandedArticle?.id === id) {
+        setExpandedArticle(prev => prev ? { ...prev, kept } : null);
+      }
       toast.error('Failed');
     }
   };
@@ -128,6 +133,7 @@ function LibraryInner() {
     if (res.ok) {
       setArticles((prev) => prev.filter((a) => a.id !== id));
       toast.success('Removed');
+      setExpandedArticle(null);
     } else toast.error('Failed');
   };
 
@@ -137,6 +143,9 @@ function LibraryInner() {
     const newFb = current.feedback === fb ? null : fb;
 
     setArticles((prev) => prev.map((a) => (a.id === id ? { ...a, feedback: newFb } : a)));
+    if (expandedArticle?.id === id) {
+      setExpandedArticle(prev => prev ? { ...prev, feedback: newFb } : null);
+    }
     setFeedbackAnimation((prev) => ({ ...prev, [id]: Date.now() }));
 
     const res = await fetch('/api/feedback', {
@@ -146,6 +155,9 @@ function LibraryInner() {
     });
     if (!res.ok) {
       setArticles((prev) => prev.map((a) => (a.id === id ? { ...a, feedback: current.feedback } : a)));
+      if (expandedArticle?.id === id) {
+        setExpandedArticle(prev => prev ? { ...prev, feedback: current.feedback } : null);
+      }
       toast.error('Failed');
     }
   };
@@ -160,6 +172,9 @@ function LibraryInner() {
       setArticles((prev) =>
         prev.map((a) => (a.id === articleId ? { ...a, tags: newTags } : a))
       );
+      if (expandedArticle?.id === articleId) {
+        setExpandedArticle(prev => prev ? { ...prev, tags: newTags } : null);
+      }
       toast.success('Tags updated');
     } else toast.error('Failed');
   };
@@ -243,7 +258,7 @@ function LibraryInner() {
     );
 
   return (
-    <main className="flex-1 pt-12 pb-16 px-4 max-w-3xl mx-auto">
+    <main className="flex-1 pt-12 pb-16 px-4 max-w-6xl mx-auto">
       {/* Weekly digest preview */}
       {!loading && weeklyDigest.length > 0 && (
         <motion.div
@@ -264,14 +279,7 @@ function LibraryInner() {
               {weeklyDigest.map((article) => (
                 <button
                   key={article.id}
-                  onClick={() => {
-                    setExpandedId(article.id);
-                    setTimeout(() => {
-                      document
-                        .getElementById(`article-${article.id}`)
-                        ?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    }, 100);
-                  }}
+                  onClick={() => setExpandedArticle(article)}
                   className="w-full text-left text-sm text-surface-200 hover:text-accent-400 transition line-clamp-1"
                 >
                   {article.summary}
@@ -347,15 +355,14 @@ function LibraryInner() {
               const res = await fetch('/api/surprise');
               const data = await res.json();
               if (data.article) {
-                setExpandedId(data.article.id);
                 setFilter('all');
                 setSearch('');
-                toast.success('Found one!');
-                setTimeout(() => {
-                  document
-                    .getElementById(`article-${data.article.id}`)
-                    ?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }, 100);
+                // find the article in our state
+                const found = articles.find(a => a.id === data.article.id);
+                if (found) {
+                  setExpandedArticle(found);
+                  toast.success('Found one!');
+                }
               } else toast.error('Nothing to surprise you with');
             }}
             className="px-4 py-2 bg-accent-500 text-white rounded-xl text-sm font-medium hover:bg-accent-600 transition"
@@ -514,28 +521,22 @@ function LibraryInner() {
               </h2>
               <div className="grid gap-4 grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
                 {articles.map((article) => {
-                  const isAnimating = !!feedbackAnimation[article.id];
                   return (
                     <motion.div
                       id={`article-${article.id}`}
                       key={article.id}
                       role="button"
                       tabIndex={0}
-                      aria-expanded={expandedId === article.id}
-                      aria-label={`Article: ${article.summary.substring(0, 60)}…`}
                       onKeyDown={(e) => {
                         if (e.key === 'Enter' || e.key === ' ') {
                           e.preventDefault();
-                          setExpandedId(expandedId === article.id ? null : article.id);
+                          setExpandedArticle(article);
                         }
                       }}
-                      onClick={() =>
-                        setExpandedId(expandedId === article.id ? null : article.id)
-                      }
+                      onClick={() => setExpandedArticle(article)}
                       className="bg-surface-800/60 backdrop-blur-xl border border-surface-600/40 shadow-glass rounded-2xl p-5 transition-shadow hover:shadow-glass cursor-pointer hover:-translate-y-0.5"
                     >
                       <div className="flex flex-col sm:flex-row items-start gap-3">
-                        {/* Thumbnail */}
                         <Thumbnail src={article.thumbnail_url} size={80} className="rounded-lg flex-shrink-0" />
                         <div className="flex-1 min-w-0">
                           <div className="flex items-start gap-2">
@@ -585,131 +586,7 @@ function LibraryInner() {
                             </div>
                           )}
                         </div>
-                        <div className="flex items-center gap-1 shrink-0" onClick={(e) => e.stopPropagation()}>
-                          {/* Keep / Discard toggle */}
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              toggleKeep(article.id, article.kept);
-                            }}
-                            className="p-1.5 rounded-md hover:bg-surface-700/50 transition"
-                            aria-label={article.kept ? 'Discard' : 'Keep'}
-                          >
-                            {article.kept ? (
-                              <CheckCircle className="w-4 h-4 text-verdict-green" />
-                            ) : (
-                              <Archive className="w-4 h-4 text-surface-400" />
-                            )}
-                          </button>
-                          {/* Expand indicator */}
-                          <span className="text-surface-500 text-xs ml-1">
-                            {expandedId === article.id ? '▲' : '▼'}
-                          </span>
-                        </div>
                       </div>
-                      <AnimatePresence>
-                        {expandedId === article.id && (
-                          <motion.div
-                            initial={{ height: 0, opacity: 0 }}
-                            animate={{ height: 'auto', opacity: 1 }}
-                            exit={{ height: 0, opacity: 0 }}
-                            className="overflow-hidden"
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            <div className="pt-4 mt-4 border-t border-surface-700/50 space-y-3">
-                              <p className="text-surface-200 text-sm leading-relaxed">
-                                {article.summary}
-                              </p>
-                              {article.insight && (
-                                <div className="bg-surface-800/60 rounded-xl p-3 border-l-4 border-accent-400">
-                                  <p className="text-surface-300 italic text-sm">
-                                    {article.insight}
-                                  </p>
-                                </div>
-                              )}
-                              {article.source_url && (
-                                <a
-                                  href={article.source_url}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="inline-flex items-center gap-1 text-accent-400 hover:underline text-sm"
-                                  onClick={(e) => e.stopPropagation()}
-                                >
-                                  Read original <ArrowRight className="w-3 h-3" />
-                                </a>
-                              )}
-                              <div onClick={(e) => e.stopPropagation()}>
-                                <label className="text-xs font-medium text-surface-400 block mb-1">
-                                  Tags (comma separated)
-                                </label>
-                                <form
-                                  onSubmit={async (e) => {
-                                    e.preventDefault();
-                                    const fd = new FormData(e.currentTarget);
-                                    const input = fd.get('tags')?.toString().trim();
-                                    const newTags = input
-                                      ? input
-                                          .split(',')
-                                          .map((t) => t.trim())
-                                          .filter((t) => t)
-                                      : [];
-                                    await updateTags(article.id, newTags);
-                                  }}
-                                  className="flex gap-2"
-                                >
-                                  <input
-                                    name="tags"
-                                    defaultValue={(article.tags || []).join(', ')}
-                                    placeholder="e.g., AI, design"
-                                    className="flex-1 min-w-0 max-w-full px-2 py-1 text-sm border border-surface-600 rounded-lg bg-surface-800 text-surface-50 placeholder-surface-400 focus:ring-2 focus:ring-accent-400/50 outline-none"
-                                  />
-                                  <button
-                                    type="submit"
-                                    className="px-3 py-1 text-sm bg-accent-400/10 text-accent-400 rounded-lg hover:bg-accent-400/20 transition"
-                                  >
-                                    Save
-                                  </button>
-                                </form>
-                              </div>
-                              {/* Feedback and delete inside expanded card */}
-                              <div className="flex items-center gap-2 pt-3 border-t border-surface-700/50">
-                                <motion.button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleFeedback(article.id, 'agree');
-                                  }}
-                                  className={`p-1 rounded-md ${article.feedback === 'agree' ? 'text-verdict-green' : 'text-surface-400'} hover:bg-surface-700/50`}
-                                  aria-label="Agree with verdict"
-                                  whileTap={{ scale: 0.9 }}
-                                >
-                                  <ThumbsUp className="w-4 h-4" />
-                                </motion.button>
-                                <motion.button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleFeedback(article.id, 'disagree');
-                                  }}
-                                  className={`p-1 rounded-md ${article.feedback === 'disagree' ? 'text-verdict-amber' : 'text-surface-400'} hover:bg-surface-700/50`}
-                                  aria-label="Disagree with verdict"
-                                  whileTap={{ scale: 0.9 }}
-                                >
-                                  <ThumbsDown className="w-4 h-4" />
-                                </motion.button>
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleDelete(article.id);
-                                  }}
-                                  className="p-1 text-surface-400 hover:text-red-400 ml-auto"
-                                  aria-label="Delete article"
-                                >
-                                  <Trash2 className="w-4 h-4" />
-                                </button>
-                              </div>
-                            </div>
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
                     </motion.div>
                   );
                 })}
@@ -718,6 +595,136 @@ function LibraryInner() {
           ))}
         </motion.div>
       )}
+
+      {/* --- Modal overlay for expanded article --- */}
+      <AnimatePresence>
+        {expandedArticle && (
+          <motion.div
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setExpandedArticle(null)}
+          >
+            <motion.div
+              className="bg-surface-800 border border-surface-600/40 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6"
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Close button */}
+              <button
+                onClick={() => setExpandedArticle(null)}
+                className="absolute top-4 right-4 p-1 text-surface-400 hover:text-surface-200"
+                aria-label="Close"
+              >
+                <X className="w-5 h-5" />
+              </button>
+
+              <div className="flex gap-4 mb-5">
+                <Thumbnail src={expandedArticle.thumbnail_url} size={80} className="rounded-lg flex-shrink-0" />
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-3">
+                    <span
+                      className={`w-3 h-3 rounded-full ${
+                        expandedArticle.verdict === 'Worth a full read'
+                          ? 'bg-verdict-green'
+                          : expandedArticle.verdict === 'Skim this'
+                          ? 'bg-verdict-amber'
+                          : 'bg-verdict-grey'
+                      }`}
+                    />
+                    <span className="text-sm font-semibold text-surface-300">
+                      {expandedArticle.verdict}
+                    </span>
+                    <span className="text-xs text-surface-400 ml-auto">
+                      {new Date(expandedArticle.created_at).toLocaleDateString()}
+                    </span>
+                  </div>
+                  <p className="text-surface-200 leading-relaxed">{expandedArticle.summary}</p>
+                  {expandedArticle.insight && (
+                    <div className="bg-surface-800/60 rounded-xl p-3 border-l-4 border-accent-400 mt-3">
+                      <p className="text-surface-300 italic text-sm">{expandedArticle.insight}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {expandedArticle.source_url && (
+                <a
+                  href={expandedArticle.source_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 text-accent-400 hover:underline text-sm mb-4"
+                >
+                  Read original <ArrowRight className="w-3 h-3" />
+                </a>
+              )}
+
+              {/* Tags */}
+              <div className="mb-4">
+                <label className="text-xs font-medium text-surface-400 block mb-1">Tags (comma separated)</label>
+                <form
+                  onSubmit={async (e) => {
+                    e.preventDefault();
+                    const fd = new FormData(e.currentTarget);
+                    const input = fd.get('tags')?.toString().trim();
+                    const newTags = input
+                      ? input.split(',').map((t) => t.trim()).filter((t) => t)
+                      : [];
+                    await updateTags(expandedArticle.id, newTags);
+                  }}
+                  className="flex gap-2"
+                >
+                  <input
+                    name="tags"
+                    defaultValue={(expandedArticle.tags || []).join(', ')}
+                    placeholder="e.g., AI, design"
+                    className="flex-1 min-w-0 max-w-full px-2 py-1 text-sm border border-surface-600 rounded-lg bg-surface-800 text-surface-50 placeholder-surface-400 focus:ring-2 focus:ring-accent-400/50 outline-none"
+                  />
+                  <button
+                    type="submit"
+                    className="px-3 py-1 text-sm bg-accent-400/10 text-accent-400 rounded-lg hover:bg-accent-400/20 transition"
+                  >
+                    Save
+                  </button>
+                </form>
+              </div>
+
+              {/* Actions */}
+              <div className="flex items-center gap-3 pt-3 border-t border-surface-700/50">
+                <button
+                  onClick={() => toggleKeep(expandedArticle.id, expandedArticle.kept)}
+                  className={`p-2 rounded-lg ${expandedArticle.kept ? 'bg-verdict-green/10 text-verdict-green' : 'bg-surface-700/50 text-surface-400'} hover:bg-surface-700 transition`}
+                >
+                  {expandedArticle.kept ? <CheckCircle className="w-4 h-4" /> : <Archive className="w-4 h-4" />}
+                  <span className="sr-only">{expandedArticle.kept ? 'Discard' : 'Keep'}</span>
+                </button>
+                <button
+                  onClick={() => handleFeedback(expandedArticle.id, 'agree')}
+                  className={`p-2 rounded-lg ${expandedArticle.feedback === 'agree' ? 'bg-verdict-green/10 text-verdict-green' : 'bg-surface-700/50 text-surface-400'} hover:bg-surface-700 transition`}
+                >
+                  <ThumbsUp className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => handleFeedback(expandedArticle.id, 'disagree')}
+                  className={`p-2 rounded-lg ${expandedArticle.feedback === 'disagree' ? 'bg-verdict-amber/10 text-verdict-amber' : 'bg-surface-700/50 text-surface-400'} hover:bg-surface-700 transition`}
+                >
+                  <ThumbsDown className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => handleDelete(expandedArticle.id)}
+                  className="p-2 rounded-lg text-surface-400 hover:text-red-400 hover:bg-surface-700 transition ml-auto"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </main>
   );
 }

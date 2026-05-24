@@ -5,7 +5,7 @@ interface GlassCardProps {
   children: React.ReactNode;
   className?: string;
   variant?: 'default' | 'interactive';
-  onClick?: React.MouseEventHandler<HTMLDivElement>; // new
+  onClick?: React.MouseEventHandler<HTMLDivElement>;
 }
 
 export const GlassCard: React.FC<GlassCardProps> = ({
@@ -16,7 +16,8 @@ export const GlassCard: React.FC<GlassCardProps> = ({
 }) => {
   const base =
     'bg-surface-800/60 backdrop-blur-xl border border-surface-700/50 shadow-glass rounded-2xl';
-  const interactive = 'transition-all duration-200 hover:bg-surface-800/80 hover:shadow-glass';
+  const interactive =
+    'transition-all duration-200 hover:bg-surface-800/80 hover:shadow-glass hover:-translate-y-0.5';
 
   return (
     <div

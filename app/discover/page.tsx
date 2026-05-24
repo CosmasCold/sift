@@ -157,7 +157,7 @@ function DiscoverInner() {
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {category.feeds.map((feed) => (
-                <GlassCard key={feed.url} variant="interactive" className="p-5">
+                <GlassCard key={feed.url} variant="interactive" className="p-5 hover:-translate-y-0.5 transition-transform">
                   <div className="flex flex-col h-full">
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
