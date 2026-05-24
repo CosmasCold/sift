@@ -44,22 +44,37 @@ export async function GET() {
 
     if (!articles || articles.length === 0) continue;
 
-    // Build email HTML
-    const articleList = articles.map(a => `
-      <tr>
-        <td style="padding: 12px 0; border-bottom: 1px solid #3e3a35;">
-          <p style="margin:0; font-size:14px; color:#d3cbc0;">${a.summary.substring(0, 150)}…</p>
-          <p style="margin:4px 0 0; font-size:12px; color:#a39a90;">${a.verdict}</p>
-        </td>
-      </tr>
+    // Build restyled email HTML
+    const articleList = articles.map((a, i) => `
+      <div style="background:#fff;border:1px solid #e8e3dd;border-radius:14px;padding:18px 20px;margin-bottom:14px;${i === articles.length - 1 ? 'margin-bottom:0;' : ''}">
+        <p style="font-size:15px;color:#1c1b18;margin:0 0 10px;line-height:1.5;">${a.summary.substring(0, 200)}${a.summary.length > 200 ? '…' : ''}</p>
+        <span style="display:inline-block;font-size:12px;font-weight:500;color:#c77d5a;background:rgba(199,125,90,0.12);padding:4px 10px;border-radius:20px;">${a.verdict}</span>
+      </div>
     `).join('');
 
     const html = `
-      <div style="max-width:600px;margin:0 auto;background:#1a1714;border-radius:16px;padding:24px;font-family:system-ui,sans-serif;">
-        <h1 style="color:#f0ede8;font-size:24px;margin:0 0 8px;">🧠 Your weekly Sift digest</h1>
-        <p style="color:#a39a90;font-size:14px;margin:0 0 24px;">Here are the articles you kept this week, @${profile.username || 'reader'}.</p>
-        <table style="width:100%;border-collapse:collapse;">${articleList}</table>
-        <p style="margin:24px 0 0;font-size:12px;color:#8a8178;">Sent by Sift. <a href="https://sift-lac.vercel.app/settings" style="color:#c77d5a;">Manage digest settings</a>.</p>
+      <div style="max-width:560px;margin:40px auto;background:#f8f6f2;border-radius:20px;padding:40px 32px;font-family:system-ui,-apple-system,sans-serif;color:#1c1b18;">
+        <!-- Header -->
+        <div style="text-align:center;margin-bottom:32px;">
+          <h1 style="font-size:28px;font-weight:600;color:#1c1b18;margin:0 0 8px;">Sift</h1>
+          <p style="font-size:14px;color:#5e574f;margin:0;">Your weekly reading digest</p>
+        </div>
+
+        <!-- Greeting -->
+        <p style="font-size:15px;color:#5e574f;margin:0 0 24px;line-height:1.6;">Hi @${profile.username || 'reader'}, here are the articles you kept this week.</p>
+
+        <!-- Article list -->
+        ${articleList}
+
+        <!-- CTA -->
+        <div style="text-align:center;margin-top:28px;">
+          <a href="https://sift-lac.vercel.app/library" style="display:inline-block;background:#c77d5a;color:#fff;font-size:14px;font-weight:500;text-decoration:none;padding:12px 28px;border-radius:30px;">View your library</a>
+        </div>
+
+        <!-- Footer -->
+        <div style="margin-top:36px;padding-top:24px;border-top:1px solid #e8e3dd;text-align:center;">
+          <p style="font-size:12px;color:#7a7268;margin:0;">Sent by Sift · <a href="https://sift-lac.vercel.app/settings" style="color:#c77d5a;text-decoration:none;">Manage digest settings</a></p>
+        </div>
       </div>
     `;
 
