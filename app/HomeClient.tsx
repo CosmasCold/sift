@@ -7,7 +7,6 @@ import {
   Loader2,
   Sparkles,
   ClipboardList,
-  ImageOff,
   Zap,
   Rss,
   Clock,
@@ -21,6 +20,7 @@ import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
 import type { User } from '@supabase/supabase-js';
 import { GlassCard } from '@/components/ui/GlassCard';
+import Thumbnail from '@/components/Thumbnail';
 
 interface SiftResult {
   summary: string;
@@ -99,7 +99,6 @@ export default function HomeClient() {
     const code = searchParams.get('code');
     if (code && user) {
       supabase.auth.exchangeCodeForSession(code).then(() => {
-        // Clean the URL so the code parameter doesn't stay visible
         router.replace('/');
       });
     }
@@ -593,22 +592,7 @@ export default function HomeClient() {
         >
           <GlassCard className="p-6">
             <div className="flex gap-4">
-              <div className="flex-shrink-0 w-20 h-20 rounded-xl overflow-hidden bg-surface-800/50">
-                {result.thumbnailUrl ? (
-                  <Image
-                    src={result.thumbnailUrl}
-                    alt=""
-                    width={80}
-                    height={80}
-                    className="object-cover w-full h-full"
-                    unoptimized
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-surface-500">
-                    <ImageOff className="w-6 h-6" />
-                  </div>
-                )}
-              </div>
+              <Thumbnail src={result.thumbnailUrl} size={80} className="rounded-xl flex-shrink-0" />
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-3 mb-5 pb-4 border-b border-surface-700/50">
                   <span
@@ -664,84 +648,79 @@ export default function HomeClient() {
 
       {/* Dashboard – personal reading journal */}
       {!showOnboarding && articleCount !== null && articleCount > 0 && !result && (
-        <div className="w-full max-w-2xl space-y-6 mt-4">
+        <div className="w-full max-w-4xl space-y-6 mt-4">
           <div className="flex items-center gap-2 px-1">
             <BookOpen className="w-5 h-5 text-accent-400" />
             <h2 className="text-lg font-semibold text-surface-50">Your reading journal</h2>
           </div>
 
-          {weeklyStats && (
-            <motion.div
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3 }}
-            >
-              <GlassCard className="p-4">
-                <p className="text-sm text-surface-300">
-                  This week you&apos;ve{' '}
-                  <span className="text-verdict-green font-medium">kept {weeklyStats.kept}</span>
-                  {weeklyStats.skimmed > 0 && (
-                    <>, <span className="text-verdict-amber font-medium">skimmed {weeklyStats.skimmed}</span></>
-                  )}
-                  {weeklyStats.skipped > 0 && (
-                    <>, <span className="text-surface-400 font-medium">skipped {weeklyStats.skipped}</span></>
-                  )}
-                  {' '}article{weeklyStats.kept + weeklyStats.skimmed + weeklyStats.skipped !== 1 ? 's' : ''}.
-                </p>
-              </GlassCard>
-            </motion.div>
-          )}
+          {/* Weekly recap + Network recommendation side by side */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {weeklyStats && (
+              <motion.div
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+              >
+                <GlassCard className="p-4 h-full">
+                  <p className="text-sm text-surface-300">
+                    This week you&apos;ve{' '}
+                    <span className="text-verdict-green font-medium">kept {weeklyStats.kept}</span>
+                    {weeklyStats.skimmed > 0 && (
+                      <>, <span className="text-verdict-amber font-medium">skimmed {weeklyStats.skimmed}</span></>
+                    )}
+                    {weeklyStats.skipped > 0 && (
+                      <>, <span className="text-surface-400 font-medium">skipped {weeklyStats.skipped}</span></>
+                    )}
+                    {' '}article{weeklyStats.kept + weeklyStats.skimmed + weeklyStats.skipped !== 1 ? 's' : ''}.
+                  </p>
+                </GlassCard>
+              </motion.div>
+            )}
 
-          {networkRecommendation && (
-            <motion.div
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: 0.1 }}
-            >
-              <GlassCard className="p-4">
-                <p className="text-xs text-surface-400 uppercase tracking-wider mb-2 flex items-center gap-1">
-                  <Users className="w-4 h-4" /> From your network
-                </p>
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg overflow-hidden bg-surface-700 flex-shrink-0">
-                    {networkRecommendation.thumbnail_url ? (
-                      <Image
-                        src={networkRecommendation.thumbnail_url}
-                        alt=""
-                        width={40}
-                        height={40}
-                        className="object-cover w-full h-full"
-                        unoptimized
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-surface-400 text-xs">📄</div>
+            {networkRecommendation && (
+              <motion.div
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, delay: 0.1 }}
+              >
+                <GlassCard className="p-4 h-full">
+                  <p className="text-xs text-surface-400 uppercase tracking-wider mb-2 flex items-center gap-1">
+                    <Users className="w-4 h-4" /> From your network
+                  </p>
+                  <div className="flex items-center gap-3">
+                    <Thumbnail
+                      src={networkRecommendation.thumbnail_url}
+                      size={48}
+                      className="rounded-lg flex-shrink-0"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm text-surface-200 line-clamp-2">{networkRecommendation.summary}</p>
+                      <div className="flex items-center gap-2 mt-1 text-xs text-surface-400">
+                        <span>{networkRecommendation.verdict}</span>
+                        <span>·</span>
+                        <Link href={`/profile/${networkRecommendation.username}`} className="text-accent-400 hover:underline">
+                          @{networkRecommendation.username}
+                        </Link>
+                      </div>
+                    </div>
+                    {networkRecommendation.source_url && (
+                      <a
+                        href={networkRecommendation.source_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-accent-400 hover:underline text-sm flex-shrink-0"
+                      >
+                        Read
+                      </a>
                     )}
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm text-surface-200 line-clamp-2">{networkRecommendation.summary}</p>
-                    <div className="flex items-center gap-2 mt-1 text-xs text-surface-400">
-                      <span>{networkRecommendation.verdict}</span>
-                      <span>·</span>
-                      <Link href={`/profile/${networkRecommendation.username}`} className="text-accent-400 hover:underline">
-                        @{networkRecommendation.username}
-                      </Link>
-                    </div>
-                  </div>
-                  {networkRecommendation.source_url && (
-                    <a
-                      href={networkRecommendation.source_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-accent-400 hover:underline text-sm flex-shrink-0"
-                    >
-                      Read
-                    </a>
-                  )}
-                </div>
-              </GlassCard>
-            </motion.div>
-          )}
+                </GlassCard>
+              </motion.div>
+            )}
+          </div>
 
+          {/* Recently sifted */}
           {recentSifts.length > 0 && (
             <motion.div
               initial={{ opacity: 0, y: 8 }}
@@ -749,8 +728,8 @@ export default function HomeClient() {
               transition={{ duration: 0.3, delay: 0.2 }}
             >
               <h3 className="text-sm font-semibold text-surface-400 mb-3 px-1 flex items-center gap-2">
-  <Clock className="w-4 h-4" /> Recently sifted
-</h3>
+                <Clock className="w-4 h-4" /> Recently sifted
+              </h3>
               <div className="space-y-3">
                 {recentSifts.map(sift => (
                   <GlassCard key={sift.id} variant="interactive" className="p-4">
@@ -764,6 +743,7 @@ export default function HomeClient() {
                             : 'bg-verdict-grey'
                         }`}
                       />
+                      <Thumbnail src={sift.thumbnail_url} size={48} className="rounded-lg flex-shrink-0" />
                       <div className="flex-1 min-w-0">
                         <p className="text-sm text-surface-200 line-clamp-1">{sift.summary}</p>
                         <div className="flex items-center gap-2 mt-1 text-xs text-surface-400">

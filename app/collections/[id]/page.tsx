@@ -8,6 +8,7 @@ import Image from 'next/image';
 import { GlassCard } from '@/components/ui/GlassCard';
 import StarButton from '@/components/StarButton';
 import toast from 'react-hot-toast';
+import Thumbnail from '@/components/Thumbnail';
 
 interface Article {
   id: string;
@@ -93,22 +94,7 @@ export default function CollectionPage() {
           {articles.map(article => (
             <GlassCard key={article.id} variant="interactive" className="p-5">
               <div className="flex gap-4">
-                <div className="flex-shrink-0 w-14 h-14 rounded-lg overflow-hidden bg-surface-700/50">
-                  {article.thumbnail_url ? (
-                    <Image
-                      src={article.thumbnail_url}
-                      alt=""
-                      width={56}
-                      height={56}
-                      className="object-cover w-full h-full"
-                      unoptimized
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-surface-400 text-xs">
-                      📄
-                    </div>
-                  )}
-                </div>
+                <Thumbnail src={article.thumbnail_url} size={56} className="rounded-lg flex-shrink-0" />
                 <div className="flex-1 min-w-0">
                   <p className="text-sm text-surface-200 leading-relaxed line-clamp-2">
                     {article.summary}

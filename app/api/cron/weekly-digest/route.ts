@@ -1,101 +1,74 @@
-import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-
-interface SiftRow {
-  id: string;
-  user_id: string;
-  summary: string | null;
-  verdict: string;
-  kept: boolean;
-  user_profiles: { email: string }[];   // <-- array from Supabase join
-}
+import { NextResponse } from 'next/server';
+import { Resend } from 'resend';
 
 export async function GET() {
   const supabase = await createClient();
+  const resend = new Resend(process.env.RESEND_API_KEY);
 
-  const weekStart = new Date();
-  weekStart.setDate(weekStart.getDate() - 7);
+  // Get all users who have opted in
+  const { data: profiles, error: profileError } = await supabase
+    .from('user_profiles')
+    .select('id, username')
+    .eq('weekly_digest', true);
 
-  const { data } = await supabase
-    .from('sifted_articles')
-    .select('id, user_id, summary, verdict, kept, user_profiles(email)')
-    .gte('created_at', weekStart.toISOString())
-    .eq('kept', true)
-    .order('created_at', { ascending: false });
-
-  const users: SiftRow[] = (data as SiftRow[]) ?? [];
-
-  if (users.length === 0) {
-    return NextResponse.json({ message: 'No digests to send' });
+  if (profileError || !profiles) {
+    return NextResponse.json({ error: 'No profiles found' }, { status: 500 });
   }
 
-  // Group by user
-  const userMap = new Map<string, { email: string; articles: SiftRow[] }>();
-  for (const row of users) {
-    const userId = row.user_id;
-    if (!userMap.has(userId)) {
-      const profile = row.user_profiles?.[0];
-      userMap.set(userId, {
-        email: profile?.email ?? '',
-        articles: [],
+  let sent = 0;
+
+  for (const profile of profiles) {
+    // Get user email from auth
+    const { data: { user } } = await supabase.auth.admin.getUserById(profile.id);
+    if (!user?.email) continue;
+
+    // Fetch top kept articles from the past week
+    const oneWeekAgo = new Date();
+    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+
+    const { data: articles } = await supabase
+      .from('sifted_articles')
+      .select('summary, verdict, source_url')
+      .eq('user_id', profile.id)
+      .eq('kept', true)
+      .gte('created_at', oneWeekAgo.toISOString())
+      .order('created_at', { ascending: false })
+      .limit(5);
+
+    if (!articles || articles.length === 0) continue;
+
+    // Build email HTML
+    const articleList = articles.map(a => `
+      <tr>
+        <td style="padding: 12px 0; border-bottom: 1px solid #3e3a35;">
+          <p style="margin:0; font-size:14px; color:#d3cbc0;">${a.summary.substring(0, 150)}…</p>
+          <p style="margin:4px 0 0; font-size:12px; color:#a39a90;">${a.verdict}</p>
+        </td>
+      </tr>
+    `).join('');
+
+    const html = `
+      <div style="max-width:600px;margin:0 auto;background:#1a1714;border-radius:16px;padding:24px;font-family:system-ui,sans-serif;">
+        <h1 style="color:#f0ede8;font-size:24px;margin:0 0 8px;">🧠 Your weekly Sift digest</h1>
+        <p style="color:#a39a90;font-size:14px;margin:0 0 24px;">Here are the articles you kept this week, @${profile.username || 'reader'}.</p>
+        <table style="width:100%;border-collapse:collapse;">${articleList}</table>
+        <p style="margin:24px 0 0;font-size:12px;color:#8a8178;">Sent by Sift. <a href="https://sift-lac.vercel.app/settings" style="color:#c77d5a;">Manage digest settings</a>.</p>
+      </div>
+    `;
+
+    try {
+      await resend.emails.send({
+        from: 'Sift <digest@sift-lac.vercel.app>', // verify this domain in Resend
+        to: user.email,
+        subject: `Sift digest — ${articles.length} article${articles.length > 1 ? 's' : ''} you kept`,
+        html,
       });
+      sent++;
+    } catch (e) {
+      console.error(`Failed to send to ${user.email}`, e);
     }
-    userMap.get(userId)!.articles.push(row);
   }
 
-  const resendKey = process.env.RESEND_API_KEY;
-  if (!resendKey) {
-    return NextResponse.json({ error: 'Resend API key not configured' }, { status: 500 });
-  }
-
-  const results = await Promise.allSettled(
-    Array.from(userMap.entries()).map(async ([, data]) => {
-      if (!data.email) return { error: 'No email for user' };
-
-      const articlesHtml = data.articles
-        .map(
-          (a) => `
-            <tr>
-              <td style="padding:12px;border-bottom:1px solid #e5e7eb;">
-                <p style="margin:0;font-weight:500;color:#1c1917;">${a.summary?.substring(0, 120) ?? ''}…</p>
-                <p style="margin:4px 0 0;font-size:13px;color:#6b7280;">${a.verdict}</p>
-              </td>
-            </tr>
-          `
-        )
-        .join('');
-
-      const html = `
-        <div style="max-width:600px;margin:0 auto;font-family:sans-serif;">
-          <div style="background:#5b4b8a;padding:24px;border-radius:12px 12px 0 0;text-align:center;">
-            <h1 style="color:white;margin:0;">📚 Your Weekly Sift</h1>
-          </div>
-          <div style="background:white;padding:24px;border:1px solid #e5e7eb;border-top:none;border-radius:0 0 12px 12px;">
-            <p style="color:#4b5563;">Here's what you kept this week:</p>
-            <table style="width:100%;border-collapse:collapse;">
-              ${articlesHtml}
-            </table>
-            <a href="https://sift.pauseapp.space/library" style="display:inline-block;margin-top:16px;background:#5b4b8a;color:white;padding:10px 24px;border-radius:8px;text-decoration:none;">View Library</a>
-          </div>
-        </div>
-      `;
-
-      await fetch('https://api.resend.com/emails', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${resendKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          from: 'Sift <sift@pauseapp.space>',
-          to: data.email,
-          subject: 'Your Weekly Sift Digest',
-          html,
-        }),
-      });
-    })
-  );
-
-  const sent = results.filter(r => r.status === 'fulfilled').length;
-  return NextResponse.json({ message: `Digests sent: ${sent}` });
+  return NextResponse.json({ sent });
 }

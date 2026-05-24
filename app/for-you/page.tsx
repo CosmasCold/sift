@@ -4,12 +4,10 @@ import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Sparkles, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
-import Image from 'next/image';
 import toast from 'react-hot-toast';
 import { GlassCard } from '@/components/ui/GlassCard';
-import AuthGuard from '@/components/AuthGuard';
+import Thumbnail from '@/components/Thumbnail';
 import UserAvatar from '@/components/UserAvatar';
-import ReportButton from '@/components/ReportButton';
 
 interface RecommendedArticle {
   id: string;
@@ -22,7 +20,7 @@ interface RecommendedArticle {
   user_profiles: { username: string; avatar_url: string | null };
 }
 
-function ForYouInner() {
+export default function ForYouPage() {
   const [articles, setArticles] = useState<RecommendedArticle[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -43,7 +41,7 @@ function ForYouInner() {
   }
 
   return (
-    <main className="flex-1 pt-12 pb-16 px-4 max-w-3xl mx-auto">
+    <main className="flex-1 pt-12 pb-16 px-4 max-w-6xl mx-auto">
       <div className="mb-8">
         <h1 className="text-3xl font-semibold text-surface-50 flex items-center gap-2">
           <Sparkles className="w-6 h-6 text-accent-400" />
@@ -78,7 +76,7 @@ function ForYouInner() {
             hidden: { opacity: 0 },
             visible: { opacity: 1, transition: { staggerChildren: 0.06 } },
           }}
-          className="space-y-4"
+          className="grid gap-5 grid-cols-1 md:grid-cols-2 xl:grid-cols-3"
         >
           {articles.map(article => (
             <motion.div
@@ -87,77 +85,57 @@ function ForYouInner() {
                 hidden: { opacity: 0, y: 8 },
                 visible: { opacity: 1, y: 0 },
               }}
+              className="hover:-translate-y-0.5 transition-transform"
             >
-              <GlassCard variant="interactive" className="p-5">
-                <div className="flex gap-4">
-                  {/* Thumbnail */}
-                  <div className="flex-shrink-0 w-14 h-14 rounded-lg overflow-hidden bg-surface-700/50">
-                    {article.thumbnail_url ? (
-                      <Image
-                        src={article.thumbnail_url}
-                        alt=""
-                        width={56}
-                        height={56}
-                        className="object-cover w-full h-full"
-                        unoptimized
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-surface-400 text-xs">
-                        📄
-                      </div>
+              <GlassCard variant="interactive" className="p-5 h-full flex flex-col">
+                <div className="flex-1">
+                  <p className="text-sm text-surface-200 leading-relaxed line-clamp-4 mb-3">
+                    {article.summary}
+                  </p>
+                  <div className="flex items-center gap-2 text-xs text-surface-400 mb-3">
+                    <span>{article.verdict}</span>
+                    <span>·</span>
+                    <span>{new Date(article.created_at).toLocaleDateString()}</span>
+                    {article.user_profiles?.username && (
+                      <>
+                        <span>·</span>
+                        <Link
+                          href={`/profile/${article.user_profiles.username}`}
+                          className="flex items-center gap-1 text-accent-400 hover:underline"
+                        >
+                          <UserAvatar
+                            username={article.user_profiles.username}
+                            avatarKey={article.user_profiles.avatar_url}
+                            size={14}
+                          />
+                          @{article.user_profiles.username}
+                        </Link>
+                      </>
                     )}
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm text-surface-200 leading-relaxed line-clamp-3">
-                      {article.summary}
-                    </p>
-                    <div className="flex items-center gap-2 mt-2 text-xs text-surface-400">
-                      <span>{article.verdict}</span>
-                      <span>·</span>
-                      <span>{new Date(article.created_at).toLocaleDateString()}</span>
-                      {article.user_profiles?.username && (
-                        <>
-                          <span>·</span>
-                          <Link
-                            href={`/profile/${article.user_profiles.username}`}
-                            className="flex items-center gap-1 text-accent-400 hover:underline"
-                          >
-                            <UserAvatar
-                              username={article.user_profiles.username}
-                              avatarKey={article.user_profiles.avatar_url}
-                              size={16}
-                            />
-                            @{article.user_profiles.username}
-                          </Link>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                  {article.source_url && (
-                    <a
-                      href={article.source_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="self-start flex-shrink-0 text-accent-400 hover:underline text-sm flex items-center gap-1"
-                    >
-                      Read <ArrowRight className="w-3 h-3" />
-                    </a>
-                  )}
-                  <ReportButton contentType="article" contentId={article.id} className="self-start" />
                 </div>
+
+                <Thumbnail
+                  src={article.thumbnail_url}
+                  size={160}
+                  className="rounded-xl w-full h-32 mb-3"
+                />
+
+                {article.source_url && (
+                  <a
+                    href={article.source_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="self-end inline-flex items-center gap-1 text-accent-400 hover:underline text-sm"
+                  >
+                    Read <ArrowRight className="w-3 h-3" />
+                  </a>
+                )}
               </GlassCard>
             </motion.div>
           ))}
         </motion.div>
       )}
     </main>
-  );
-}
-
-export default function ForYouPage() {
-  return (
-    <AuthGuard>
-      <ForYouInner />
-    </AuthGuard>
   );
 }

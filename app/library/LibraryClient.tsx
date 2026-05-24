@@ -24,6 +24,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import AuthGuard from '@/components/AuthGuard';
 import ReportButton from '@/components/ReportButton';
+import Thumbnail from '@/components/Thumbnail';
 
 interface Feed {
   id: string;
@@ -512,7 +513,7 @@ function LibraryInner() {
               <h2 className="text-sm font-semibold text-surface-400 mb-3 px-1 border-b border-surface-600/30 pb-2">
   {groupName}
 </h2>
-              <div className="grid gap-4">
+              <div className="grid gap-4 grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
                 {articles.map((article) => {
                   const isAnimating = !!feedbackAnimation[article.id];
                   return (
@@ -533,26 +534,11 @@ function LibraryInner() {
                       onClick={() =>
                         setExpandedId(expandedId === article.id ? null : article.id)
                       }
-                      className="bg-surface-800/60 backdrop-blur-xl border border-surface-600/40 shadow-glass rounded-2xl p-6 transition-shadow hover:shadow-glass cursor-pointer"
+                      className="bg-surface-800/60 backdrop-blur-xl border border-surface-600/40 shadow-glass rounded-2xl p-6 transition-shadow hover:shadow-glass cursor-pointer hover:shadow-lg hover:-translate-y-0.5"
                     >
                       <div className="flex flex-col sm:flex-row items-start gap-3">
                         {/* Thumbnail */}
-                        <div className="flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden bg-surface-800/50">
-                          {article.thumbnail_url ? (
-                            <Image
-                              src={article.thumbnail_url}
-                              alt=""
-                              width={80}
-                              height={80}
-                              className="object-cover w-full h-full"
-                              unoptimized
-                            />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center text-surface-500">
-                              <ImageOff className="w-6 h-6" />
-                            </div>
-                          )}
-                        </div>
+                        <Thumbnail src={article.thumbnail_url} size={80} className="rounded-lg flex-shrink-0" />
                         <div className="flex-1 min-w-0">
                           <div className="flex items-start gap-2">
                             <span

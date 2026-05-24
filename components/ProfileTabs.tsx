@@ -7,6 +7,7 @@ import { motion } from 'framer-motion';
 import { ArrowRight, ExternalLink, Clock, BarChart3, Star, Users } from 'lucide-react';
 import { GlassCard } from '@/components/ui/GlassCard';
 import UserAvatar from '@/components/UserAvatar';
+import Thumbnail from '@/components/Thumbnail';
 
 interface TagFrequency {
   [tag: string]: number;
@@ -204,29 +205,14 @@ export default function ProfileTabs({
                 </p>
               </GlassCard>
             ) : (
-              <div className="grid gap-5">
+              <div className="grid gap-5 grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
                 {filteredArticles.map((article) => (
                   <div
                     key={article.id}
                     className="bg-surface-800 rounded-2xl border border-surface-700/50 p-5 transition-shadow hover:shadow-card"
                   >
                     <div className="flex gap-4">
-                      <div className="flex-shrink-0 w-14 h-14 rounded-lg overflow-hidden bg-surface-700/50">
-                        {article.thumbnail_url ? (
-                          <Image
-                            src={article.thumbnail_url}
-                            alt=""
-                            width={56}
-                            height={56}
-                            className="object-cover w-full h-full"
-                            unoptimized
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center text-surface-400 text-xs">
-                            📄
-                          </div>
-                        )}
-                      </div>
+                      <Thumbnail src={article.thumbnail_url} size={56} className="rounded-lg flex-shrink-0" />
                       <div className="flex-1 min-w-0">
                         <a
                           href={article.source_url || '#'}
