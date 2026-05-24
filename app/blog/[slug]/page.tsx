@@ -35,7 +35,7 @@ export default async function BlogPost({ params }: { params: Promise<{ slug: str
         <p className="text-xs text-surface-400 mb-6">
           {new Date(data.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
         </p>
-        <div className="prose prose-invert max-w-none text-surface-200">
+        <div className="blog-content">
           <MDXRemote source={content} />
         </div>
       </GlassCard>
