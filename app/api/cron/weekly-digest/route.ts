@@ -1,8 +1,17 @@
 import { createClient } from '@supabase/supabase-js';
-import { NextResponse } from 'next/server';
+import { NextResponse, type NextRequest } from 'next/server';
 import { Resend } from 'resend';
 
-export async function GET() {
+export const dynamic = 'force-dynamic';
+
+export async function GET(request: NextRequest) {
+  // Secret check – only allow the cron job (or you with the secret) to trigger
+  const { searchParams } = new URL(request.url);
+  const secret = searchParams.get('secret');
+  if (secret !== 'sift-cron-8a7f3b2c-4e1d-4f6a-9c3e-2b7a5d1f0e8c') {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   const supabaseAdmin = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!,

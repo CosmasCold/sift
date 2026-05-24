@@ -23,7 +23,6 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import AuthGuard from '@/components/AuthGuard';
-import ReportButton from '@/components/ReportButton';
 import Thumbnail from '@/components/Thumbnail';
 
 interface Feed {
@@ -338,7 +337,7 @@ function LibraryInner() {
           <button
             onClick={handleExport}
             disabled={final.length === 0}
-            className="px-4 py-2 bg-surface-800/60 border border-surface-600/40 text-surface-300 rounded-xl text-sm font-medium hover:bg-surface-700/60 disabled:opacity-50 flex items-center gap-1 transition"
+            className="px-4 py-2 bg-surface-800/60 border border-surface-700/50 text-surface-300 rounded-xl text-sm font-medium hover:bg-surface-700/60 disabled:opacity-50 flex items-center gap-1 transition"
             aria-label="Export visible articles as Markdown"
           >
             <Download className="w-4 h-4" /> Export
@@ -511,8 +510,8 @@ function LibraryInner() {
               }}
             >
               <h2 className="text-sm font-semibold text-surface-400 mb-3 px-1 border-b border-surface-600/30 pb-2">
-  {groupName}
-</h2>
+                {groupName}
+              </h2>
               <div className="grid gap-4 grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
                 {articles.map((article) => {
                   const isAnimating = !!feedbackAnimation[article.id];
@@ -520,7 +519,6 @@ function LibraryInner() {
                     <motion.div
                       id={`article-${article.id}`}
                       key={article.id}
-                      layout
                       role="button"
                       tabIndex={0}
                       aria-expanded={expandedId === article.id}
@@ -534,7 +532,7 @@ function LibraryInner() {
                       onClick={() =>
                         setExpandedId(expandedId === article.id ? null : article.id)
                       }
-                      className="bg-surface-800/60 backdrop-blur-xl border border-surface-600/40 shadow-glass rounded-2xl p-6 transition-shadow hover:shadow-glass cursor-pointer hover:shadow-lg hover:-translate-y-0.5"
+                      className="bg-surface-800/60 backdrop-blur-xl border border-surface-600/40 shadow-glass rounded-2xl p-5 transition-shadow hover:shadow-glass cursor-pointer hover:-translate-y-0.5"
                     >
                       <div className="flex flex-col sm:flex-row items-start gap-3">
                         {/* Thumbnail */}
@@ -587,17 +585,15 @@ function LibraryInner() {
                             </div>
                           )}
                         </div>
-                        <div
-                          className="flex items-center gap-2 shrink-0"
-                          onClick={(e) => e.stopPropagation()}
-                        >
+                        <div className="flex items-center gap-1 shrink-0" onClick={(e) => e.stopPropagation()}>
+                          {/* Keep / Discard toggle */}
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
                               toggleKeep(article.id, article.kept);
                             }}
-                            className="p-1 rounded-md hover:bg-surface-800"
-                            aria-label={article.kept ? 'Mark as discarded' : 'Keep article'}
+                            className="p-1.5 rounded-md hover:bg-surface-700/50 transition"
+                            aria-label={article.kept ? 'Discard' : 'Keep'}
                           >
                             {article.kept ? (
                               <CheckCircle className="w-4 h-4 text-verdict-green" />
@@ -605,81 +601,10 @@ function LibraryInner() {
                               <Archive className="w-4 h-4 text-surface-400" />
                             )}
                           </button>
-
-                          <motion.button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleFeedback(article.id, 'agree');
-                            }}
-                            className={`p-1 rounded-md relative ${
-                              article.feedback === 'agree'
-                                ? 'text-verdict-green'
-                                : 'text-surface-400'
-                            }`}
-                            aria-label="Agree with verdict"
-                            whileTap={{ scale: 0.9 }}
-                            animate={
-                              isAnimating && article.feedback === 'agree'
-                                ? { scale: [1, 1.3, 1] }
-                                : {}
-                            }
-                            transition={{ duration: 0.3 }}
-                          >
-                            <ThumbsUp className="w-4 h-4" />
-                            {isAnimating && article.feedback === 'agree' && (
-                              <motion.span
-                                className="absolute -top-1 -right-1 text-accent-400"
-                                initial={{ opacity: 0, scale: 0 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                exit={{ opacity: 0 }}
-                              >
-                                <Sparkles className="w-3 h-3" />
-                              </motion.span>
-                            )}
-                          </motion.button>
-
-                          <motion.button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleFeedback(article.id, 'disagree');
-                            }}
-                            className={`p-1 rounded-md relative ${
-                              article.feedback === 'disagree'
-                                ? 'text-verdict-amber'
-                                : 'text-surface-400'
-                            }`}
-                            aria-label="Disagree with verdict"
-                            whileTap={{ scale: 0.9 }}
-                            animate={
-                              isAnimating && article.feedback === 'disagree'
-                                ? { scale: [1, 1.3, 1] }
-                                : {}
-                            }
-                            transition={{ duration: 0.3 }}
-                          >
-                            <ThumbsDown className="w-4 h-4" />
-                            {isAnimating && article.feedback === 'disagree' && (
-                              <motion.span
-                                className="absolute -top-1 -right-1 text-accent-400"
-                                initial={{ opacity: 0, scale: 0 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                exit={{ opacity: 0 }}
-                              >
-                                <Sparkles className="w-3 h-3" />
-                              </motion.span>
-                            )}
-                          </motion.button>
-
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleDelete(article.id);
-                            }}
-                            className="text-surface-400 hover:text-red-400"
-                            aria-label="Delete article"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
+                          {/* Expand indicator */}
+                          <span className="text-surface-500 text-xs ml-1">
+                            {expandedId === article.id ? '▲' : '▼'}
+                          </span>
                         </div>
                       </div>
                       <AnimatePresence>
@@ -691,7 +616,7 @@ function LibraryInner() {
                             className="overflow-hidden"
                             onClick={(e) => e.stopPropagation()}
                           >
-                            <div className="pt-4 mt-4 border-t border-surface-600/40 space-y-3">
+                            <div className="pt-4 mt-4 border-t border-surface-700/50 space-y-3">
                               <p className="text-surface-200 text-sm leading-relaxed">
                                 {article.summary}
                               </p>
@@ -736,7 +661,7 @@ function LibraryInner() {
                                     name="tags"
                                     defaultValue={(article.tags || []).join(', ')}
                                     placeholder="e.g., AI, design"
-                                    className="flex-1 px-2 py-1 text-sm border border-surface-600 rounded-lg bg-surface-800 text-surface-50 placeholder-surface-400 focus:ring-2 focus:ring-accent-400/50 outline-none"
+                                    className="flex-1 min-w-0 max-w-full px-2 py-1 text-sm border border-surface-600 rounded-lg bg-surface-800 text-surface-50 placeholder-surface-400 focus:ring-2 focus:ring-accent-400/50 outline-none"
                                   />
                                   <button
                                     type="submit"
@@ -746,9 +671,41 @@ function LibraryInner() {
                                   </button>
                                 </form>
                               </div>
-                              <div className="flex items-center gap-2 mt-2" onClick={(e) => e.stopPropagation()}>
-  <ReportButton contentType="article" contentId={article.id} />
-</div>
+                              {/* Feedback and delete inside expanded card */}
+                              <div className="flex items-center gap-2 pt-3 border-t border-surface-700/50">
+                                <motion.button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleFeedback(article.id, 'agree');
+                                  }}
+                                  className={`p-1 rounded-md ${article.feedback === 'agree' ? 'text-verdict-green' : 'text-surface-400'} hover:bg-surface-700/50`}
+                                  aria-label="Agree with verdict"
+                                  whileTap={{ scale: 0.9 }}
+                                >
+                                  <ThumbsUp className="w-4 h-4" />
+                                </motion.button>
+                                <motion.button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleFeedback(article.id, 'disagree');
+                                  }}
+                                  className={`p-1 rounded-md ${article.feedback === 'disagree' ? 'text-verdict-amber' : 'text-surface-400'} hover:bg-surface-700/50`}
+                                  aria-label="Disagree with verdict"
+                                  whileTap={{ scale: 0.9 }}
+                                >
+                                  <ThumbsDown className="w-4 h-4" />
+                                </motion.button>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleDelete(article.id);
+                                  }}
+                                  className="p-1 text-surface-400 hover:text-red-400 ml-auto"
+                                  aria-label="Delete article"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              </div>
                             </div>
                           </motion.div>
                         )}

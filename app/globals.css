@@ -146,3 +146,20 @@ option {
 .dark textarea {
   color: #f0ede8; /* surface-50 – bright white */
 }
+
+.dark input::placeholder,
+.dark textarea::placeholder {
+  color: #8a8178;
+  opacity: 1;
+}
+.dark input,
+.dark textarea,
+.dark select {
+  color: #f0ede8;
+  background-color: #24211d;
+  border-color: #3e3a35;
+}
+.dark select option {
+  background-color: #24211d;
+  color: #f0ede8;
+}

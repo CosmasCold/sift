@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Plus, Check } from 'lucide-react';
+import { ArrowLeft, Plus, Check, Search } from 'lucide-react';
 import Link from 'next/link';
 import { GlassCard } from '@/components/ui/GlassCard';
 import toast from 'react-hot-toast';
@@ -21,6 +21,7 @@ export default function NewCollectionPage() {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [filterText, setFilterText] = useState('');
 
   useEffect(() => {
     fetch('/api/library')
@@ -30,10 +31,23 @@ export default function NewCollectionPage() {
       .finally(() => setLoading(false));
   }, []);
 
+  const filteredLibrary = articles.filter(a =>
+    a.summary.toLowerCase().includes(filterText.toLowerCase())
+  );
+
   const toggleSelect = (id: string) => {
     setSelectedIds(prev =>
       prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
     );
+  };
+
+  const selectAllVisible = () => {
+    const visibleIds = filteredLibrary.map(a => a.id);
+    setSelectedIds(prev => [...new Set([...prev, ...visibleIds])]);
+  };
+
+  const clearSelection = () => {
+    setSelectedIds([]);
   };
 
   const handleCreate = async () => {
@@ -101,15 +115,40 @@ export default function NewCollectionPage() {
         </div>
       </GlassCard>
 
-      <h2 className="text-lg font-semibold text-surface-50 mb-4">Select articles from your library</h2>
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-lg font-semibold text-surface-50">
+          Select articles ({selectedIds.length} selected)
+        </h2>
+        <div className="flex items-center gap-2">
+          <button onClick={selectAllVisible} className="text-xs text-accent-400 hover:underline">
+            Select all
+          </button>
+          <button onClick={clearSelection} className="text-xs text-surface-400 hover:underline">
+            Clear
+          </button>
+        </div>
+      </div>
+
+      <div className="relative mb-4">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-surface-500" />
+        <input
+          type="text"
+          placeholder="Filter articles…"
+          value={filterText}
+          onChange={(e) => setFilterText(e.target.value)}
+          className="w-full pl-9 pr-3 py-2 bg-surface-800/50 border border-surface-700 rounded-xl text-surface-50 placeholder-surface-500 focus:ring-2 focus:ring-accent-400/50 outline-none"
+        />
+      </div>
 
       <div className="space-y-3 mb-6">
-        {articles.length === 0 ? (
+        {filteredLibrary.length === 0 ? (
           <GlassCard className="p-10 text-center">
-            <p className="text-surface-400">No kept articles in your library yet.</p>
+            <p className="text-surface-400">
+              {filterText ? 'No articles match your filter.' : 'No kept articles in your library yet.'}
+            </p>
           </GlassCard>
         ) : (
-          articles.map(article => {
+          filteredLibrary.map(article => {
             const isSelected = selectedIds.includes(article.id);
             return (
               <GlassCard

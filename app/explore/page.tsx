@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Search, Tag } from 'lucide-react';
+import { Search, Tag, Sparkles } from 'lucide-react';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { motion, AnimatePresence } from 'framer-motion';
 import AuthGuard from '@/components/AuthGuard';
@@ -14,12 +14,25 @@ interface Profile {
   created_at: string;
 }
 
+interface FeaturedProfile {
+  username: string;
+  avatar_url: string | null;
+  articlesKept: number;
+}
+
 function ExploreInner() {
   const [searchMode, setSearchMode] = useState<'username' | 'tag'>('username');
   const [query, setQuery] = useState('');
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
+  const [featuredProfiles, setFeaturedProfiles] = useState<FeaturedProfile[]>([]);
+
+  useEffect(() => {
+    fetch('/api/explore/featured')
+      .then(r => r.json())
+      .then(data => setFeaturedProfiles(data.profiles || []));
+  }, []);
 
   const handleSearch = async () => {
     const trimmed = query.trim();
@@ -46,6 +59,26 @@ function ExploreInner() {
 
   return (
     <main className="flex-1 pt-12 pb-16 px-4 max-w-3xl mx-auto">
+      {/* Featured readers */}
+      {featuredProfiles.length > 0 && (
+        <div className="mb-10">
+          <h2 className="text-xl font-semibold text-surface-50 mb-4 flex items-center gap-2">
+            <Sparkles className="w-5 h-5 text-accent-400" /> Featured readers
+          </h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {featuredProfiles.map((p) => (
+              <Link key={p.username} href={`/profile/${p.username}`}>
+                <GlassCard variant="interactive" className="p-4 text-center">
+                  <UserAvatar username={p.username} avatarKey={p.avatar_url} size={48} />
+                  <p className="text-sm font-medium text-surface-200 mt-2">@{p.username}</p>
+                  <p className="text-xs text-surface-400">{p.articlesKept} articles kept</p>
+                </GlassCard>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
+
       <h1 className="text-3xl font-semibold text-surface-50 mb-2">Explore public profiles</h1>
       <p className="text-surface-400 mb-6">
         Discover fellow readers by username or the topics they care about.
