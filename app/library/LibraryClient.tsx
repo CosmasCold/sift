@@ -27,7 +27,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import AuthGuard from '@/components/AuthGuard';
 import Thumbnail from '@/components/Thumbnail';
-import html2pdf from 'html2pdf.js';
+
 
 interface Feed {
   id: string;
@@ -407,6 +407,7 @@ function LibraryInner() {
     `;
 
     toast.loading('Generating PDF…');
+    const html2pdf = (await import('html2pdf.js')).default;
     await html2pdf().set({
       margin: 10,
       filename: `sift-export-${new Date().toISOString().split('T')[0]}.pdf`,
