@@ -278,26 +278,28 @@ export default function SettingsPage() {
           <p className="text-xs text-surface-400 mb-3">
             Use this key to send URLs to Sift from automation tools.
           </p>
-          <div className="flex gap-2">
-            <input
-              type="text"
-              readOnly
-              value={apiKey || 'Generating…'}
-              className="flex-1 px-3 py-2 text-sm bg-surface-800/50 border border-surface-700 rounded-xl text-surface-50 placeholder-surface-500 focus:outline-none"
-            />
-            <button
-              onClick={copyApiKey}
-              className="px-4 py-2 bg-surface-800/60 border border-surface-700/50 text-surface-300 rounded-xl text-sm font-medium hover:bg-surface-700/60 transition"
-            >
-              Copy
-            </button>
-            <button
-              onClick={regenerateApiKey}
-              className="px-4 py-2 bg-surface-800/60 border border-surface-700/50 text-surface-300 rounded-xl text-sm font-medium hover:bg-surface-700/60 transition"
-            >
-              Regenerate
-            </button>
-          </div>
+          <div className="flex flex-col sm:flex-row gap-2">
+  <input
+    type="text"
+    readOnly
+    value={apiKey || 'Generating…'}
+    className="flex-1 px-3 py-2 text-sm bg-surface-800/50 border border-surface-700 rounded-xl text-surface-50 placeholder-surface-500 focus:outline-none"
+  />
+  <div className="flex gap-2">
+    <button
+      onClick={copyApiKey}
+      className="flex-1 sm:flex-none px-4 py-2 bg-surface-800/60 border border-surface-700/50 text-surface-300 rounded-xl text-sm font-medium hover:bg-surface-700/60 transition"
+    >
+      Copy
+    </button>
+    <button
+      onClick={regenerateApiKey}
+      className="flex-1 sm:flex-none px-4 py-2 bg-surface-800/60 border border-surface-700/50 text-surface-300 rounded-xl text-sm font-medium hover:bg-surface-700/60 transition"
+    >
+      Regenerate
+    </button>
+  </div>
+</div>
           <p className="text-xs text-surface-500 mt-2">
             POST to <code className="text-accent-400">https://thesift.space/api/v1/sift</code> with<br />
             <code className="text-surface-300">Authorization: Bearer your‑key</code> and JSON body{' '}
