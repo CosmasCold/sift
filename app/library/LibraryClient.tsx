@@ -364,7 +364,7 @@ function LibraryInner() {
     toast.success(`${final.length} articles exported.`);
   };
 
-  const handleExportPdf = async () => {
+    const handleExportPdf = async () => {
     if (final.length === 0) {
       toast.error('No articles to export.');
       return;
@@ -383,71 +383,72 @@ function LibraryInner() {
             color: #1c1b18;
             background: #f8f6f2;
             margin: 0;
-            padding: 24px;
+            padding: 40px 32px;
           }
           .header {
             text-align: center;
-            margin-bottom: 28px;
+            margin-bottom: 36px;
           }
           .header img {
-            height: 24px;
-            margin-bottom: 8px;
+            height: 28px;               /* small logo */
+            margin-bottom: 10px;
           }
           .header h1 {
             color: #c77d5a;
             margin: 0;
-            font-size: 22px;
+            font-size: 24px;
             font-weight: 600;
           }
           .header p {
             color: #5e574f;
-            margin: 4px 0 0;
-            font-size: 12px;
+            margin: 6px 0 0;
+            font-size: 13px;
           }
           .card {
             background: #fff;
             border: 1px solid #e8e3dd;
-            border-radius: 12px;
-            padding: 14px 16px;
-            margin-bottom: 12px;
+            border-radius: 14px;
+            padding: 18px 22px;
+            margin-bottom: 18px;
           }
           .verdict {
             display: inline-block;
-            font-size: 11px;
+            font-size: 12px;
             font-weight: 500;
             color: #c77d5a;
             background: rgba(199,125,90,0.12);
-            padding: 3px 10px;
+            padding: 4px 12px;
             border-radius: 20px;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
           }
           .summary {
-            font-size: 13px;
-            line-height: 1.5;
+            font-size: 14px;
+            line-height: 1.6;
             color: #1c1b18;
-            margin: 0 0 6px;
+            margin: 0 0 8px;
           }
           .meta {
-            font-size: 11px;
+            font-size: 12px;
             color: #7a7268;
-            margin-top: 6px;
+            margin-top: 8px;
           }
           .tag {
             display: inline-block;
             background: #e8e3dd;
             color: #5e574f;
-            padding: 2px 8px;
+            padding: 3px 10px;
             border-radius: 20px;
-            font-size: 10px;
-            margin-right: 4px;
+            font-size: 11px;
+            margin-right: 6px;
+            margin-bottom: 4px;
           }
           .footer {
             text-align: center;
-            margin-top: 28px;
-            padding-top: 18px;
+            margin-top: 36px;
+            padding-top: 24px;
             border-top: 1px solid #e8e3dd;
             color: #7a7268;
-            font-size: 11px;
+            font-size: 12px;
           }
         </style>
       </head>
@@ -462,17 +463,17 @@ function LibraryInner() {
           <div class="card">
             <span class="verdict">${article.verdict}</span>
             <p class="summary">${article.summary}</p>
-            ${article.tags?.length ? `<div style="margin-top:6px;">${article.tags.map(tag => `<span class="tag">#${tag}</span>`).join(' ')}</div>` : ''}
+            ${article.tags?.length ? `<div style="margin-top:8px;">${article.tags.map(tag => `<span class="tag">#${tag}</span>`).join(' ')}</div>` : ''}
             <p class="meta">
               ${new Date(article.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
               ${article.feed?.title ? ` · from ${article.feed.title}` : ''}
-              ${article.source_url ? ` · <a href="${article.source_url}" style="color:#c77d5a;">Original</a>` : ''}
+              ${article.source_url ? ` · <span style="color:#7a7268;">${article.source_url}</span>` : ''}
             </p>
           </div>
         `).join('')}
 
         <div class="footer">
-          Sifted with care · <a href="https://thesift.space" style="color:#c77d5a;">thesift.space</a>
+          Sifted with care · <span style="color:#c77d5a;">thesift.space</span>
         </div>
       </body>
       </html>
@@ -480,7 +481,7 @@ function LibraryInner() {
 
     toast.loading('Generating PDF…');
     await html2pdf().set({
-      margin: 10,
+      margin: 12,
       filename: `sift-export-${new Date().toISOString().split('T')[0]}.pdf`,
       image: { type: 'jpeg', quality: 0.98 },
       html2canvas: { scale: 2, useCORS: true },
