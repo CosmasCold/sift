@@ -2,7 +2,16 @@
 
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Copy, Check, ExternalLink, Rss, Sparkles, TrendingUp } from 'lucide-react';
+import {
+  Copy,
+  Check,
+  ExternalLink,
+  Rss,
+  Sparkles,
+  TrendingUp,
+  Bookmark,
+  ClipboardCopy,
+} from 'lucide-react';
 import toast from 'react-hot-toast';
 import { GlassCard } from '@/components/ui/GlassCard';
 import Link from 'next/link';
@@ -123,6 +132,9 @@ const categories: { name: string; icon: string; feeds: FeedSuggestion[] }[] = [
 function DiscoverInner() {
   const [copiedUrl, setCopiedUrl] = useState<string | null>(null);
   const [popularFeeds, setPopularFeeds] = useState<PopularFeed[]>([]);
+  const [bookmarkletCopied, setBookmarkletCopied] = useState(false);
+
+  const bookmarkletCode = `javascript:(function(){window.open('https://thesift.space/extension/queue?url='+encodeURIComponent(window.location.href),'_blank');})();`;
 
   useEffect(() => {
     fetch('/api/discover/popular')
@@ -142,6 +154,17 @@ function DiscoverInner() {
     }
   };
 
+  const copyBookmarklet = async () => {
+    try {
+      await navigator.clipboard.writeText(bookmarkletCode);
+      setBookmarkletCopied(true);
+      toast.success('Bookmarklet code copied!');
+      setTimeout(() => setBookmarkletCopied(false), 2000);
+    } catch {
+      toast.error('Could not copy code.');
+    }
+  };
+
   return (
     <main className="flex-1 pt-12 pb-16 px-4 max-w-4xl mx-auto">
       <div className="mb-8">
@@ -156,6 +179,49 @@ function DiscoverInner() {
           </Link>{' '}
           page.
         </p>
+      </div>
+
+      {/* Bookmarklet section */}
+      <div className="mb-10">
+        <GlassCard className="p-5">
+          <div className="flex items-start gap-3">
+            <div className="flex-shrink-0 w-10 h-10 rounded-full bg-accent-400/10 flex items-center justify-center">
+              <Bookmark className="w-5 h-5 text-accent-400" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <h2 className="text-lg font-semibold text-surface-50 mb-1">
+                Browser bookmarklet
+              </h2>
+              <p className="text-sm text-surface-400 mb-3">
+                Drag this link to your bookmarks bar, or copy the code and create a bookmark manually.
+                Click it while reading any article to sift it instantly.
+              </p>
+              <div className="flex items-center gap-2">
+                <a
+                  href={bookmarkletCode}
+                  className="inline-flex items-center gap-1 px-4 py-2 bg-accent-500 text-white rounded-xl text-sm font-medium hover:bg-accent-600 transition"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    copyBookmarklet();
+                  }}
+                >
+                  <ClipboardCopy className="w-4 h-4" />
+                  {bookmarkletCopied ? 'Copied!' : 'Copy bookmarklet'}
+                </a>
+                <button
+                  onClick={copyBookmarklet}
+                  className="inline-flex items-center gap-1 text-sm text-surface-400 hover:text-accent-400 transition"
+                >
+                  <Copy className="w-3 h-3" />
+                  Copy code
+                </button>
+              </div>
+              <pre className="mt-3 text-xs text-surface-500 bg-surface-800/50 p-3 rounded-xl overflow-x-auto whitespace-pre-wrap break-all select-all">
+                {bookmarkletCode}
+              </pre>
+            </div>
+          </div>
+        </GlassCard>
       </div>
 
       {/* Popular feeds – dynamic */}

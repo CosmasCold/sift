@@ -366,11 +366,13 @@ function LibraryInner() {
     toast.success(`${final.length} articles exported.`);
   };
 
-  const handleExportPdf = async () => {
+    const handleExportPdf = async () => {
     if (final.length === 0) {
       toast.error('No articles to export.');
       return;
     }
+
+    const html2pdf = (await import('html2pdf.js')).default;
 
     const html = `
       <!DOCTYPE html>
@@ -378,36 +380,107 @@ function LibraryInner() {
       <head>
         <meta charset="utf-8">
         <style>
-          body { font-family: system-ui, -apple-system, sans-serif; color: #1c1b18; background: #f8f6f2; margin: 0; padding: 20px; }
-          .header { text-align: center; margin-bottom: 30px; }
-          .header h1 { color: #c77d5a; margin: 0; }
-          .header p { color: #5e574f; margin: 5px 0 0; }
-          .card { background: #fff; border: 1px solid #e8e3dd; border-radius: 12px; padding: 15px; margin-bottom: 15px; }
-          .verdict { display: inline-block; font-size: 12px; font-weight: 500; color: #c77d5a; background: rgba(199,125,90,0.12); padding: 3px 10px; border-radius: 20px; margin-bottom: 8px; }
-          .summary { font-size: 14px; line-height: 1.6; color: #1c1b18; }
-          .meta { font-size: 12px; color: #7a7268; margin-top: 8px; }
-          .tag { display: inline-block; background: #e8e3dd; color: #5e574f; padding: 2px 8px; border-radius: 10px; font-size: 11px; margin-right: 4px; }
+          body {
+            font-family: system-ui, -apple-system, sans-serif;
+            color: #1c1b18;
+            background: #f8f6f2;
+            margin: 0;
+            padding: 32px;
+          }
+          .header {
+            text-align: center;
+            margin-bottom: 36px;
+          }
+          .header img {
+            height: 36px;
+            margin-bottom: 12px;
+          }
+          .header h1 {
+            color: #c77d5a;
+            margin: 0;
+            font-size: 28px;
+            font-weight: 600;
+          }
+          .header p {
+            color: #5e574f;
+            margin: 6px 0 0;
+            font-size: 14px;
+          }
+          .card {
+            background: #fff;
+            border: 1px solid #e8e3dd;
+            border-radius: 14px;
+            padding: 18px 20px;
+            margin-bottom: 16px;
+          }
+          .verdict {
+            display: inline-block;
+            font-size: 12px;
+            font-weight: 500;
+            color: #c77d5a;
+            background: rgba(199,125,90,0.12);
+            padding: 4px 12px;
+            border-radius: 20px;
+            margin-bottom: 10px;
+          }
+          .summary {
+            font-size: 15px;
+            line-height: 1.6;
+            color: #1c1b18;
+            margin: 0 0 6px;
+          }
+          .meta {
+            font-size: 12px;
+            color: #7a7268;
+            margin-top: 8px;
+          }
+          .tag {
+            display: inline-block;
+            background: #e8e3dd;
+            color: #5e574f;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            margin-right: 4px;
+          }
+          .footer {
+            text-align: center;
+            margin-top: 36px;
+            padding-top: 24px;
+            border-top: 1px solid #e8e3dd;
+            color: #7a7268;
+            font-size: 12px;
+          }
         </style>
       </head>
       <body>
         <div class="header">
+          <img src="https://thesift.space/sift-logo.png" alt="Sift" />
           <h1>Sift</h1>
-          <p>Exported on ${new Date().toLocaleDateString()}</p>
+          <p>Exported on ${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
         </div>
+
         ${final.map(article => `
           <div class="card">
             <span class="verdict">${article.verdict}</span>
             <p class="summary">${article.summary}</p>
             ${article.tags?.length ? `<div style="margin-top:8px;">${article.tags.map(tag => `<span class="tag">#${tag}</span>`).join(' ')}</div>` : ''}
-            <p class="meta">${new Date(article.created_at).toLocaleDateString()}${article.feed?.title ? ` · from ${article.feed.title}` : ''}</p>
+            <p class="meta">
+              ${new Date(article.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+              ${article.feed?.title ? ` · from ${article.feed.title}` : ''}
+              ${article.source_url ? ` · <a href="${article.source_url}" style="color:#c77d5a;">Original</a>` : ''}
+            </p>
           </div>
         `).join('')}
+
+        <div class="footer">
+          Sifted with care · <a href="https://thesift.space" style="color:#c77d5a;">thesift.space</a>
+        </div>
       </body>
       </html>
     `;
 
     toast.loading('Generating PDF…');
-    const html2pdf = (await import('html2pdf.js')).default;
     await html2pdf().set({
       margin: 10,
       filename: `sift-export-${new Date().toISOString().split('T')[0]}.pdf`,
@@ -418,13 +491,6 @@ function LibraryInner() {
     toast.dismiss();
     toast.success('PDF exported');
   };
-
-  if (loading)
-    return (
-      <div className="flex justify-center pt-16">
-        <div className="animate-spin w-6 h-6 border-2 border-accent-400 border-t-transparent rounded-full" />
-      </div>
-    );
 
   return (
     <main className="flex-1 pt-12 pb-16 px-4 max-w-6xl mx-auto">
