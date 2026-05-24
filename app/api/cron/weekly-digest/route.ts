@@ -1,13 +1,19 @@
-import { createClient } from '@/lib/supabase/server';
+import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
 import { Resend } from 'resend';
 
 export async function GET() {
-  const supabase = await createClient();
+  // Service role client – allows admin API calls
+  const supabaseAdmin = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    { auth: { autoRefreshToken: false, persistSession: false } }
+  );
+
   const resend = new Resend(process.env.RESEND_API_KEY);
 
   // Get all users who have opted in
-  const { data: profiles, error: profileError } = await supabase
+  const { data: profiles, error: profileError } = await supabaseAdmin
     .from('user_profiles')
     .select('id, username')
     .eq('weekly_digest', true);
@@ -19,15 +25,15 @@ export async function GET() {
   let sent = 0;
 
   for (const profile of profiles) {
-    // Get user email from auth
-    const { data: { user } } = await supabase.auth.admin.getUserById(profile.id);
-    if (!user?.email) continue;
+    // Get user email using admin API
+    const { data: { user }, error: userError } = await supabaseAdmin.auth.admin.getUserById(profile.id);
+    if (userError || !user?.email) continue;
 
     // Fetch top kept articles from the past week
     const oneWeekAgo = new Date();
     oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
 
-    const { data: articles } = await supabase
+    const { data: articles } = await supabaseAdmin
       .from('sifted_articles')
       .select('summary, verdict, source_url')
       .eq('user_id', profile.id)
@@ -59,7 +65,7 @@ export async function GET() {
 
     try {
       await resend.emails.send({
-        from: 'Sift <digest@sift-lac.vercel.app>', // verify this domain in Resend
+        from: 'Sift <digest@sift-lac.vercel.app>',
         to: user.email,
         subject: `Sift digest — ${articles.length} article${articles.length > 1 ? 's' : ''} you kept`,
         html,
