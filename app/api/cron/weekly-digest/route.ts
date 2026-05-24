@@ -3,7 +3,6 @@ import { NextResponse } from 'next/server';
 import { Resend } from 'resend';
 
 export async function GET() {
-  // Service role client – allows admin API calls
   const supabaseAdmin = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!,
@@ -12,7 +11,6 @@ export async function GET() {
 
   const resend = new Resend(process.env.RESEND_API_KEY);
 
-  // Get all users who have opted in
   const { data: profiles, error: profileError } = await supabaseAdmin
     .from('user_profiles')
     .select('id, username')
@@ -25,11 +23,9 @@ export async function GET() {
   let sent = 0;
 
   for (const profile of profiles) {
-    // Get user email using admin API
     const { data: { user }, error: userError } = await supabaseAdmin.auth.admin.getUserById(profile.id);
     if (userError || !user?.email) continue;
 
-    // Fetch top kept articles from the past week
     const oneWeekAgo = new Date();
     oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
 
@@ -44,7 +40,6 @@ export async function GET() {
 
     if (!articles || articles.length === 0) continue;
 
-    // Build restyled email HTML
     const articleList = articles.map((a, i) => `
       <div style="background:#fff;border:1px solid #e8e3dd;border-radius:14px;padding:18px 20px;margin-bottom:14px;${i === articles.length - 1 ? 'margin-bottom:0;' : ''}">
         <p style="font-size:15px;color:#1c1b18;margin:0 0 10px;line-height:1.5;">${a.summary.substring(0, 200)}${a.summary.length > 200 ? '…' : ''}</p>
@@ -54,6 +49,11 @@ export async function GET() {
 
     const html = `
       <div style="max-width:560px;margin:40px auto;background:#f8f6f2;border-radius:20px;padding:40px 32px;font-family:system-ui,-apple-system,sans-serif;color:#1c1b18;">
+        <!-- Logo -->
+        <div style="text-align:center;margin-bottom:24px;">
+          <img src="https://sift-lac.vercel.app/sift-logo.png" alt="Sift" style="height:36px;width:auto;" />
+        </div>
+
         <!-- Header -->
         <div style="text-align:center;margin-bottom:32px;">
           <h1 style="font-size:28px;font-weight:600;color:#1c1b18;margin:0 0 8px;">Sift</h1>
