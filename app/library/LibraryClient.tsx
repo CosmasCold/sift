@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useMemo, useCallback } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ArrowRight,
@@ -27,7 +27,6 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import AuthGuard from '@/components/AuthGuard';
 import Thumbnail from '@/components/Thumbnail';
-
 
 interface Feed {
   id: string;
@@ -90,7 +89,7 @@ function LibraryInner() {
   const [collections, setCollections] = useState<Collection[]>([]);
   const [feedbackAnimation, setFeedbackAnimation] = useState<Record<string, number>>({});
 
-  // ---- Annotations state ----
+  // Annotations state
   const [annotations, setAnnotations] = useState<Annotation[]>([]);
   const [selectedText, setSelectedText] = useState('');
   const [annotationNote, setAnnotationNote] = useState('');
@@ -144,7 +143,7 @@ function LibraryInner() {
     fetchData();
   }, [search, searchMode]);
 
-  // ---- Fetch annotations when an article is expanded ----
+  // Fetch annotations when an article is expanded
   useEffect(() => {
     if (!expandedArticle) return;
     const fetchAnnotations = async () => {
@@ -231,7 +230,7 @@ function LibraryInner() {
     } else toast.error('Failed');
   };
 
-  // ---- Annotation handlers ----
+  // Annotation handlers
   const handleTextSelection = () => {
     const selection = window.getSelection();
     if (!selection || selection.isCollapsed) {
@@ -240,7 +239,6 @@ function LibraryInner() {
       return;
     }
     const text = selection.toString().trim();
-    // Only show if selection is within the expanded article content
     const container = document.getElementById('expanded-article-content');
     if (container && container.contains(selection.anchorNode)) {
       setSelectedText(text);
@@ -265,7 +263,6 @@ function LibraryInner() {
       setAnnotationNote('');
       setSelectedText('');
       setShowAnnotationForm(false);
-      // Refresh annotations
       const r = await fetch(`/api/annotations?articleId=${expandedArticle.id}`);
       const updated = await r.json();
       setAnnotations(updated.annotations || []);
@@ -336,6 +333,7 @@ function LibraryInner() {
       .slice(0, 3);
   }, [articles]);
 
+  // Export handlers
   const handleExportMd = () => {
     if (final.length === 0) {
       toast.error('No articles to export.');
@@ -366,7 +364,7 @@ function LibraryInner() {
     toast.success(`${final.length} articles exported.`);
   };
 
-    const handleExportPdf = async () => {
+  const handleExportPdf = async () => {
     if (final.length === 0) {
       toast.error('No articles to export.');
       return;
@@ -385,71 +383,71 @@ function LibraryInner() {
             color: #1c1b18;
             background: #f8f6f2;
             margin: 0;
-            padding: 32px;
+            padding: 24px;
           }
           .header {
             text-align: center;
-            margin-bottom: 36px;
+            margin-bottom: 28px;
           }
           .header img {
-            height: 36px;
-            margin-bottom: 12px;
+            height: 24px;
+            margin-bottom: 8px;
           }
           .header h1 {
             color: #c77d5a;
             margin: 0;
-            font-size: 28px;
+            font-size: 22px;
             font-weight: 600;
           }
           .header p {
             color: #5e574f;
-            margin: 6px 0 0;
-            font-size: 14px;
+            margin: 4px 0 0;
+            font-size: 12px;
           }
           .card {
             background: #fff;
             border: 1px solid #e8e3dd;
-            border-radius: 14px;
-            padding: 18px 20px;
-            margin-bottom: 16px;
+            border-radius: 12px;
+            padding: 14px 16px;
+            margin-bottom: 12px;
           }
           .verdict {
             display: inline-block;
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 500;
             color: #c77d5a;
             background: rgba(199,125,90,0.12);
-            padding: 4px 12px;
+            padding: 3px 10px;
             border-radius: 20px;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
           }
           .summary {
-            font-size: 15px;
-            line-height: 1.6;
+            font-size: 13px;
+            line-height: 1.5;
             color: #1c1b18;
             margin: 0 0 6px;
           }
           .meta {
-            font-size: 12px;
+            font-size: 11px;
             color: #7a7268;
-            margin-top: 8px;
+            margin-top: 6px;
           }
           .tag {
             display: inline-block;
             background: #e8e3dd;
             color: #5e574f;
-            padding: 3px 10px;
+            padding: 2px 8px;
             border-radius: 20px;
-            font-size: 11px;
+            font-size: 10px;
             margin-right: 4px;
           }
           .footer {
             text-align: center;
-            margin-top: 36px;
-            padding-top: 24px;
+            margin-top: 28px;
+            padding-top: 18px;
             border-top: 1px solid #e8e3dd;
             color: #7a7268;
-            font-size: 12px;
+            font-size: 11px;
           }
         </style>
       </head>
@@ -464,7 +462,7 @@ function LibraryInner() {
           <div class="card">
             <span class="verdict">${article.verdict}</span>
             <p class="summary">${article.summary}</p>
-            ${article.tags?.length ? `<div style="margin-top:8px;">${article.tags.map(tag => `<span class="tag">#${tag}</span>`).join(' ')}</div>` : ''}
+            ${article.tags?.length ? `<div style="margin-top:6px;">${article.tags.map(tag => `<span class="tag">#${tag}</span>`).join(' ')}</div>` : ''}
             <p class="meta">
               ${new Date(article.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
               ${article.feed?.title ? ` · from ${article.feed.title}` : ''}
@@ -491,6 +489,13 @@ function LibraryInner() {
     toast.dismiss();
     toast.success('PDF exported');
   };
+
+  if (loading)
+    return (
+      <div className="flex justify-center pt-16">
+        <div className="animate-spin w-6 h-6 border-2 border-accent-400 border-t-transparent rounded-full" />
+      </div>
+    );
 
   return (
     <main className="flex-1 pt-12 pb-16 px-4 max-w-6xl mx-auto">
@@ -785,7 +790,7 @@ function LibraryInner() {
                         }
                       }}
                       onClick={() => setExpandedArticle(article)}
-                      className="bg-surface-800/60 backdrop-blur-xl border border-surface-600/40 shadow-glass rounded-2xl p-5 transition-shadow hover:shadow-glass cursor-pointer hover:-translate-y-0.5"
+                      className="bg-surface-800 border border-surface-600/50 shadow-card rounded-2xl p-5 transition-shadow hover:shadow-card-hover cursor-pointer hover:-translate-y-0.5"
                     >
                       <div className="flex flex-col sm:flex-row items-start gap-3">
                         <Thumbnail src={article.thumbnail_url} size={80} className="rounded-lg flex-shrink-0" />
