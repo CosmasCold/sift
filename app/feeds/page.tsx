@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
-import { Trash2, Plus } from 'lucide-react';
+import { Trash2, Plus, Download } from 'lucide-react';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -49,9 +49,49 @@ export default function FeedsPage() {
     toast.success('Feed removed');
   };
 
+  const handleExportOpml = () => {
+    if (feeds.length === 0) {
+      toast.error('No feeds to export.');
+      return;
+    }
+
+    const opml = `<?xml version="1.0" encoding="UTF-8"?>
+<opml version="1.0">
+  <head>
+    <title>Sift Feeds Export</title>
+    <dateCreated>${new Date().toISOString()}</dateCreated>
+  </head>
+  <body>
+    ${feeds.map(feed => `
+      <outline text="${feed.title || feed.feed_url}" type="rss" xmlUrl="${feed.feed_url}" />
+    `).join('')}
+  </body>
+</opml>`;
+
+    const blob = new Blob([opml], { type: 'text/xml' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'sift-feeds.opml';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    toast.success('Feeds exported');
+  };
+
   return (
     <main className="flex-1 pt-12 pb-16 px-4 max-w-2xl mx-auto">
-      <h1 className="text-2xl font-semibold text-surface-50 mb-6">Your Feeds</h1>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-semibold text-surface-50">Your Feeds</h1>
+        <button
+          onClick={handleExportOpml}
+          disabled={feeds.length === 0}
+          className="px-4 py-2 bg-surface-800/60 border border-surface-700/50 text-surface-300 rounded-xl text-sm font-medium hover:bg-surface-700/60 disabled:opacity-50 flex items-center gap-1 transition"
+        >
+          <Download className="w-4 h-4" /> OPML
+        </button>
+      </div>
 
       <GlassCard className="p-4 mb-6">
         <div className="flex gap-2">
@@ -73,7 +113,7 @@ export default function FeedsPage() {
 
       <AnimatePresence mode="wait">
         {feeds.length === 0 ? (
-                    <motion.div
+          <motion.div
             key="empty"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -83,14 +123,11 @@ export default function FeedsPage() {
             <GlassCard className="p-10 text-center">
               <div className="mx-auto mb-6 w-20 h-20">
                 <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
-                  {/* Satellite dish */}
                   <ellipse cx="40" cy="44" rx="10" ry="24" fill="var(--surface-700)" />
                   <path d="M30 44 Q40 24, 50 44" stroke="var(--surface-500)" strokeWidth="2" fill="none" />
                   <line x1="40" y1="20" x2="40" y2="44" stroke="var(--surface-500)" strokeWidth="2" />
-                  {/* Signal waves */}
                   <path d="M20 44 Q10 36, 20 28" stroke="var(--accent-400)" strokeWidth="2" fill="none" opacity="0.7" />
                   <path d="M14 44 Q4 36, 14 22" stroke="var(--accent-300)" strokeWidth="1.5" fill="none" opacity="0.5" />
-                  {/* Sparkles */}
                   <circle cx="22" cy="24" r="1.5" fill="var(--accent-400)" opacity="0.8" />
                 </svg>
               </div>

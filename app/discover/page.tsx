@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Copy, Check, ExternalLink, Rss, Sparkles } from 'lucide-react';
+import { Copy, Check, ExternalLink, Rss, Sparkles, TrendingUp } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { GlassCard } from '@/components/ui/GlassCard';
 import Link from 'next/link';
@@ -13,6 +13,12 @@ interface FeedSuggestion {
   description: string;
   url: string;
   type: 'rss' | 'substack';
+}
+
+interface PopularFeed {
+  url: string;
+  title: string;
+  followers: number;
 }
 
 const categories: { name: string; icon: string; feeds: FeedSuggestion[] }[] = [
@@ -116,6 +122,14 @@ const categories: { name: string; icon: string; feeds: FeedSuggestion[] }[] = [
 
 function DiscoverInner() {
   const [copiedUrl, setCopiedUrl] = useState<string | null>(null);
+  const [popularFeeds, setPopularFeeds] = useState<PopularFeed[]>([]);
+
+  useEffect(() => {
+    fetch('/api/discover/popular')
+      .then(r => r.json())
+      .then(data => setPopularFeeds(data.feeds || []))
+      .catch(() => {});
+  }, []);
 
   const copyToClipboard = async (url: string) => {
     try {
@@ -144,6 +158,61 @@ function DiscoverInner() {
         </p>
       </div>
 
+      {/* Popular feeds – dynamic */}
+      {popularFeeds.length > 0 && (
+        <div className="mb-10">
+          <div className="flex items-center gap-2 mb-4">
+            <TrendingUp className="w-5 h-5 text-accent-400" />
+            <h2 className="text-xl font-semibold text-surface-50">Most followed in Sift</h2>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {popularFeeds.map((feed) => (
+              <GlassCard key={feed.url} variant="interactive" className="p-5">
+                <div className="flex flex-col h-full">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Rss className="w-4 h-4 text-accent-400" />
+                      <h3 className="text-sm font-semibold text-surface-50 leading-tight">
+                        {feed.title}
+                      </h3>
+                    </div>
+                    <p className="text-xs text-surface-400 mb-2">
+                      {feed.url}
+                    </p>
+                    <p className="text-xs text-accent-400 font-medium">
+                      {feed.followers} {feed.followers === 1 ? 'follower' : 'followers'}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2 mt-3">
+                    <button
+                      onClick={() => copyToClipboard(feed.url)}
+                      className="flex items-center gap-1 text-xs font-medium text-surface-300 hover:text-accent-400 transition"
+                    >
+                      {copiedUrl === feed.url ? (
+                        <Check className="w-3 h-3 text-verdict-green" />
+                      ) : (
+                        <Copy className="w-3 h-3" />
+                      )}
+                      {copiedUrl === feed.url ? 'Copied!' : 'Copy URL'}
+                    </button>
+                    <a
+                      href={feed.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs text-surface-400 hover:text-surface-200 ml-auto"
+                      title="Visit feed"
+                    >
+                      <ExternalLink className="w-3 h-3" />
+                    </a>
+                  </div>
+                </div>
+              </GlassCard>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Curated feed categories */}
       <div className="space-y-10">
         {categories.map((category) => (
           <motion.div
@@ -157,7 +226,7 @@ function DiscoverInner() {
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {category.feeds.map((feed) => (
-                <GlassCard key={feed.url} variant="interactive" className="p-5 hover:-translate-y-0.5 transition-transform">
+                <GlassCard key={feed.url} variant="interactive" className="p-5">
                   <div className="flex flex-col h-full">
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">

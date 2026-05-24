@@ -1,5 +1,5 @@
 /** @type {import('next-sitemap').IConfig} */
 module.exports = {
-  siteUrl: 'https://sift-lac.vercel.app',
+  siteUrl: 'https://thesift.space',
   generateRobotsTxt: true,
 };

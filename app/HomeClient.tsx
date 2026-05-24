@@ -16,11 +16,11 @@ import {
 import toast from 'react-hot-toast';
 import { supabase } from '@/lib/supabase/client';
 import Link from 'next/link';
-import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
 import type { User } from '@supabase/supabase-js';
 import { GlassCard } from '@/components/ui/GlassCard';
 import Thumbnail from '@/components/Thumbnail';
+import ProgressRing from '@/components/ProgressRing';
 
 interface SiftResult {
   summary: string;
@@ -58,6 +58,15 @@ interface NetworkRecommendation {
   avatar_url: string | null;
 }
 
+interface ReadNextSuggestion {
+  id: string;
+  summary: string;
+  verdict: string;
+  source_url: string | null;
+  thumbnail_url: string | null;
+  reading_time: number | null;
+}
+
 export default function HomeClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -79,6 +88,11 @@ export default function HomeClient() {
   const [recentSifts, setRecentSifts] = useState<RecentSift[]>([]);
   const [weeklyStats, setWeeklyStats] = useState<WeeklyStats | null>(null);
   const [networkRecommendation, setNetworkRecommendation] = useState<NetworkRecommendation | null>(null);
+  const [readNext, setReadNext] = useState<ReadNextSuggestion | null>(null);
+
+  // Weekly goal state
+  const [weeklyGoal, setWeeklyGoal] = useState<number>(0);
+  const [weeklyKept, setWeeklyKept] = useState<number>(0);
 
   // ---- Auth ----
   useEffect(() => {
@@ -166,6 +180,19 @@ export default function HomeClient() {
             });
             setWeeklyStats(stats);
 
+            // Fetch weekly goal and kept count for progress ring
+            const { data: profileData } = await supabase
+              .from('user_profiles')
+              .select('weekly_goal')
+              .eq('id', user.id)
+              .single();
+            const goal = profileData?.weekly_goal || 0;
+            setWeeklyGoal(goal);
+
+            if (goal > 0) {
+              setWeeklyKept(stats.kept);
+            }
+
             // Network recommendation
             const { data: follows } = await supabase
               .from('follows')
@@ -219,6 +246,17 @@ export default function HomeClient() {
       }
     };
     checkAndFetch();
+  }, [user]);
+
+  // ---- Fetch Read Next suggestion ----
+  useEffect(() => {
+    if (!user) return;
+    fetch('/api/read-next')
+      .then(r => r.json())
+      .then(data => {
+        if (data.article) setReadNext(data.article);
+      })
+      .catch(() => {});
   }, [user]);
 
   // ---- Sift logic ----
@@ -654,6 +692,46 @@ export default function HomeClient() {
             <h2 className="text-lg font-semibold text-surface-50">Your reading journal</h2>
           </div>
 
+          {/* Read Next */}
+          {readNext && (
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <GlassCard className="p-4">
+                <p className="text-xs text-surface-400 uppercase tracking-wider mb-2 flex items-center gap-1">
+                  <BookOpen className="w-3 h-3" /> What to read next
+                </p>
+                <div className="flex items-center gap-3">
+                  <Thumbnail src={readNext.thumbnail_url} size={48} className="rounded-lg flex-shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm text-surface-200 line-clamp-2">{readNext.summary}</p>
+                    <div className="flex items-center gap-2 mt-1 text-xs text-surface-400">
+                      <span>{readNext.verdict}</span>
+                      {readNext.reading_time && (
+                        <>
+                          <span>·</span>
+                          <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {readNext.reading_time} min</span>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                  {readNext.source_url && (
+                    <a
+                      href={readNext.source_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-accent-400 hover:underline text-sm flex-shrink-0"
+                    >
+                      Read
+                    </a>
+                  )}
+                </div>
+              </GlassCard>
+            </motion.div>
+          )}
+
           {/* Weekly recap + Network recommendation side by side */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {weeklyStats && (
@@ -663,17 +741,24 @@ export default function HomeClient() {
                 transition={{ duration: 0.3 }}
               >
                 <GlassCard className="p-4 h-full">
-                  <p className="text-sm text-surface-300">
-                    This week you&apos;ve{' '}
-                    <span className="text-verdict-green font-medium">kept {weeklyStats.kept}</span>
-                    {weeklyStats.skimmed > 0 && (
-                      <>, <span className="text-verdict-amber font-medium">skimmed {weeklyStats.skimmed}</span></>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-surface-300">
+                        This week you&apos;ve{' '}
+                        <span className="text-verdict-green font-medium">kept {weeklyStats.kept}</span>
+                        {weeklyStats.skimmed > 0 && (
+                          <>, <span className="text-verdict-amber font-medium">skimmed {weeklyStats.skimmed}</span></>
+                        )}
+                        {weeklyStats.skipped > 0 && (
+                          <>, <span className="text-surface-400 font-medium">skipped {weeklyStats.skipped}</span></>
+                        )}
+                        {' '}article{weeklyStats.kept + weeklyStats.skimmed + weeklyStats.skipped !== 1 ? 's' : ''}.
+                      </p>
+                    </div>
+                    {weeklyGoal > 0 && (
+                      <ProgressRing current={weeklyKept} goal={weeklyGoal} size={48} strokeWidth={3} />
                     )}
-                    {weeklyStats.skipped > 0 && (
-                      <>, <span className="text-surface-400 font-medium">skipped {weeklyStats.skipped}</span></>
-                    )}
-                    {' '}article{weeklyStats.kept + weeklyStats.skimmed + weeklyStats.skipped !== 1 ? 's' : ''}.
-                  </p>
+                  </div>
                 </GlassCard>
               </motion.div>
             )}

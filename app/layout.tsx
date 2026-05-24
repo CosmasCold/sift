@@ -16,11 +16,11 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Sift — Save, Summarize, Sift',
     description: 'AI-powered reading triage. Sift articles and keep what matters.',
-    url: 'https://sift-lac.vercel.app',
+    url: 'https://thesift.space',
     siteName: 'Sift',
     images: [
       {
-        url: 'https://sift-lac.vercel.app/og-image.png',
+        url: 'https://thesift.space/og-image.png',
         width: 1200,
         height: 630,
         alt: 'Sift — AI reading triage',
@@ -33,7 +33,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Sift — Save, Summarize, Sift',
     description: 'AI-powered reading triage. Sift articles and keep what matters.',
-    images: ['https://sift-lac.vercel.app/og-image.png'],
+    images: ['https://thesift.space/og-image.png'],
   },
 };
 
@@ -88,7 +88,7 @@ export default function RootLayout({
           name: "Sift",
           description:
             "AI-powered reading triage. Save articles, let AI sift them, and keep what matters.",
-          url: "https://sift-lac.vercel.app",
+          url: "https://thesift.space",
           applicationCategory: "EducationalApplication",
           operatingSystem: "All",
           offers: {
@@ -100,8 +100,8 @@ export default function RootLayout({
         {
           "@type": "Organization",
           name: "Sift",
-          url: "https://sift-lac.vercel.app",
-          logo: "https://sift-lac.vercel.app/og-image.png",
+          url: "https://thesift.space",
+          logo: "https://thesift.space/og-image.png",
           sameAs: [
             "https://twitter.com/yourhandle",
             "https://github.com/yourrepo",

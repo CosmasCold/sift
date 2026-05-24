@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ArrowRight,
@@ -15,7 +15,11 @@ import {
   Sparkles,
   Layers,
   Download,
+  FileText,
   X,
+  Highlighter,
+  Plus,
+  MessageSquare,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { GlassCard } from '@/components/ui/GlassCard';
@@ -23,6 +27,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import AuthGuard from '@/components/AuthGuard';
 import Thumbnail from '@/components/Thumbnail';
+import html2pdf from 'html2pdf.js';
 
 interface Feed {
   id: string;
@@ -50,6 +55,13 @@ interface Collection {
   articleIds: string[];
 }
 
+interface Annotation {
+  id: string;
+  selected_text: string;
+  note: string;
+  created_at: string;
+}
+
 const getDateGroup = (date: Date) => {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -71,9 +83,18 @@ function LibraryInner() {
   const [expandedArticle, setExpandedArticle] = useState<SiftEntry | null>(null);
   const [filter, setFilter] = useState<'all' | 'kept' | 'discarded'>('kept');
   const [search, setSearch] = useState('');
+  const [searchMode, setSearchMode] = useState<'summary' | 'full'>('summary');
+  const [fullSearchResults, setFullSearchResults] = useState<SiftEntry[]>([]);
+  const [searchLoading, setSearchLoading] = useState(false);
   const [feedFilter, setFeedFilter] = useState<string>('all');
   const [collections, setCollections] = useState<Collection[]>([]);
   const [feedbackAnimation, setFeedbackAnimation] = useState<Record<string, number>>({});
+
+  // ---- Annotations state ----
+  const [annotations, setAnnotations] = useState<Annotation[]>([]);
+  const [selectedText, setSelectedText] = useState('');
+  const [annotationNote, setAnnotationNote] = useState('');
+  const [showAnnotationForm, setShowAnnotationForm] = useState(false);
 
   const tagFilter = searchParams.get('tag');
   const collectionFilter = searchParams.get('collection');
@@ -102,6 +123,37 @@ function LibraryInner() {
     }, 600);
     return () => clearTimeout(timeout);
   }, [feedbackAnimation]);
+
+  // Full‑text search effect
+  useEffect(() => {
+    if (searchMode !== 'full') return;
+
+    const fetchData = async () => {
+      setSearchLoading(true);
+      try {
+        const r = await fetch(`/api/library/search?q=${encodeURIComponent(search.trim())}`);
+        const data = await r.json();
+        setFullSearchResults(data.articles || []);
+      } catch {
+        setFullSearchResults([]);
+      } finally {
+        setSearchLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [search, searchMode]);
+
+  // ---- Fetch annotations when an article is expanded ----
+  useEffect(() => {
+    if (!expandedArticle) return;
+    const fetchAnnotations = async () => {
+      const r = await fetch(`/api/annotations?articleId=${expandedArticle.id}`);
+      const data = await r.json();
+      setAnnotations(data.annotations || []);
+    };
+    fetchAnnotations();
+  }, [expandedArticle]);
 
   const toggleKeep = async (id: string, kept: boolean) => {
     const newKept = !kept;
@@ -179,15 +231,79 @@ function LibraryInner() {
     } else toast.error('Failed');
   };
 
-  const filtered = articles
-    .filter((a) => (filter === 'kept' ? a.kept : filter === 'discarded' ? !a.kept : true))
-    .filter((a) => a.summary.toLowerCase().includes(search.toLowerCase()))
-    .filter((a) => (tagFilter ? a.tags?.includes(tagFilter) : true))
-    .filter((a) => {
-      if (!collectionFilter) return true;
-      const collection = collections.find(c => c.title === collectionFilter);
-      return collection ? collection.articleIds.includes(a.id) : true;
+  // ---- Annotation handlers ----
+  const handleTextSelection = () => {
+    const selection = window.getSelection();
+    if (!selection || selection.isCollapsed) {
+      setSelectedText('');
+      setShowAnnotationForm(false);
+      return;
+    }
+    const text = selection.toString().trim();
+    // Only show if selection is within the expanded article content
+    const container = document.getElementById('expanded-article-content');
+    if (container && container.contains(selection.anchorNode)) {
+      setSelectedText(text);
+      setShowAnnotationForm(true);
+    }
+  };
+
+  const handleSaveAnnotation = async () => {
+    if (!expandedArticle || !selectedText) return;
+    const res = await fetch('/api/annotations', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        articleId: expandedArticle.id,
+        selectedText,
+        note: annotationNote.trim(),
+      }),
     });
+    const data = await res.json();
+    if (data.success) {
+      toast.success('Annotation saved');
+      setAnnotationNote('');
+      setSelectedText('');
+      setShowAnnotationForm(false);
+      // Refresh annotations
+      const r = await fetch(`/api/annotations?articleId=${expandedArticle.id}`);
+      const updated = await r.json();
+      setAnnotations(updated.annotations || []);
+    } else {
+      toast.error('Failed to save annotation');
+    }
+  };
+
+  const handleDeleteAnnotation = async (annotationId: string) => {
+    const res = await fetch('/api/annotations', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ annotationId }),
+    });
+    if (res.ok) {
+      setAnnotations(prev => prev.filter(a => a.id !== annotationId));
+      toast.success('Annotation removed');
+    } else {
+      toast.error('Failed to delete annotation');
+    }
+  };
+
+  const filtered = useMemo(() => {
+    if (searchMode === 'full') {
+      return fullSearchResults.length > 0
+        ? fullSearchResults
+        : articles.filter((a) => (filter === 'kept' ? a.kept : filter === 'discarded' ? !a.kept : true));
+    }
+    return articles
+      .filter((a) => (filter === 'kept' ? a.kept : filter === 'discarded' ? !a.kept : true))
+      .filter((a) => a.summary.toLowerCase().includes(search.toLowerCase()))
+      .filter((a) => (tagFilter ? a.tags?.includes(tagFilter) : true))
+      .filter((a) => {
+        if (!collectionFilter) return true;
+        const collection = collections.find(c => c.title === collectionFilter);
+        return collection ? collection.articleIds.includes(a.id) : true;
+      });
+  }, [articles, filter, search, searchMode, fullSearchResults, tagFilter, collectionFilter, collections]);
 
   const final =
     feedFilter === 'all' ? filtered : filtered.filter((a) => a.feed?.id === feedFilter);
@@ -220,7 +336,7 @@ function LibraryInner() {
       .slice(0, 3);
   }, [articles]);
 
-  const handleExport = () => {
+  const handleExportMd = () => {
     if (final.length === 0) {
       toast.error('No articles to export.');
       return;
@@ -248,6 +364,58 @@ function LibraryInner() {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
     toast.success(`${final.length} articles exported.`);
+  };
+
+  const handleExportPdf = async () => {
+    if (final.length === 0) {
+      toast.error('No articles to export.');
+      return;
+    }
+
+    const html = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <style>
+          body { font-family: system-ui, -apple-system, sans-serif; color: #1c1b18; background: #f8f6f2; margin: 0; padding: 20px; }
+          .header { text-align: center; margin-bottom: 30px; }
+          .header h1 { color: #c77d5a; margin: 0; }
+          .header p { color: #5e574f; margin: 5px 0 0; }
+          .card { background: #fff; border: 1px solid #e8e3dd; border-radius: 12px; padding: 15px; margin-bottom: 15px; }
+          .verdict { display: inline-block; font-size: 12px; font-weight: 500; color: #c77d5a; background: rgba(199,125,90,0.12); padding: 3px 10px; border-radius: 20px; margin-bottom: 8px; }
+          .summary { font-size: 14px; line-height: 1.6; color: #1c1b18; }
+          .meta { font-size: 12px; color: #7a7268; margin-top: 8px; }
+          .tag { display: inline-block; background: #e8e3dd; color: #5e574f; padding: 2px 8px; border-radius: 10px; font-size: 11px; margin-right: 4px; }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <h1>Sift</h1>
+          <p>Exported on ${new Date().toLocaleDateString()}</p>
+        </div>
+        ${final.map(article => `
+          <div class="card">
+            <span class="verdict">${article.verdict}</span>
+            <p class="summary">${article.summary}</p>
+            ${article.tags?.length ? `<div style="margin-top:8px;">${article.tags.map(tag => `<span class="tag">#${tag}</span>`).join(' ')}</div>` : ''}
+            <p class="meta">${new Date(article.created_at).toLocaleDateString()}${article.feed?.title ? ` · from ${article.feed.title}` : ''}</p>
+          </div>
+        `).join('')}
+      </body>
+      </html>
+    `;
+
+    toast.loading('Generating PDF…');
+    await html2pdf().set({
+      margin: 10,
+      filename: `sift-export-${new Date().toISOString().split('T')[0]}.pdf`,
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+    }).from(html).save();
+    toast.dismiss();
+    toast.success('PDF exported');
   };
 
   if (loading)
@@ -343,12 +511,20 @@ function LibraryInner() {
             {articles.length} sifted
           </span>
           <button
-            onClick={handleExport}
+            onClick={handleExportMd}
             disabled={final.length === 0}
             className="px-4 py-2 bg-surface-800/60 border border-surface-700/50 text-surface-300 rounded-xl text-sm font-medium hover:bg-surface-700/60 disabled:opacity-50 flex items-center gap-1 transition"
             aria-label="Export visible articles as Markdown"
           >
-            <Download className="w-4 h-4" /> Export
+            <Download className="w-4 h-4" /> Markdown
+          </button>
+          <button
+            onClick={handleExportPdf}
+            disabled={final.length === 0}
+            className="px-4 py-2 bg-surface-800/60 border border-surface-700/50 text-surface-300 rounded-xl text-sm font-medium hover:bg-surface-700/60 disabled:opacity-50 flex items-center gap-1 transition"
+            aria-label="Export visible articles as PDF"
+          >
+            <FileText className="w-4 h-4" /> PDF
           </button>
           <button
             onClick={async () => {
@@ -357,7 +533,6 @@ function LibraryInner() {
               if (data.article) {
                 setFilter('all');
                 setSearch('');
-                // find the article in our state
                 const found = articles.find(a => a.id === data.article.id);
                 if (found) {
                   setExpandedArticle(found);
@@ -412,11 +587,20 @@ function LibraryInner() {
             <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-surface-500" />
             <input
               type="text"
-              placeholder="Search summaries…"
+              placeholder={searchMode === 'full' ? 'Search full text…' : 'Search summaries…'}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-9 pr-3 py-2 bg-surface-800/50 border border-surface-700 rounded-xl text-surface-50 placeholder-surface-500 focus:ring-2 focus:ring-accent-400/50 outline-none"
+              className="w-full pl-9 pr-16 py-2 bg-surface-800/50 border border-surface-700 rounded-xl text-surface-50 placeholder-surface-500 focus:ring-2 focus:ring-accent-400/50 outline-none"
             />
+            <div className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center gap-1">
+              <button
+                onClick={() => setSearchMode(searchMode === 'summary' ? 'full' : 'summary')}
+                className={`text-xs px-2 py-1 rounded-lg transition ${searchMode === 'full' ? 'bg-accent-400/20 text-accent-400' : 'text-surface-400 hover:text-surface-200'}`}
+                title={`Search ${searchMode === 'summary' ? 'full text' : 'summaries'}`}
+              >
+                {searchMode === 'full' ? 'Full' : 'TL;DR'}
+              </button>
+            </div>
           </div>
         </div>
         {feedsList.length > 0 && (
@@ -643,7 +827,9 @@ function LibraryInner() {
                       {new Date(expandedArticle.created_at).toLocaleDateString()}
                     </span>
                   </div>
-                  <p className="text-surface-200 leading-relaxed">{expandedArticle.summary}</p>
+                  <div id="expanded-article-content" onMouseUp={handleTextSelection}>
+                    <p className="text-surface-200 leading-relaxed">{expandedArticle.summary}</p>
+                  </div>
                   {expandedArticle.insight && (
                     <div className="bg-surface-800/60 rounded-xl p-3 border-l-4 border-accent-400 mt-3">
                       <p className="text-surface-300 italic text-sm">{expandedArticle.insight}</p>
@@ -661,6 +847,73 @@ function LibraryInner() {
                 >
                   Read original <ArrowRight className="w-3 h-3" />
                 </a>
+              )}
+
+              {/* Annotation form (shown when text selected) */}
+              {showAnnotationForm && selectedText && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  className="mb-4 p-3 bg-surface-900/30 border border-surface-600/50 rounded-xl"
+                >
+                  <div className="flex items-center gap-1 text-xs text-surface-400 mb-2">
+                    <Highlighter className="w-3 h-3" /> Highlighted: {selectedText.substring(0, 80)}{selectedText.length > 80 ? '…' : ''}
+                  </div>
+                  <textarea
+                    value={annotationNote}
+                    onChange={(e) => setAnnotationNote(e.target.value)}
+                    placeholder="Add a note (optional)..."
+                    rows={2}
+                    className="w-full px-2 py-1 text-sm bg-surface-800 border border-surface-600 rounded-lg text-surface-50 placeholder-surface-500 focus:ring-2 focus:ring-accent-400/50 outline-none resize-none mb-2"
+                  />
+                  <div className="flex gap-2 justify-end">
+                    <button
+                      onClick={() => {
+                        setShowAnnotationForm(false);
+                        setAnnotationNote('');
+                        setSelectedText('');
+                      }}
+                      className="px-3 py-1 text-xs text-surface-400 hover:text-surface-200"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={handleSaveAnnotation}
+                      className="px-3 py-1 text-xs bg-accent-500 text-white rounded-lg hover:bg-accent-600 transition"
+                    >
+                      <Plus className="w-3 h-3 inline mr-1" /> Save
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+
+              {/* Existing annotations */}
+              {annotations.length > 0 && (
+                <div className="mb-4">
+                  <h4 className="text-xs font-semibold text-surface-400 mb-2 flex items-center gap-1">
+                    <MessageSquare className="w-3 h-3" /> Your annotations ({annotations.length})
+                  </h4>
+                  <div className="space-y-2">
+                    {annotations.map(ann => (
+                      <div key={ann.id} className="bg-surface-800/60 rounded-lg p-3 border border-surface-700/50">
+                        <div className="flex items-start justify-between gap-2">
+                          <p className="text-xs text-surface-300 italic border-l-2 border-accent-400 pl-2 flex-1">
+                            {ann.selected_text}
+                          </p>
+                          <button
+                            onClick={() => handleDeleteAnnotation(ann.id)}
+                            className="p-0.5 text-surface-400 hover:text-red-400 shrink-0"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </button>
+                        </div>
+                        {ann.note && (
+                          <p className="text-xs text-surface-200 mt-2 pl-3">{ann.note}</p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
               )}
 
               {/* Tags */}

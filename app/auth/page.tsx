@@ -21,7 +21,7 @@ export default function AuthPage() {
     const { error } = await supabase.auth.signInWithOtp({
       email: email.trim(),
       options: {
-        emailRedirectTo: 'https://sift-lac.vercel.app',
+        emailRedirectTo: 'https://thesift.space',
       },
     });
 
@@ -38,7 +38,7 @@ export default function AuthPage() {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: 'https://sift-lac.vercel.app',
+        redirectTo: 'https://thesift.space',
       },
     });
 
