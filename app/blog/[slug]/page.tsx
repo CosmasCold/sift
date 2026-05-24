@@ -1,7 +1,6 @@
 import fs from 'fs';
 import path from 'path';
 import matter from 'gray-matter';
-import { serialize } from 'next-mdx-remote/serialize';
 import { MDXRemote } from 'next-mdx-remote/rsc';
 import { GlassCard } from '@/components/ui/GlassCard';
 import Link from 'next/link';
@@ -10,6 +9,7 @@ import { notFound } from 'next/navigation';
 
 export async function generateStaticParams() {
   const postsDir = path.join(process.cwd(), 'content/blog');
+  if (!fs.existsSync(postsDir)) return [];
   const filenames = fs.readdirSync(postsDir).filter(f => f.endsWith('.mdx'));
   return filenames.map(filename => ({ slug: filename.replace('.mdx', '') }));
 }
@@ -22,7 +22,6 @@ export default async function BlogPost({ params }: { params: Promise<{ slug: str
 
   const raw = fs.readFileSync(filePath, 'utf-8');
   const { data, content } = matter(raw);
-  const mdxSource = await serialize(content);
 
   return (
     <main className="flex-1 pt-12 pb-16 px-4 max-w-3xl mx-auto">
@@ -37,7 +36,7 @@ export default async function BlogPost({ params }: { params: Promise<{ slug: str
           {new Date(data.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
         </p>
         <div className="prose prose-invert max-w-none text-surface-200">
-          <MDXRemote source={mdxSource} />
+          <MDXRemote source={content} />
         </div>
       </GlassCard>
     </main>
