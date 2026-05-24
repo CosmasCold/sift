@@ -65,7 +65,7 @@ export async function GET() {
 
     try {
       await resend.emails.send({
-        from: 'Sift <digest@sift-lac.vercel.app>',
+        from: 'Sift <support@pauseapp.space>',
         to: user.email,
         subject: `Sift digest — ${articles.length} article${articles.length > 1 ? 's' : ''} you kept`,
         html,
