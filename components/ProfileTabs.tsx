@@ -1,10 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
-import { ArrowRight, ExternalLink, Clock, BarChart3, Star } from 'lucide-react';
+import { ArrowRight, ExternalLink, Clock, BarChart3, Star, Users } from 'lucide-react';
 import { GlassCard } from '@/components/ui/GlassCard';
 import UserAvatar from '@/components/UserAvatar';
 
@@ -69,6 +69,9 @@ export default function ProfileTabs({
   starredCollections,
 }: ProfileTabsProps) {
   const [activeTab, setActiveTab] = useState('reading');
+  const [similarProfiles, setSimilarProfiles] = useState<
+    { username: string; avatar_url: string | null; commonTags: string[] }[]
+  >([]);
 
   const [highlight] = useState<Article | null>(() => {
     if (allArticles && allArticles.length > 0) {
@@ -85,6 +88,13 @@ export default function ProfileTabs({
   const sortedTags = Object.entries(tagFreq).sort((a, b) => b[1] - a[1]);
 
   const maxStatCount = Math.max(...stats.map(s => s.count), 1);
+
+  useEffect(() => {
+    fetch(`/api/profiles/similar?username=${username}`)
+      .then(r => r.json())
+      .then(data => setSimilarProfiles(data.profiles || []))
+      .catch(() => {});
+  }, [username]);
 
   return (
     <>
@@ -433,6 +443,28 @@ export default function ProfileTabs({
                 ))}
               </div>
             </GlassCard>
+          </div>
+        )}
+
+        {/* Readers Like You */}
+        {similarProfiles.length > 0 && (
+          <div className="max-w-4xl mx-auto px-4 mt-12">
+            <h3 className="text-sm font-semibold text-surface-400 mb-3 flex items-center gap-2">
+              <Users className="w-4 h-4" /> Readers like you
+            </h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {similarProfiles.map(p => (
+                <Link key={p.username} href={`/profile/${p.username}`}>
+                  <GlassCard variant="interactive" className="p-3 text-center">
+                    <UserAvatar username={p.username} avatarKey={p.avatar_url} size={40} />
+                    <p className="text-xs font-medium text-surface-200 mt-2">@{p.username}</p>
+                    <p className="text-xs text-surface-400 mt-1">
+                      {p.commonTags.map(t => `#${t}`).join(', ')}
+                    </p>
+                  </GlassCard>
+                </Link>
+              ))}
+            </div>
           </div>
         )}
       </div>
