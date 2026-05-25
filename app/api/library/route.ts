@@ -23,7 +23,6 @@ export async function GET() {
       created_at,
       tags,
       reading_time,
-      full_text,
       thumbnail_url,
       feed:sift_feeds(id, title)
     
