@@ -4,6 +4,7 @@ import './globals.css';
 import { Toaster } from 'react-hot-toast';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import { Analytics } from '@vercel/analytics/react';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -45,7 +46,6 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        {/* Theme script */}
         <script
           dangerouslySetInnerHTML={{
             __html: `
@@ -62,7 +62,6 @@ export default function RootLayout({
             `,
           }}
         />
-        {/* Accent script */}
         <script
           dangerouslySetInnerHTML={{
             __html: `
@@ -77,40 +76,37 @@ export default function RootLayout({
             `,
           }}
         />
+        {/* Structured data for the web application */}
         <script
-  type="application/ld+json"
-  dangerouslySetInnerHTML={{
-    __html: JSON.stringify({
-      "@context": "https://schema.org",
-      "@graph": [
-        {
-          "@type": "WebApplication",
-          name: "Sift",
-          description:
-            "AI-powered reading triage. Save articles, let AI sift them, and keep what matters.",
-          url: "https://thesift.space",
-          applicationCategory: "EducationalApplication",
-          operatingSystem: "All",
-          offers: {
-            "@type": "Offer",
-            price: "0",
-            priceCurrency: "USD",
-          },
-        },
-        {
-          "@type": "Organization",
-          name: "Sift",
-          url: "https://thesift.space",
-          logo: "https://thesift.space/og-image.png",
-          sameAs: [
-            "https://twitter.com/yourhandle",
-            "https://github.com/yourrepo",
-          ],
-        },
-      ],
-    }),
-  }}
-/>
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@graph": [
+                {
+                  "@type": "WebApplication",
+                  name: "Sift",
+                  description:
+                    "AI-powered reading triage. Save articles, let AI sift them, and keep what matters.",
+                  url: "https://thesift.space",
+                  applicationCategory: "EducationalApplication",
+                  operatingSystem: "All",
+                  offers: {
+                    "@type": "Offer",
+                    price: "0",
+                    priceCurrency: "USD",
+                  },
+                },
+                {
+                  "@type": "Organization",
+                  name: "Sift",
+                  url: "https://thesift.space",
+                  logo: "https://thesift.space/og-image.png",
+                },
+              ],
+            }),
+          }}
+        />
       </head>
       <body className={`${inter.className} min-h-screen flex flex-col bg-surface-900 text-surface-50 transition-colors`}>
         <a
@@ -157,25 +153,6 @@ export default function RootLayout({
             },
           }}
         />
-
-        {/* Service worker registration temporarily disabled */}
-        {/* 
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              if ('serviceWorker' in navigator) {
-                window.addEventListener('load', () => {
-                  navigator.serviceWorker.register('/sw.js').then(
-                    () => console.log('Service Worker registered'),
-                    (err) => console.error('Service Worker registration failed:', err)
-                  );
-                });
-              }
-            `,
-          }}
-        />
-        */}
-
         {/* Clear any existing service worker cache */}
         <script
           dangerouslySetInnerHTML={{
@@ -190,6 +167,7 @@ export default function RootLayout({
             `,
           }}
         />
+        <Analytics />
       </body>
     </html>
   );
