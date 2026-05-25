@@ -19,6 +19,10 @@ const faqs = [
     question: 'Can I use Sift for free?',
     answer: `Sift is free to use. I plan to keep it that way while I work out a sustainable path forward — probably a support option or a tasteful sponsorship down the road. For now, if you'd like to help, there's a Support Sift link in the footer. Whatever happens, your library is yours. You can export it anytime as Markdown or OPML, and I'll never hold your data hostage.`,
   },
+    {
+    question: 'Is there a limit on how much I can sift?',
+    answer: `To keep Sift free and fast for everyone, there's a daily limit of 15 sifts per account. Most people never hit it, and if you do, you can sift more tomorrow.`,
+  },
   {
     question: 'What are RSS feeds and how do they work in Sift?',
     answer: `RSS (Really Simple Syndication) is a way to get updates from websites, blogs, and newsletters automatically. Add any RSS or Substack URL on the <a href="/feeds" style="color:#c77d5a;text-decoration:underline;">Feeds page</a>, and Sift will automatically sift new posts and add them to your library.`,
