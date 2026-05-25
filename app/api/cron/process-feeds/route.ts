@@ -47,7 +47,6 @@ export async function GET(request: NextRequest) {
         const link = item.link;
         if (!link) continue;
 
-        // Skip if already sifted by this user
         const { data: existing } = await supabaseAdmin
           .from('sifted_articles')
           .select('id')
@@ -57,7 +56,6 @@ export async function GET(request: NextRequest) {
 
         if (existing) continue;
 
-        // Call the internal sift endpoint
         try {
           const siftRes = await fetch(
             `${process.env.NEXT_PUBLIC_SITE_URL || 'https://thesift.space'}/api/sift`,
@@ -73,7 +71,6 @@ export async function GET(request: NextRequest) {
           const siftData = await siftRes.json();
           if (siftData.error) continue;
 
-          // Save the sifted article
           await supabaseAdmin.from('sifted_articles').insert({
             user_id: feed.user_id,
             source_url: link,

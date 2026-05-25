@@ -41,15 +41,17 @@ export default function BlogPage() {
         Thoughts on reading, focus, and building a calmer internet.
       </p>
 
-      <div className="grid gap-8">
+      <div>
         {posts.map(post => (
-          <Link key={post.slug} href={`/blog/${post.slug}`}>
-            <GlassCard variant="interactive" className="p-6">
-              <h2 className="text-xl font-semibold text-surface-50 mb-1">{post.title}</h2>
-              <p className="text-xs text-surface-400 mb-3">{new Date(post.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
-              <p className="text-sm text-surface-300">{post.description}</p>
-            </GlassCard>
-          </Link>
+          <div key={post.slug} className="mb-6 last:mb-0">
+            <Link href={`/blog/${post.slug}`}>
+              <GlassCard variant="default" className="p-6 hover:-translate-y-0 transition-none">
+                <h2 className="text-xl font-semibold text-surface-50 mb-1">{post.title}</h2>
+                <p className="text-xs text-surface-400 mb-3">{new Date(post.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                <p className="text-sm text-surface-300">{post.description}</p>
+              </GlassCard>
+            </Link>
+          </div>
         ))}
       </div>
     </main>
