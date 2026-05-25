@@ -6,7 +6,6 @@ export const dynamic = 'force-dynamic';
 
 const parser = new Parser();
 
-// Wait helper (in milliseconds)
 const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 export async function GET(request: NextRequest) {
@@ -46,7 +45,7 @@ export async function GET(request: NextRequest) {
 
       if (!parsed.items?.length) continue;
 
-      for (const item of parsed.items.slice(0, 3)) {   // only 3 per feed, to be gentle
+      for (const item of parsed.items.slice(0, 3)) {
         const link = item.link;
         if (!link) continue;
 
@@ -68,6 +67,13 @@ export async function GET(request: NextRequest) {
               body: JSON.stringify({ url: link }),
             }
           );
+
+          // If we get a 429 (rate limit), pause and retry once
+          if (siftRes.status === 429) {
+            console.log('Rate limited – waiting 10 seconds before retry');
+            await wait(10000);
+            continue; // move to the next article
+          }
 
           if (!siftRes.ok) continue;
 
@@ -100,8 +106,8 @@ export async function GET(request: NextRequest) {
             processed++;
           }
 
-          // ** PAUSE for 2 seconds to respect Groq rate limit **
-          await wait(2000);
+          // Always wait 5 seconds between successful sifts
+          await wait(5000);
         } catch (siftError) {
           console.error(`Sift failed for ${link}:`, siftError);
         }
