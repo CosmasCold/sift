@@ -156,18 +156,22 @@ export async function POST(request: NextRequest) {
           { status: 400 }
         );
       }
-
-      articleText = articleText.substring(0, 4000);
     }
 
     // --------------------------------------------------
-    // 3. Calculate reading time
+    // 3. Truncate for AI vs storage
     // --------------------------------------------------
-    const wordCount = articleText.split(/\s+/).length;
+    const aiText = articleText.substring(0, 4000);       // short version for Groq
+    const fullText = articleText.substring(0, 10000);   // longer version stored for reading/annotations
+
+    // --------------------------------------------------
+    // 4. Calculate reading time (based on the longer version)
+    // --------------------------------------------------
+    const wordCount = fullText.split(/\s+/).length;
     const readingTime = Math.max(1, Math.ceil(wordCount / 200));
 
     // --------------------------------------------------
-    // 4. Call Groq
+    // 5. Call Groq
     // --------------------------------------------------
     if (!GROQ_API_KEY) {
       return NextResponse.json({ error: 'API key not configured' }, { status: 500 });
@@ -187,7 +191,7 @@ export async function POST(request: NextRequest) {
         model: 'llama-3.1-8b-instant',
         messages: [
           { role: 'system', content: systemMessage },
-          { role: 'user', content: articleText },
+          { role: 'user', content: aiText },   // use the short text for AI
         ],
         temperature: 0.2,
         max_tokens: 600,
@@ -231,7 +235,7 @@ export async function POST(request: NextRequest) {
       sourceUrl: url,
       readingTime,
       thumbnailUrl,
-      fullText: articleText,
+      fullText,   // now holds up to 10,000 characters
     });
   } catch (error) {
     console.error('Sift error:', error);
