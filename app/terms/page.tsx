@@ -27,7 +27,7 @@ export default function TermsPage() {
           <p>By using Sift, you agree to these terms.</p>
 
           <h2 className="text-xl font-semibold text-surface-50 mt-6">1. Use of the service</h2>
-          <p>Sift provides AI‑generated article summaries, verdicts, and optional audio. You are responsible for how you use this information. Sift is a tool to assist reading, not a substitute for professional advice.</p>
+          <p>We use Groq (for AI summarisation), Supabase (database and authentication), Vercel (hosting), Brevo (email delivery), and ElevenLabs (optional audio). Each service has its own privacy policy. We only share the minimum required data (e.g., article text to Groq, email address to Brevo).</p>
 
           <h2 className="text-xl font-semibold text-surface-50 mt-6">2. Account responsibilities</h2>
           <p>You are responsible for maintaining the security of your account. You must be at least 13 years old to use Sift.</p>
