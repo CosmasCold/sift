@@ -382,7 +382,7 @@ export default function SettingsPage() {
             Sift is free and independent. If it helps you read better, consider supporting its development.
           </p>
           <a
-            href="https://your-support-link.com"
+            href="https://buymeacoffee.com/cloudandclipboard"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 px-4 py-2 bg-accent-500 text-white rounded-xl text-sm font-medium hover:bg-accent-600 transition"
