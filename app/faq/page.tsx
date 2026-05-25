@@ -17,7 +17,7 @@ const faqs = [
   },
   {
     question: 'Can I use Sift for free?',
-    answer: `Sift is completely free and will stay free. There are no premium tiers, no paywalls, and no ads. If you'd like to support the project, you can do so through our <a href="/settings" style="color:#c77d5a;text-decoration:underline;">Settings page</a>.`,
+    answer: `Sift is free to use. I plan to keep it that way while I work out a sustainable path forward — probably a support option or a tasteful sponsorship down the road. For now, if you'd like to help, there's a Support Sift link in the footer. Whatever happens, your library is yours. You can export it anytime as Markdown or OPML, and I'll never hold your data hostage.`,
   },
   {
     question: 'What are RSS feeds and how do they work in Sift?',
@@ -61,7 +61,7 @@ const faqSchema = {
     name: faq.question,
     acceptedAnswer: {
       '@type': 'Answer',
-      text: faq.answer.replace(/<[^>]*>/g, ''), // strip HTML for schema
+      text: faq.answer.replace(/<[^>]*>/g, ''),
     },
   })),
 };
