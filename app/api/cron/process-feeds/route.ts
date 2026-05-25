@@ -71,7 +71,15 @@ export async function GET(request: NextRequest) {
           const siftData = await siftRes.json();
           if (siftData.error) continue;
 
-          await supabaseAdmin.from('sifted_articles').insert({
+          // ** LOG the data we are about to insert **
+          console.log('Inserting sifted article:', {
+            user_id: feed.user_id,
+            source_url: link,
+            summary: siftData.summary?.substring(0, 50),
+            verdict: siftData.verdict,
+          });
+
+          const { error: insertError } = await supabaseAdmin.from('sifted_articles').insert({
             user_id: feed.user_id,
             source_url: link,
             summary: siftData.summary,
@@ -84,7 +92,11 @@ export async function GET(request: NextRequest) {
             full_text: siftData.fullText,
           });
 
-          processed++;
+          if (insertError) {
+            console.error('Insert error:', insertError);
+          } else {
+            processed++;
+          }
         } catch (siftError) {
           console.error(`Sift failed for ${link}:`, siftError);
         }
