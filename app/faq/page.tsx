@@ -1,82 +1,106 @@
-// app/faq/page.tsx
+import { GlassCard } from '@/components/ui/GlassCard';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
-import { GlassCard } from '@/components/ui/GlassCard';
 
-export const metadata = {
-  title: 'FAQ | Sift',
-  description: 'Frequently asked questions about Sift',
+const faqs = [
+  {
+    question: 'What is Sift?',
+    answer: `Sift is an AI‑powered reading triage tool. You paste an article URL (or add RSS feeds), and Sift reads it, gives you a short summary, and tells you whether it's "Worth a full read", "Skim this", or "You can skip this". It helps you decide what matters without reading everything first.`,
+  },
+  {
+    question: 'How does the AI verdict work?',
+    answer: `Sift sends the article text to a language model (via Groq) that analyses the content and returns a verdict, a one‑paragraph summary, and often a key insight. If you give feedback (thumbs up or down) on a verdict, Sift uses that history to personalise future verdicts.`,
+  },
+  {
+    question: 'Is my data private?',
+    answer: `Yes. Your email and sifted articles are stored securely in Supabase. We never sell your data. Your public profile is completely optional—you control what others see. See our <a href="/privacy" style="color:#c77d5a;text-decoration:underline;">Privacy Policy</a> for details.`,
+  },
+  {
+    question: 'Can I use Sift for free?',
+    answer: `Sift is completely free and will stay free. There are no premium tiers, no paywalls, and no ads. If you'd like to support the project, you can do so through our <a href="/settings" style="color:#c77d5a;text-decoration:underline;">Settings page</a>.`,
+  },
+  {
+    question: 'What are RSS feeds and how do they work in Sift?',
+    answer: `RSS (Really Simple Syndication) is a way to get updates from websites, blogs, and newsletters automatically. Add any RSS or Substack URL on the <a href="/feeds" style="color:#c77d5a;text-decoration:underline;">Feeds page</a>, and Sift will automatically sift new posts and add them to your library.`,
+  },
+  {
+    question: 'Can I import my existing bookmarks?',
+    answer: `Yes. You can import your saved articles from Raindrop.io right from the <a href="/settings" style="color:#c77d5a;text-decoration:underline;">Settings page</a>. We also support importing OPML files for your feed subscriptions.`,
+  },
+  {
+    question: 'What are Collections and how do I create one?',
+    answer: `Collections are themed reading lists you can curate from your kept articles. Anyone can create a collection from the <a href="/collections/new" style="color:#c77d5a;text-decoration:underline;">Collections page</a>. You can also star collections created by other readers.`,
+  },
+  {
+    question: 'How does the social side work?',
+    answer: `Sift has a quiet social layer: you can follow other readers, see what they're keeping, and browse trending articles in the community. There are no comments, no likes—just a signal that something mattered to someone. You control your public profile in <a href="/settings" style="color:#c77d5a;text-decoration:underline;">Settings</a>.`,
+  },
+  {
+    question: 'Can I export my library?',
+    answer: `Yes. You can export your kept articles as a Markdown file from the Library page. You can also export your RSS feeds as an OPML file from the Feeds page. Your data always belongs to you.`,
+  },
+  {
+    question: 'Does Sift have an API?',
+    answer: `Yes. Every user gets a personal API key in <a href="/settings" style="color:#c77d5a;text-decoration:underline;">Settings</a>. You can use it to send URLs to Sift from automation tools like Zapier, iOS Shortcuts, or custom scripts.`,
+  },
+  {
+    question: 'What about the weekly digest?',
+    answer: `If you opt in from Settings, Sift will send you a beautiful email every Monday morning with your top kept articles of the week. It's like a personal newsletter generated from your own reading.`,
+  },
+  {
+    question: 'How do I get started?',
+    answer: `Sign up, go to the <a href="/discover" style="color:#c77d5a;text-decoration:underline;">Discover page</a> to find feeds you like, paste an article URL on the home page, and sift your first article. It takes about 30 seconds.`,
+  },
+];
+
+const faqSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faqs.map((faq) => ({
+    '@type': 'Question',
+    name: faq.question,
+    acceptedAnswer: {
+      '@type': 'Answer',
+      text: faq.answer.replace(/<[^>]*>/g, ''), // strip HTML for schema
+    },
+  })),
 };
 
 export default function FAQPage() {
   return (
-    <main className="flex-1 pt-12 pb-16 px-4 max-w-3xl mx-auto">
-      <Link
-        href="/"
-        className="inline-flex items-center gap-1 text-sm text-surface-400 hover:text-surface-200 mb-6 transition-colors"
-      >
-        <ArrowLeft className="w-4 h-4" />
-        Back to Sift
-      </Link>
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+      />
+      <main className="flex-1 pt-12 pb-16 px-4 max-w-3xl mx-auto">
+        <Link
+          href="/"
+          className="inline-flex items-center gap-1 text-sm text-surface-400 hover:text-surface-200 mb-6 transition-colors"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Back to Sift
+        </Link>
 
-      <GlassCard className="p-6 md:p-8">
-        <h1 className="text-3xl font-semibold text-surface-50 mb-6">Frequently Asked Questions</h1>
-
-        <div className="space-y-6 text-surface-200">
-          <div>
-            <h2 className="text-xl font-semibold text-surface-50">What is Sift?</h2>
-            <p className="mt-1">
-              Sift is an AI‑powered reading triage tool. Paste any article URL and get a verdict: “Worth a full read”, “Skim this”, or “You can skip this”. You also get a TL;DR summary and a key insight.
-            </p>
+        <GlassCard className="p-6 md:p-8">
+          <h1 className="text-3xl font-semibold text-surface-50 mb-6">
+            Frequently Asked Questions
+          </h1>
+          <div className="space-y-6">
+            {faqs.map((faq, i) => (
+              <div key={i}>
+                <h2 className="text-xl font-semibold text-surface-50 mb-2">
+                  {faq.question}
+                </h2>
+                <p
+                  className="text-surface-200 leading-relaxed"
+                  dangerouslySetInnerHTML={{ __html: faq.answer }}
+                />
+              </div>
+            ))}
           </div>
-
-          <div>
-            <h2 className="text-xl font-semibold text-surface-50">How does the personalisation work?</h2>
-            <p className="mt-1">
-              When you click 👍 (agree) or 👎 (disagree) on a verdict, Sift stores that feedback. The AI uses your past feedback to adjust future verdicts. Over time, it learns what you value.
-            </p>
-          </div>
-
-          <div>
-            <h2 className="text-xl font-semibold text-surface-50">Is my data private?</h2>
-            <p className="mt-1">
-              Yes. Your email and sifted articles are stored securely in Supabase. We never sell your data. See our{' '}
-              <Link href="/privacy" className="text-accent-400 hover:underline">
-                Privacy Policy
-              </Link>{' '}
-              for details.
-            </p>
-          </div>
-
-          <div>
-            <h2 className="text-xl font-semibold text-surface-50">Can I use Sift for free?</h2>
-            <p className="mt-1">
-              Yes, there will be a free tier with a limited number of sifts per month. Pricing details are coming soon.
-            </p>
-          </div>
-
-          <div>
-            <h2 className="text-xl font-semibold text-surface-50">What about RSS feeds and email digests?</h2>
-            <p className="mt-1">
-              You can add any RSS or Substack feed to automatically sift new posts. Weekly digests (every Monday) recap what you kept that week.
-            </p>
-          </div>
-
-          <div>
-            <h2 className="text-xl font-semibold text-surface-50">How accurate are the summaries?</h2>
-            <p className="mt-1">
-              Sift uses Groq’s LLM (Llama 3.1) to generate summaries and insights. It’s highly accurate, but always use your own judgment for important decisions.
-            </p>
-          </div>
-
-          <div>
-            <h2 className="text-xl font-semibold text-surface-50">Can I export my kept articles?</h2>
-            <p className="mt-1">
-              Yes. On the Library page, click “Export Markdown” to download all your kept articles as a .md file.
-            </p>
-          </div>
-        </div>
-      </GlassCard>
-    </main>
+        </GlassCard>
+      </main>
+    </>
   );
 }
