@@ -41,7 +41,7 @@ export default function BlogPage() {
         Thoughts on reading, focus, and building a calmer internet.
       </p>
 
-      <div className="space-y-8">
+      <div className="grid gap-8">
         {posts.map(post => (
           <Link key={post.slug} href={`/blog/${post.slug}`}>
             <GlassCard variant="interactive" className="p-6">

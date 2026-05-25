@@ -1,81 +1,99 @@
-import { createClient } from '@/lib/supabase/server';
-import { NextResponse } from 'next/server';
+import { createClient } from '@supabase/supabase-js';
+import { NextRequest, NextResponse } from 'next/server';
 import Parser from 'rss-parser';
 
 export const dynamic = 'force-dynamic';
 
 const parser = new Parser();
 
-export async function GET() {
-  const supabase = await createClient();
+export async function GET(request: NextRequest) {
+  const { searchParams } = new URL(request.url);
+  const secret = searchParams.get('secret');
+  if (secret !== 'sift-cron-8a7f3b2c-4e1d-4f6a-9c3e-2b7a5d1f0e8c') {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
 
-  // Get all feeds from all users
-  const { data: feeds, error } = await supabase
+  const supabaseAdmin = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    { auth: { autoRefreshToken: false, persistSession: false } }
+  );
+
+  const { data: feeds, error } = await supabaseAdmin
     .from('sift_feeds')
     .select('id, user_id, feed_url');
 
-  if (error || !feeds) {
-    return NextResponse.json({ error: 'No feeds found' }, { status: 500 });
+  if (error || !feeds || feeds.length === 0) {
+    return NextResponse.json({ processed: 0 });
   }
 
   let processed = 0;
+
   for (const feed of feeds) {
     try {
       const res = await fetch(feed.feed_url, {
         headers: { 'User-Agent': 'SiftBot/1.0' },
         signal: AbortSignal.timeout(15000),
       });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+      if (!res.ok) continue;
+
       const xml = await res.text();
       const parsed = await parser.parseString(xml);
 
-      if (parsed.items?.length) {
-        for (const item of parsed.items.slice(0, 5)) {
-          const link = item.link;
-          if (!link) continue;
+      if (!parsed.items?.length) continue;
 
-          // Skip if already sifted by this user
-          const { data: existing } = await supabase
-            .from('sifted_articles')
-            .select('id')
-            .eq('source_url', link)
-            .eq('user_id', feed.user_id)
-            .maybeSingle();
+      for (const item of parsed.items.slice(0, 5)) {
+        const link = item.link;
+        if (!link) continue;
 
-          if (existing) continue;
+        // Skip if already sifted by this user
+        const { data: existing } = await supabaseAdmin
+          .from('sifted_articles')
+          .select('id')
+          .eq('source_url', link)
+          .eq('user_id', feed.user_id)
+          .maybeSingle();
 
-          // Trigger sift for this URL (using the existing sift API logic)
-          try {
-            const siftRes = await fetch(`${process.env.NEXT_PUBLIC_URL || 'https://sift-lac.vercel.app'}/api/sift`, {
+        if (existing) continue;
+
+        // Call the internal sift endpoint
+        try {
+          const siftRes = await fetch(
+            `${process.env.NEXT_PUBLIC_SITE_URL || 'https://thesift.space'}/api/sift`,
+            {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ url: link }),
-            });
-            if (siftRes.ok) {
-              const data = await siftRes.json();
-              // Save directly
-              await supabase.from('sifted_articles').insert({
-                user_id: feed.user_id,
-                source_url: link,
-                summary: data.summary,
-                insight: data.insight,
-                verdict: data.verdict,
-                kept: true,
-                feed: feed.id,
-                reading_time: data.readingTime,
-                thumbnail_url: data.thumbnailUrl,
-                full_text: data.fullText,
-              });
-              processed++;
             }
-          } catch (siftError) {
-            console.error(`Sift failed for ${link}:`, siftError);
-          }
+          );
+
+          if (!siftRes.ok) continue;
+
+          const siftData = await siftRes.json();
+          if (siftData.error) continue;
+
+          // Save the sifted article
+          await supabaseAdmin.from('sifted_articles').insert({
+            user_id: feed.user_id,
+            source_url: link,
+            summary: siftData.summary,
+            insight: siftData.insight,
+            verdict: siftData.verdict,
+            kept: true,
+            feed: feed.id,
+            reading_time: siftData.readingTime,
+            thumbnail_url: siftData.thumbnailUrl,
+            full_text: siftData.fullText,
+          });
+
+          processed++;
+        } catch (siftError) {
+          console.error(`Sift failed for ${link}:`, siftError);
         }
       }
     } catch (feedError) {
       console.error(`Failed to process feed ${feed.feed_url}:`, feedError);
-      // Continue with other feeds
     }
   }
 
