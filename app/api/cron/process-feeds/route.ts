@@ -45,72 +45,65 @@ export async function GET(request: NextRequest) {
 
       if (!parsed.items?.length) continue;
 
-      for (const item of parsed.items.slice(0, 3)) {
-        const link = item.link;
-        if (!link) continue;
+      // Only the very newest item
+      const item = parsed.items[0];
+      const link = item.link;
+      if (!link) continue;
 
-        const { data: existing } = await supabaseAdmin
-          .from('sifted_articles')
-          .select('id')
-          .eq('source_url', link)
-          .eq('user_id', feed.user_id)
-          .maybeSingle();
+      const { data: existing } = await supabaseAdmin
+        .from('sifted_articles')
+        .select('id')
+        .eq('source_url', link)
+        .eq('user_id', feed.user_id)
+        .maybeSingle();
 
-        if (existing) continue;
+      if (existing) continue;
 
-        try {
-          const siftRes = await fetch(
-            `${process.env.NEXT_PUBLIC_SITE_URL || 'https://thesift.space'}/api/sift`,
-            {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ url: link }),
-            }
-          );
-
-          // If we get a 429 (rate limit), pause and retry once
-          if (siftRes.status === 429) {
-            console.log('Rate limited – waiting 10 seconds before retry');
-            await wait(10000);
-            continue; // move to the next article
+      try {
+        const siftRes = await fetch(
+          `${process.env.NEXT_PUBLIC_SITE_URL || 'https://thesift.space'}/api/sift`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ url: link }),
           }
+        );
 
-          if (!siftRes.ok) continue;
+        if (!siftRes.ok) continue;
 
-          const siftData = await siftRes.json();
-          if (siftData.error) continue;
+        const siftData = await siftRes.json();
+        if (siftData.error) continue;
 
-          console.log('Inserting sifted article:', {
-            user_id: feed.user_id,
-            source_url: link,
-            summary: siftData.summary?.substring(0, 50),
-            verdict: siftData.verdict,
-          });
+        console.log('Inserting sifted article:', {
+          user_id: feed.user_id,
+          source_url: link,
+          summary: siftData.summary?.substring(0, 50),
+          verdict: siftData.verdict,
+        });
 
-          const { error: insertError } = await supabaseAdmin.from('sifted_articles').insert({
-            user_id: feed.user_id,
-            source_url: link,
-            summary: siftData.summary,
-            insight: siftData.insight,
-            verdict: siftData.verdict,
-            kept: true,
-            feed: feed.id,
-            reading_time: siftData.readingTime,
-            thumbnail_url: siftData.thumbnailUrl,
-            full_text: siftData.fullText,
-          });
+        const { error: insertError } = await supabaseAdmin.from('sifted_articles').insert({
+          user_id: feed.user_id,
+          source_url: link,
+          summary: siftData.summary,
+          insight: siftData.insight,
+          verdict: siftData.verdict,
+          kept: true,
+          feed: feed.id,
+          reading_time: siftData.readingTime,
+          thumbnail_url: siftData.thumbnailUrl,
+          full_text: siftData.fullText,
+        });
 
-          if (insertError) {
-            console.error('Insert error:', insertError);
-          } else {
-            processed++;
-          }
-
-          // Always wait 5 seconds between successful sifts
-          await wait(5000);
-        } catch (siftError) {
-          console.error(`Sift failed for ${link}:`, siftError);
+        if (insertError) {
+          console.error('Insert error:', insertError);
+        } else {
+          processed++;
         }
+
+        // Wait 8 seconds between feeds to keep Groq happy
+        await wait(8000);
+      } catch (siftError) {
+        console.error(`Sift failed for ${link}:`, siftError);
       }
     } catch (feedError) {
       console.error(`Failed to process feed ${feed.feed_url}:`, feedError);
