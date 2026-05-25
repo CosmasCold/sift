@@ -6,6 +6,9 @@ export const dynamic = 'force-dynamic';
 
 const parser = new Parser();
 
+// Wait helper (in milliseconds)
+const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const secret = searchParams.get('secret');
@@ -43,7 +46,7 @@ export async function GET(request: NextRequest) {
 
       if (!parsed.items?.length) continue;
 
-      for (const item of parsed.items.slice(0, 5)) {
+      for (const item of parsed.items.slice(0, 3)) {   // only 3 per feed, to be gentle
         const link = item.link;
         if (!link) continue;
 
@@ -71,7 +74,6 @@ export async function GET(request: NextRequest) {
           const siftData = await siftRes.json();
           if (siftData.error) continue;
 
-          // ** LOG the data we are about to insert **
           console.log('Inserting sifted article:', {
             user_id: feed.user_id,
             source_url: link,
@@ -97,6 +99,9 @@ export async function GET(request: NextRequest) {
           } else {
             processed++;
           }
+
+          // ** PAUSE for 2 seconds to respect Groq rate limit **
+          await wait(2000);
         } catch (siftError) {
           console.error(`Sift failed for ${link}:`, siftError);
         }
