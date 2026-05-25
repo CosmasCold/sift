@@ -45,6 +45,7 @@ interface SiftEntry {
   feed: Feed | null;
   tags: string[];
   reading_time: number | null;
+  full_text: string | null;
   thumbnail_url: string | null;
 }
 
@@ -764,7 +765,9 @@ function LibraryInner() {
               </span>
             </div>
             <div id="expanded-article-content" onMouseUp={handleTextSelection}>
-              <p className="text-surface-200 leading-relaxed">{expandedArticle.summary}</p>
+              <p className="text-surface-200 leading-relaxed">
+  {expandedArticle.full_text || expandedArticle.summary}
+</p>
             </div>
             {expandedArticle.insight && (
               <div className="bg-surface-800/60 rounded-xl p-3 border-l-4 border-accent-400 mt-3">
