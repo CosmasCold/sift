@@ -717,203 +717,203 @@ function LibraryInner() {
       )}
 
       {/* --- Modal overlay for expanded article --- */}
-      <AnimatePresence>
-        {expandedArticle && (
-          <motion.div
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => setExpandedArticle(null)}
+<AnimatePresence>
+  {expandedArticle && (
+    <motion.div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      onClick={() => setExpandedArticle(null)}
+    >
+      <motion.div
+        className="bg-surface-800 border border-surface-600/40 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6"
+        initial={{ scale: 0.95, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.95, opacity: 0 }}
+        transition={{ duration: 0.2 }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Close button */}
+        <button
+          onClick={() => setExpandedArticle(null)}
+          className="absolute top-4 right-4 p-1 text-surface-400 hover:text-surface-200"
+          aria-label="Close"
+        >
+          <X className="w-5 h-5" />
+        </button>
+
+        <div className="flex gap-4 mb-5">
+          <Thumbnail src={expandedArticle.thumbnail_url} size={80} className="rounded-lg flex-shrink-0" />
+          <div className="flex-1">
+            <div className="flex items-center gap-2 mb-3">
+              <span
+                className={`w-3 h-3 rounded-full ${
+                  expandedArticle.verdict === 'Worth a full read'
+                    ? 'bg-verdict-green'
+                    : expandedArticle.verdict === 'Skim this'
+                    ? 'bg-verdict-amber'
+                    : 'bg-verdict-grey'
+                }`}
+              />
+              <span className="text-sm font-semibold text-surface-300">
+                {expandedArticle.verdict}
+              </span>
+              <span className="text-xs text-surface-400 ml-auto">
+                {new Date(expandedArticle.created_at).toLocaleDateString()}
+              </span>
+            </div>
+            <div id="expanded-article-content" onMouseUp={handleTextSelection}>
+              <p className="text-surface-200 leading-relaxed">{expandedArticle.summary}</p>
+            </div>
+            {expandedArticle.insight && (
+              <div className="bg-surface-800/60 rounded-xl p-3 border-l-4 border-accent-400 mt-3">
+                <p className="text-surface-300 italic text-sm">{expandedArticle.insight}</p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {expandedArticle.source_url && (
+          <a
+            href={expandedArticle.source_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1 text-accent-400 hover:underline text-sm mb-4"
           >
-            <motion.div
-              className="bg-surface-800 border border-surface-600/40 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6"
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              {/* Close button */}
+            Read original <ArrowRight className="w-3 h-3" />
+          </a>
+        )}
+
+        {/* Annotation form (shown when text selected) */}
+        {showAnnotationForm && selectedText && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            className="mb-4 p-3 bg-surface-900/30 border border-surface-600/50 rounded-xl"
+          >
+            <div className="flex items-center gap-1 text-xs text-surface-400 mb-2">
+              <Highlighter className="w-3 h-3" /> Highlighted: "{selectedText.substring(0, 80)}{selectedText.length > 80 ? '…' : ''}"
+            </div>
+            <textarea
+              value={annotationNote}
+              onChange={(e) => setAnnotationNote(e.target.value)}
+              placeholder="Add a note (optional)..."
+              rows={2}
+              className="w-full px-2 py-1 text-sm bg-surface-800 border border-surface-600 rounded-lg text-surface-50 placeholder-surface-500 focus:ring-2 focus:ring-accent-400/50 outline-none resize-none mb-2"
+            />
+            <div className="flex gap-2 justify-end">
               <button
-                onClick={() => setExpandedArticle(null)}
-                className="absolute top-4 right-4 p-1 text-surface-400 hover:text-surface-200"
-                aria-label="Close"
+                onClick={() => {
+                  setShowAnnotationForm(false);
+                  setAnnotationNote('');
+                  setSelectedText('');
+                }}
+                className="px-3 py-1 text-xs text-surface-400 hover:text-surface-200"
               >
-                <X className="w-5 h-5" />
+                Cancel
               </button>
-
-              <div className="flex gap-4 mb-5">
-                <Thumbnail src={expandedArticle.thumbnail_url} size={80} className="rounded-lg flex-shrink-0" />
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-3">
-                    <span
-                      className={`w-3 h-3 rounded-full ${
-                        expandedArticle.verdict === 'Worth a full read'
-                          ? 'bg-verdict-green'
-                          : expandedArticle.verdict === 'Skim this'
-                          ? 'bg-verdict-amber'
-                          : 'bg-verdict-grey'
-                      }`}
-                    />
-                    <span className="text-sm font-semibold text-surface-300">
-                      {expandedArticle.verdict}
-                    </span>
-                    <span className="text-xs text-surface-400 ml-auto">
-                      {new Date(expandedArticle.created_at).toLocaleDateString()}
-                    </span>
-                  </div>
-                  <div id="expanded-article-content" onMouseUp={handleTextSelection}>
-                    <p className="text-surface-200 leading-relaxed">{expandedArticle.summary}</p>
-                  </div>
-                  {expandedArticle.insight && (
-                    <div className="bg-surface-800/60 rounded-xl p-3 border-l-4 border-accent-400 mt-3">
-                      <p className="text-surface-300 italic text-sm">{expandedArticle.insight}</p>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {expandedArticle.source_url && (
-                <a
-                  href={expandedArticle.source_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 text-accent-400 hover:underline text-sm mb-4"
-                >
-                  Read original <ArrowRight className="w-3 h-3" />
-                </a>
-              )}
-
-              {/* Annotation form (shown when text selected) */}
-              {showAnnotationForm && selectedText && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  className="mb-4 p-3 bg-surface-900/30 border border-surface-600/50 rounded-xl"
-                >
-                  <div className="flex items-center gap-1 text-xs text-surface-400 mb-2">
-                    <Highlighter className="w-3 h-3" /> Highlighted: {selectedText.substring(0, 80)}{selectedText.length > 80 ? '…' : ''}
-                  </div>
-                  <textarea
-                    value={annotationNote}
-                    onChange={(e) => setAnnotationNote(e.target.value)}
-                    placeholder="Add a note (optional)..."
-                    rows={2}
-                    className="w-full px-2 py-1 text-sm bg-surface-800 border border-surface-600 rounded-lg text-surface-50 placeholder-surface-500 focus:ring-2 focus:ring-accent-400/50 outline-none resize-none mb-2"
-                  />
-                  <div className="flex gap-2 justify-end">
-                    <button
-                      onClick={() => {
-                        setShowAnnotationForm(false);
-                        setAnnotationNote('');
-                        setSelectedText('');
-                      }}
-                      className="px-3 py-1 text-xs text-surface-400 hover:text-surface-200"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      onClick={handleSaveAnnotation}
-                      className="px-3 py-1 text-xs bg-accent-500 text-white rounded-lg hover:bg-accent-600 transition"
-                    >
-                      <Plus className="w-3 h-3 inline mr-1" /> Save
-                    </button>
-                  </div>
-                </motion.div>
-              )}
-
-              {/* Existing annotations */}
-              {annotations.length > 0 && (
-                <div className="mb-4">
-                  <h4 className="text-xs font-semibold text-surface-400 mb-2 flex items-center gap-1">
-                    <MessageSquare className="w-3 h-3" /> Your annotations ({annotations.length})
-                  </h4>
-                  <div className="space-y-2">
-                    {annotations.map(ann => (
-                      <div key={ann.id} className="bg-surface-800/60 rounded-lg p-3 border border-surface-700/50">
-                        <div className="flex items-start justify-between gap-2">
-                          <p className="text-xs text-surface-300 italic border-l-2 border-accent-400 pl-2 flex-1">
-                            {ann.selected_text}
-                          </p>
-                          <button
-                            onClick={() => handleDeleteAnnotation(ann.id)}
-                            className="p-0.5 text-surface-400 hover:text-red-400 shrink-0"
-                          >
-                            <Trash2 className="w-3 h-3" />
-                          </button>
-                        </div>
-                        {ann.note && (
-                          <p className="text-xs text-surface-200 mt-2 pl-3">{ann.note}</p>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Tags */}
-              <div className="mb-4">
-                <label className="text-xs font-medium text-surface-400 block mb-1">Tags (comma separated)</label>
-                <form
-                  onSubmit={async (e) => {
-                    e.preventDefault();
-                    const fd = new FormData(e.currentTarget);
-                    const input = fd.get('tags')?.toString().trim();
-                    const newTags = input
-                      ? input.split(',').map((t) => t.trim()).filter((t) => t)
-                      : [];
-                    await updateTags(expandedArticle.id, newTags);
-                  }}
-                  className="flex gap-2"
-                >
-                  <input
-                    name="tags"
-                    defaultValue={(expandedArticle.tags || []).join(', ')}
-                    placeholder="e.g., AI, design"
-                    className="flex-1 min-w-0 max-w-full px-2 py-1 text-sm border border-surface-600 rounded-lg bg-surface-800 text-surface-50 placeholder-surface-400 focus:ring-2 focus:ring-accent-400/50 outline-none"
-                  />
-                  <button
-                    type="submit"
-                    className="px-3 py-1 text-sm bg-accent-400/10 text-accent-400 rounded-lg hover:bg-accent-400/20 transition"
-                  >
-                    Save
-                  </button>
-                </form>
-              </div>
-
-              {/* Actions */}
-              <div className="flex items-center gap-3 pt-3 border-t border-surface-700/50">
-                <button
-                  onClick={() => toggleKeep(expandedArticle.id, expandedArticle.kept)}
-                  className={`p-2 rounded-lg ${expandedArticle.kept ? 'bg-verdict-green/10 text-verdict-green' : 'bg-surface-700/50 text-surface-400'} hover:bg-surface-700 transition`}
-                >
-                  {expandedArticle.kept ? <CheckCircle className="w-4 h-4" /> : <Archive className="w-4 h-4" />}
-                  <span className="sr-only">{expandedArticle.kept ? 'Discard' : 'Keep'}</span>
-                </button>
-                <button
-                  onClick={() => handleFeedback(expandedArticle.id, 'agree')}
-                  className={`p-2 rounded-lg ${expandedArticle.feedback === 'agree' ? 'bg-verdict-green/10 text-verdict-green' : 'bg-surface-700/50 text-surface-400'} hover:bg-surface-700 transition`}
-                >
-                  <ThumbsUp className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={() => handleFeedback(expandedArticle.id, 'disagree')}
-                  className={`p-2 rounded-lg ${expandedArticle.feedback === 'disagree' ? 'bg-verdict-amber/10 text-verdict-amber' : 'bg-surface-700/50 text-surface-400'} hover:bg-surface-700 transition`}
-                >
-                  <ThumbsDown className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={() => handleDelete(expandedArticle.id)}
-                  className="p-2 rounded-lg text-surface-400 hover:text-red-400 hover:bg-surface-700 transition ml-auto"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </div>
-            </motion.div>
+              <button
+                onClick={handleSaveAnnotation}
+                className="px-3 py-1 text-xs bg-accent-500 text-white rounded-lg hover:bg-accent-600 transition"
+              >
+                <Plus className="w-3 h-3 inline mr-1" /> Save
+              </button>
+            </div>
           </motion.div>
         )}
-      </AnimatePresence>
+
+        {/* Existing annotations */}
+        {annotations.length > 0 && (
+          <div className="mb-4">
+            <h4 className="text-xs font-semibold text-surface-400 mb-2 flex items-center gap-1">
+              <MessageSquare className="w-3 h-3" /> Your notes ({annotations.length})
+            </h4>
+            <div className="space-y-2">
+              {annotations.map(ann => (
+                <div key={ann.id} className="bg-surface-800/60 rounded-lg p-3 border border-surface-700/50">
+                  <div className="flex items-start justify-between gap-2">
+                    <p className="text-xs text-surface-300 italic border-l-2 border-accent-400 pl-2 flex-1">
+                      "{ann.selected_text}"
+                    </p>
+                    <button
+                      onClick={() => handleDeleteAnnotation(ann.id)}
+                      className="p-0.5 text-surface-400 hover:text-red-400 shrink-0"
+                    >
+                      <Trash2 className="w-3 h-3" />
+                    </button>
+                  </div>
+                  {ann.note && (
+                    <p className="text-xs text-surface-200 mt-2 pl-3">{ann.note}</p>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Tags */}
+        <div className="mb-4">
+          <label className="text-xs font-medium text-surface-400 block mb-1">Tags (comma separated)</label>
+          <form
+            onSubmit={async (e) => {
+              e.preventDefault();
+              const fd = new FormData(e.currentTarget);
+              const input = fd.get('tags')?.toString().trim();
+              const newTags = input
+                ? input.split(',').map((t) => t.trim()).filter((t) => t)
+                : [];
+              await updateTags(expandedArticle.id, newTags);
+            }}
+            className="flex gap-2"
+          >
+            <input
+              name="tags"
+              defaultValue={(expandedArticle.tags || []).join(', ')}
+              placeholder="e.g., AI, design"
+              className="flex-1 min-w-0 max-w-full px-2 py-1 text-sm border border-surface-600 rounded-lg bg-surface-800 text-surface-50 placeholder-surface-400 focus:ring-2 focus:ring-accent-400/50 outline-none"
+            />
+            <button
+              type="submit"
+              className="px-3 py-1 text-sm bg-accent-400/10 text-accent-400 rounded-lg hover:bg-accent-400/20 transition"
+            >
+              Save
+            </button>
+          </form>
+        </div>
+
+        {/* Actions */}
+        <div className="flex items-center gap-3 pt-3 border-t border-surface-700/50">
+          <button
+            onClick={() => toggleKeep(expandedArticle.id, expandedArticle.kept)}
+            className={`p-2 rounded-lg ${expandedArticle.kept ? 'bg-verdict-green/10 text-verdict-green' : 'bg-surface-700/50 text-surface-400'} hover:bg-surface-700 transition`}
+          >
+            {expandedArticle.kept ? <CheckCircle className="w-4 h-4" /> : <Archive className="w-4 h-4" />}
+            <span className="sr-only">{expandedArticle.kept ? 'Discard' : 'Keep'}</span>
+          </button>
+          <button
+            onClick={() => handleFeedback(expandedArticle.id, 'agree')}
+            className={`p-2 rounded-lg ${expandedArticle.feedback === 'agree' ? 'bg-verdict-green/10 text-verdict-green' : 'bg-surface-700/50 text-surface-400'} hover:bg-surface-700 transition`}
+          >
+            <ThumbsUp className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => handleFeedback(expandedArticle.id, 'disagree')}
+            className={`p-2 rounded-lg ${expandedArticle.feedback === 'disagree' ? 'bg-verdict-amber/10 text-verdict-amber' : 'bg-surface-700/50 text-surface-400'} hover:bg-surface-700 transition`}
+          >
+            <ThumbsDown className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => handleDelete(expandedArticle.id)}
+            className="p-2 rounded-lg text-surface-400 hover:text-red-400 hover:bg-surface-700 transition ml-auto"
+          >
+            <Trash2 className="w-4 h-4" />
+          </button>
+        </div>
+      </motion.div>
+    </motion.div>
+  )}
+</AnimatePresence>
     </main>
   );
 }
