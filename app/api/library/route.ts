@@ -12,21 +12,20 @@ export async function GET() {
   const { data, error } = await supabase
     .from('sifted_articles')
     .select(`
-      id,
-      url,
-      source_url,
-      summary,
-      insight,
-      verdict,
-      feedback,
-      kept,
-      created_at,
-      tags,
-      reading_time,
-      thumbnail_url,
-      feed:sift_feeds(id, title)
-    
-    `)
+  id,
+  url,
+  source_url,
+  summary,
+  insight,
+  verdict,
+  feedback,
+  kept,
+  created_at,
+  tags,
+  reading_time,
+  thumbnail_url,
+  feed:sift_feeds!sifted_articles_feed_fkey(id, title)
+`)
     .eq('user_id', user.id)
     .order('created_at', { ascending: false });
 
