@@ -7,6 +7,24 @@ import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { notFound } from 'next/navigation';
 
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const filePath = path.join(process.cwd(), 'content/blog', `${slug}.mdx`);
+  if (!fs.existsSync(filePath)) return {};
+  const raw = fs.readFileSync(filePath, 'utf-8');
+  const { data } = matter(raw);
+  return {
+    title: `${data.title} | Sift Blog`,
+    description: data.description,
+    openGraph: {
+      title: data.title,
+      description: data.description,
+      url: `https://thesift.space/blog/${slug}`,
+      images: [{ url: 'https://thesift.space/og-image.png' }],
+    },
+  };
+}
+
 export async function generateStaticParams() {
   const postsDir = path.join(process.cwd(), 'content/blog');
   if (!fs.existsSync(postsDir)) return [];

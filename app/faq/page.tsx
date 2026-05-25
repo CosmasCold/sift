@@ -48,6 +48,10 @@ const faqs = [
     answer: `If you opt in from Settings, Sift will send you a beautiful email every Monday morning with your top kept articles of the week. It's like a personal newsletter generated from your own reading.`,
   },
   {
+    question: 'What technology does Sift use?',
+    answer: `Sift is built with Next.js, Tailwind CSS, and Supabase. AI verdicts are powered by Groq. Email delivery is handled by Brevo. The site is hosted on Vercel. All of these tools have free tiers, which helps keep Sift free for everyone.`,
+  },
+  {
     question: 'How do I get started?',
     answer: `Sign up, go to the <a href="/discover" style="color:#c77d5a;text-decoration:underline;">Discover page</a> to find feeds you like, paste an article URL on the home page, and sift your first article. It takes about 30 seconds.`,
   },
