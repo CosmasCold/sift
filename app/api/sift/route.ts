@@ -53,6 +53,44 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // ---- Daily limit check (15 sifts per user per day) ----
+    if (user) {
+      const todayStart = new Date();
+      todayStart.setHours(0, 0, 0, 0);
+      const { count, error: countError } = await supabase
+        .from('sifted_articles')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+        .gte('created_at', todayStart.toISOString());
+
+      if (!countError && count !== null && count >= 15) {
+        return NextResponse.json(
+          { error: 'Daily sift limit reached. You can sift more tomorrow.' },
+          { status: 429 }
+        );
+      }
+    }
+
+    // ---- Check cache for this URL ----
+    if (url) {
+      const { data: cached } = await supabase
+        .from('sift_cache')
+        .select('*')
+        .eq('url', url)
+        .maybeSingle();
+
+      if (cached) {
+        return NextResponse.json({
+          summary: cached.summary,
+          insight: cached.insight,
+          verdict: cached.verdict,
+          readingTime: cached.reading_time,
+          thumbnailUrl: cached.thumbnail_url,
+          fullText: cached.full_text,
+        });
+      }
+    }
+
     let articleText = manualText?.trim();
     let thumbnailUrl: string | null = null;
     let feedbackContext = '';
@@ -224,6 +262,19 @@ export async function POST(request: NextRequest) {
           { status: 400 }
         );
       }
+    }
+
+    // ---- Save to cache for future reuse ----
+    if (url) {
+      await supabase.from('sift_cache').upsert({
+        url,
+        summary: result.summary,
+        insight: result.insight,
+        verdict: result.verdict,
+        reading_time: readingTime,
+        thumbnail_url: thumbnailUrl,
+        full_text: articleText,
+      }, { onConflict: 'url' }).select().maybeSingle();
     }
 
     return NextResponse.json({

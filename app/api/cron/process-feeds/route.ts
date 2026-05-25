@@ -5,7 +5,6 @@ import Parser from 'rss-parser';
 export const dynamic = 'force-dynamic';
 
 const parser = new Parser();
-
 const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 export async function GET(request: NextRequest) {
@@ -21,9 +20,12 @@ export async function GET(request: NextRequest) {
     { auth: { autoRefreshToken: false, persistSession: false } }
   );
 
+  // Fetch only 3 feeds that haven't been processed recently
   const { data: feeds, error } = await supabaseAdmin
     .from('sift_feeds')
-    .select('id, user_id, feed_url');
+    .select('id, user_id, feed_url, last_processed')
+    .order('last_processed', { ascending: true, nullsFirst: true })
+    .limit(3);
 
   if (error || !feeds || feeds.length === 0) {
     return NextResponse.json({ processed: 0 });
@@ -74,13 +76,6 @@ export async function GET(request: NextRequest) {
         const siftData = await siftRes.json();
         if (siftData.error) continue;
 
-        console.log('Inserting sifted article:', {
-          user_id: feed.user_id,
-          source_url: link,
-          summary: siftData.summary?.substring(0, 50),
-          verdict: siftData.verdict,
-        });
-
         const { error: insertError } = await supabaseAdmin.from('sifted_articles').insert({
           user_id: feed.user_id,
           source_url: link,
@@ -98,9 +93,14 @@ export async function GET(request: NextRequest) {
           console.error('Insert error:', insertError);
         } else {
           processed++;
+          // Mark feed as processed
+          await supabaseAdmin
+            .from('sift_feeds')
+            .update({ last_processed: new Date().toISOString() })
+            .eq('id', feed.id);
         }
 
-        // Wait 8 seconds between feeds to keep Groq happy
+        // Wait 8 seconds between successful sifts
         await wait(8000);
       } catch (siftError) {
         console.error(`Sift failed for ${link}:`, siftError);
