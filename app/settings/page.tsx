@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase/client';
 import toast from 'react-hot-toast';
-import { ArrowLeft, User, Mail, Palette, Target, CloudDownload, Key } from 'lucide-react';
+import { ArrowLeft, User, Mail, Palette, Target, CloudDownload, Key, Trash2, Heart } from 'lucide-react';
 import Link from 'next/link';
 import { GlassCard } from '@/components/ui/GlassCard';
 
@@ -50,6 +50,9 @@ export default function SettingsPage() {
   const [raindropToken, setRaindropToken] = useState('');
   const [raindropSaved, setRaindropSaved] = useState(false);
   const [importing, setImporting] = useState(false);
+
+  // Delete account state
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     const load = async () => {
@@ -173,6 +176,28 @@ export default function SettingsPage() {
     setImporting(false);
   };
 
+  const handleDeleteAccount = async () => {
+    if (!window.confirm('Are you sure you want to delete your account? This action cannot be undone. All your articles, tags, and data will be permanently removed.')) {
+      return;
+    }
+    setDeleting(true);
+    try {
+      const res = await fetch('/api/account', { method: 'DELETE' });
+      if (res.ok) {
+        toast.success('Account deleted.');
+        await supabase.auth.signOut();
+        window.location.href = '/';
+      } else {
+        const data = await res.json();
+        toast.error(data.error || 'Failed to delete account');
+      }
+    } catch {
+      toast.error('Something went wrong');
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   if (loading) {
     return <div className="flex-1 pt-16 text-center text-surface-400">Loading…</div>;
   }
@@ -279,27 +304,27 @@ export default function SettingsPage() {
             Use this key to send URLs to Sift from automation tools.
           </p>
           <div className="flex flex-col sm:flex-row gap-2">
-  <input
-    type="text"
-    readOnly
-    value={apiKey || 'Generating…'}
-    className="flex-1 px-3 py-2 text-sm bg-surface-800/50 border border-surface-700 rounded-xl text-surface-50 placeholder-surface-500 focus:outline-none"
-  />
-  <div className="flex gap-2">
-    <button
-      onClick={copyApiKey}
-      className="flex-1 sm:flex-none px-4 py-2 bg-surface-800/60 border border-surface-700/50 text-surface-300 rounded-xl text-sm font-medium hover:bg-surface-700/60 transition"
-    >
-      Copy
-    </button>
-    <button
-      onClick={regenerateApiKey}
-      className="flex-1 sm:flex-none px-4 py-2 bg-surface-800/60 border border-surface-700/50 text-surface-300 rounded-xl text-sm font-medium hover:bg-surface-700/60 transition"
-    >
-      Regenerate
-    </button>
-  </div>
-</div>
+            <input
+              type="text"
+              readOnly
+              value={apiKey || 'Generating…'}
+              className="flex-1 px-3 py-2 text-sm bg-surface-800/50 border border-surface-700 rounded-xl text-surface-50 placeholder-surface-500 focus:outline-none"
+            />
+            <div className="flex gap-2">
+              <button
+                onClick={copyApiKey}
+                className="flex-1 sm:flex-none px-4 py-2 bg-surface-800/60 border border-surface-700/50 text-surface-300 rounded-xl text-sm font-medium hover:bg-surface-700/60 transition"
+              >
+                Copy
+              </button>
+              <button
+                onClick={regenerateApiKey}
+                className="flex-1 sm:flex-none px-4 py-2 bg-surface-800/60 border border-surface-700/50 text-surface-300 rounded-xl text-sm font-medium hover:bg-surface-700/60 transition"
+              >
+                Regenerate
+              </button>
+            </div>
+          </div>
           <p className="text-xs text-surface-500 mt-2">
             POST to <code className="text-accent-400">https://thesift.space/api/v1/sift</code> with<br />
             <code className="text-surface-300">Authorization: Bearer your‑key</code> and JSON body{' '}
@@ -346,6 +371,41 @@ export default function SettingsPage() {
               {importing ? 'Importing…' : 'Import from Raindrop'}
             </button>
           )}
+        </div>
+
+        {/* Support Sift */}
+        <div className="border-t border-surface-700/50 pt-4 mt-2">
+          <h3 className="font-medium text-surface-200 mb-2 flex items-center gap-2">
+            <Heart className="w-4 h-4 text-accent-400" /> Support Sift
+          </h3>
+          <p className="text-xs text-surface-400 mb-3">
+            Sift is free and independent. If it helps you read better, consider supporting its development.
+          </p>
+          <a
+            href="https://your-support-link.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-accent-500 text-white rounded-xl text-sm font-medium hover:bg-accent-600 transition"
+          >
+            <Heart className="w-4 h-4" /> Buy me a coffee
+          </a>
+        </div>
+
+        {/* Delete account */}
+        <div className="border-t border-surface-700/50 pt-4 mt-2">
+          <h3 className="font-medium text-surface-200 mb-2 flex items-center gap-2">
+            <Trash2 className="w-4 h-4 text-red-400" /> Danger zone
+          </h3>
+          <p className="text-xs text-surface-400 mb-3">
+            Delete your account and all associated data. This cannot be undone.
+          </p>
+          <button
+            onClick={handleDeleteAccount}
+            disabled={deleting}
+            className="px-4 py-2 bg-red-500/10 border border-red-500/30 text-red-400 rounded-xl text-sm font-medium hover:bg-red-500/20 transition"
+          >
+            {deleting ? 'Deleting…' : 'Delete Account'}
+          </button>
         </div>
 
         <button onClick={handleSave} className="w-full py-2.5 bg-accent-500 text-white rounded-xl font-medium hover:bg-accent-600 transition-colors">
