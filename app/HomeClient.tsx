@@ -438,25 +438,30 @@ export default function HomeClient() {
   }
 
   if (!user) {
-    return (
-      <div className="min-h-[70vh] flex flex-col items-center justify-center gap-6 px-4">
-        <GlassCard className="p-8 text-center max-w-md">
-          <h1 className="text-3xl font-semibold text-surface-50 mb-3">
-            Save articles. Sift them. Keep what matters.
-          </h1>
-          <p className="text-surface-400 mb-8">
-            Sign in to start building your personal library.
-          </p>
-          <Link
-            href="/auth"
-            className="inline-flex items-center gap-2 px-6 py-3 bg-accent-500 text-white rounded-xl font-medium hover:bg-accent-600 transition"
-          >
-            Sign In to Sift
-          </Link>
-        </GlassCard>
-      </div>
-    );
-  }
+  return (
+    <div className="min-h-[70vh] flex flex-col items-center justify-center gap-6 px-4">
+      <GlassCard className="p-8 text-center max-w-lg">
+        <h1 className="text-3xl font-semibold text-surface-50 mb-3">
+          Save articles. Sift them. Keep what matters.
+        </h1>
+        <p className="text-surface-400 mb-2 text-sm leading-relaxed">
+          Paste any article or add RSS feeds, and Sift will read it, give you a verdict
+          (Worth a full read, Skim this, or You can skip this), and build a beautiful
+          personal library from what you keep.
+        </p>
+        <p className="text-surface-400 mb-8 text-sm leading-relaxed">
+          Free to use. No ads, no paywalls.
+        </p>
+        <Link
+          href="/auth"
+          className="inline-flex items-center gap-2 px-6 py-3 bg-accent-500 text-white rounded-xl font-medium hover:bg-accent-600 transition"
+        >
+          Sign Up / Sign In
+        </Link>
+      </GlassCard>
+    </div>
+  );
+}
 
   return (
     <div className="flex flex-col items-center gap-8 pt-12 px-4 pb-24">
