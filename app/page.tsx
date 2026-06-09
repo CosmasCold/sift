@@ -52,6 +52,7 @@ export default function PersonalSite() {
             boxShadow: "0 2px 8px rgba(0,0,0,0.2), 0 8px 32px rgba(0,0,0,0.1)",
           }}
         >
+          {/* Headshot */}
           <div
             style={{
               width: "96px",
@@ -60,15 +61,17 @@ export default function PersonalSite() {
               border: "2px solid #0ea5e9",
               margin: "0 auto 24px",
               overflow: "hidden",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: "36px",
-              color: "#0ea5e9",
-              background: "rgba(14,165,233,0.1)",
             }}
           >
-            G
+            <img
+              src="/gabriel-headshot.png"
+              alt="Gabriel"
+              style={{
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
+              }}
+            />
           </div>
           <h1
             style={{
@@ -77,7 +80,7 @@ export default function PersonalSite() {
               letterSpacing: "-0.02em",
             }}
           >
-            Gabriel Freitas
+            Gabriel
           </h1>
           <p
             style={{
