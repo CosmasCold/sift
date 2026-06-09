@@ -1,7 +1,5 @@
 // app/page.tsx (for thesift.space)
 import Link from "next/link";
-import Image from "next/image";
-import { ArrowRight, BookOpen, ExternalLink, PenTool } from "lucide-react";
 
 const blogPosts = [
   {
@@ -28,42 +26,126 @@ const blogPosts = [
 
 export default function PersonalSite() {
   return (
-    <div className="min-h-screen">
+    <div
+      style={{
+        minHeight: "100vh",
+        display: "flex",
+        flexDirection: "column",
+      }}
+    >
       {/* Hero */}
-      <div className="max-w-4xl mx-auto px-4 py-24 sm:py-32 text-center">
-        <div className="bg-white/[0.05] backdrop-blur-xl rounded-3xl border border-white/10 shadow-card-raised p-10 sm:p-14">
-          <div className="flex justify-center mb-6">
-            <Image
-              src="/avatar.png"
-              alt="Gabriel"
-              width={96}
-              height={96}
-              className="rounded-full border-2 border-sky-400"
-            />
+      <div
+        style={{
+          maxWidth: "720px",
+          margin: "0 auto",
+          padding: "100px 16px 80px",
+          textAlign: "center",
+        }}
+      >
+        <div
+          style={{
+            background: "rgba(255,255,255,0.05)",
+            backdropFilter: "blur(20px)",
+            border: "1px solid rgba(255,255,255,0.1)",
+            borderRadius: "24px",
+            padding: "48px 32px",
+            boxShadow: "0 2px 8px rgba(0,0,0,0.2), 0 8px 32px rgba(0,0,0,0.1)",
+          }}
+        >
+          <div
+            style={{
+              width: "96px",
+              height: "96px",
+              borderRadius: "50%",
+              border: "2px solid #0ea5e9",
+              margin: "0 auto 24px",
+              overflow: "hidden",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: "36px",
+              color: "#0ea5e9",
+              background: "rgba(14,165,233,0.1)",
+            }}
+          >
+            G
           </div>
-          <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight">
-            Gabriel
+          <h1
+            style={{
+              fontSize: "2.8rem",
+              fontWeight: 800,
+              letterSpacing: "-0.02em",
+            }}
+          >
+            Gabriel Freitas
           </h1>
-          <p className="mt-3 text-xl text-sky-400 font-semibold">
+          <p
+            style={{
+              fontSize: "1.2rem",
+              color: "#0ea5e9",
+              fontWeight: 600,
+              marginTop: "8px",
+            }}
+          >
             Solo founder of SiteSafe
           </p>
-          <p className="mt-4 max-w-xl mx-auto text-slate-300 leading-relaxed">
+          <p
+            style={{
+              maxWidth: "480px",
+              margin: "16px auto 0",
+              color: "#cbd5e1",
+              fontSize: "1rem",
+            }}
+          >
             I build simple, honest software for small businesses. No sales
             calls, flat pricing —that’s my
             thing.
           </p>
 
-          <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
-            <Link
+          <div
+            style={{
+              display: "flex",
+              gap: "16px",
+              justifyContent: "center",
+              flexWrap: "wrap",
+              marginTop: "32px",
+            }}
+          >
+            <a
               href="https://sitesafe.thesift.space"
               target="_blank"
-              className="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-xl text-slate-900 bg-white hover:bg-slate-100 transition-all duration-200 shadow-lg"
+              rel="noopener noreferrer"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "8px",
+                padding: "12px 24px",
+                background: "#fff",
+                color: "#0f172a",
+                fontWeight: 600,
+                borderRadius: "12px",
+                fontSize: "0.95rem",
+                transition: "background 0.2s",
+                textDecoration: "none",
+              }}
             >
-              Try SiteSafe free <ExternalLink className="ml-2 w-4 h-4" />
-            </Link>
+              Try SiteSafe free
+              <span style={{ fontSize: "1.1rem" }}>↗</span>
+            </a>
             <a
               href="#writing"
-              className="inline-flex items-center justify-center px-6 py-3 border border-white/10 text-base font-medium rounded-xl text-white bg-white/10 hover:bg-white/20 backdrop-blur-sm transition-all duration-200"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                padding: "12px 24px",
+                border: "1px solid rgba(255,255,255,0.15)",
+                borderRadius: "12px",
+                color: "#e2e8f0",
+                fontWeight: 500,
+                fontSize: "0.95rem",
+                textDecoration: "none",
+                transition: "background 0.2s",
+              }}
             >
               Read my writing ↓
             </a>
@@ -72,12 +154,44 @@ export default function PersonalSite() {
       </div>
 
       {/* Founder Story */}
-      <div className="max-w-3xl mx-auto px-4 pb-24">
-        <div className="bg-white/[0.06] backdrop-blur-md rounded-2xl border border-white/10 shadow-card-raised p-8">
-          <h2 className="text-2xl font-semibold text-white mb-4 flex items-center gap-2">
-            <BookOpen className="w-6 h-6 text-sky-400" /> The story
+      <div
+        style={{
+          maxWidth: "640px",
+          margin: "0 auto",
+          padding: "0 16px 80px",
+        }}
+      >
+        <div
+          style={{
+            background: "rgba(255,255,255,0.06)",
+            backdropFilter: "blur(12px)",
+            border: "1px solid rgba(255,255,255,0.1)",
+            borderRadius: "16px",
+            padding: "32px",
+          }}
+        >
+          <h2
+            style={{
+              fontSize: "1.5rem",
+              fontWeight: 600,
+              marginBottom: "16px",
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+            }}
+          >
+            📖 The story
           </h2>
-          <div className="space-y-4 text-sm leading-relaxed text-slate-200">
+          <div
+            style={{
+              fontSize: "0.9rem",
+              lineHeight: "1.7",
+              color: "#cbd5e1",
+              display: "flex",
+              flexDirection: "column",
+              gap: "12px",
+            }}
+          >
             <p>
               I wanted to build something useful. I spent a few weeks
               researching common problems in small to medium businesses. One
@@ -100,34 +214,86 @@ export default function PersonalSite() {
         </div>
       </div>
 
-      {/* Writing / Blog */}
-      <div id="writing" className="max-w-3xl mx-auto px-4 pb-24">
-        <h2 className="text-2xl font-semibold text-white mb-6 flex items-center gap-2">
-          <PenTool className="w-6 h-6 text-sky-400" /> Writing
+      {/* Writing */}
+      <div
+        id="writing"
+        style={{
+          maxWidth: "640px",
+          margin: "0 auto",
+          padding: "0 16px 80px",
+        }}
+      >
+        <h2
+          style={{
+            fontSize: "1.5rem",
+            fontWeight: 600,
+            marginBottom: "24px",
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+          }}
+        >
+          ✍️ Writing
         </h2>
-        <div className="space-y-4">
+        <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
           {blogPosts.map((post) => (
             <a
               key={post.href}
               href={post.href}
               target="_blank"
               rel="noopener noreferrer"
-              className="block bg-white/[0.06] backdrop-blur-md rounded-2xl border border-white/10 shadow-card-raised p-5 hover:shadow-card-raised transition-shadow duration-300"
+              style={{
+                display: "block",
+                background: "rgba(255,255,255,0.06)",
+                backdropFilter: "blur(12px)",
+                border: "1px solid rgba(255,255,255,0.1)",
+                borderRadius: "16px",
+                padding: "20px",
+                color: "#e2e8f0",
+                textDecoration: "none",
+                transition: "box-shadow 0.2s",
+              }}
             >
-              <p className="text-sm text-slate-400">{post.date}</p>
-              <h3 className="text-white font-medium mt-1">{post.title}</h3>
-              <p className="text-xs text-sky-400 mt-2 flex items-center gap-1">
-                Read on SiteSafe blog <ExternalLink className="w-3 h-3" />
+              <p style={{ fontSize: "0.8rem", color: "#94a3b8" }}>
+                {post.date}
+              </p>
+              <h3
+                style={{
+                  fontSize: "1rem",
+                  fontWeight: 500,
+                  marginTop: "4px",
+                }}
+              >
+                {post.title}
+              </h3>
+              <p
+                style={{
+                  fontSize: "0.8rem",
+                  color: "#0ea5e9",
+                  marginTop: "8px",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "4px",
+                }}
+              >
+                Read on SiteSafe blog <span>↗</span>
               </p>
             </a>
           ))}
         </div>
-        <p className="text-sm text-slate-400 mt-6 text-center">
+        <p
+          style={{
+            textAlign: "center",
+            fontSize: "0.85rem",
+            color: "#94a3b8",
+            marginTop: "24px",
+          }}
+        >
           More articles on the{" "}
           <a
             href="https://sitesafe.thesift.space/blog"
             target="_blank"
-            className="text-sky-400 hover:underline"
+            style={{ color: "#0ea5e9", textDecoration: "underline" }}
           >
             SiteSafe blog
           </a>.
@@ -135,36 +301,50 @@ export default function PersonalSite() {
       </div>
 
       {/* Footer */}
-      <div className="border-t border-white/5 py-8">
-        <div className="max-w-4xl mx-auto px-4 flex flex-col sm:flex-row justify-between items-center gap-4 text-sm text-slate-400">
-          <div>
-            &copy; {new Date().getFullYear()} Gabriel. Built in Brazil.
-          </div>
-          <div className="flex gap-4">
+      <div
+        style={{
+          borderTop: "1px solid rgba(255,255,255,0.05)",
+          padding: "32px 16px",
+        }}
+      >
+        <div
+          style={{
+            maxWidth: "720px",
+            margin: "0 auto",
+            display: "flex",
+            justifyContent: "space-between",
+            flexWrap: "wrap",
+            gap: "16px",
+            fontSize: "0.85rem",
+            color: "#94a3b8",
+          }}
+        >
+          <div>&copy; {new Date().getFullYear()} Gabriel Freitas. Built in Brazil.</div>
+          <div style={{ display: "flex", gap: "16px" }}>
             <a
               href="https://sitesafe.thesift.space"
               target="_blank"
-              className="hover:text-white transition-colors"
+              style={{ color: "#94a3b8", textDecoration: "none" }}
             >
               SiteSafe
             </a>
             <a
               href="https://linkedin.com/in/benediktfreitas"
               target="_blank"
-              className="hover:text-white transition-colors"
+              style={{ color: "#94a3b8", textDecoration: "none" }}
             >
               LinkedIn
             </a>
             <a
               href="https://twitter.com/sitesafehq"
               target="_blank"
-              className="hover:text-white transition-colors"
+              style={{ color: "#94a3b8", textDecoration: "none" }}
             >
               Twitter
             </a>
             <a
               href="mailto:hello@thesift.space"
-              className="hover:text-white transition-colors"
+              style={{ color: "#94a3b8", textDecoration: "none" }}
             >
               Email
             </a>
