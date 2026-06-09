@@ -101,7 +101,7 @@ export default function PersonalSite() {
             }}
           >
             I build simple, honest software for small businesses. No sales
-            calls, flat pricing —that’s my
+            calls, flat pricing—that’s my
             thing.
           </p>
 
@@ -213,6 +213,29 @@ export default function PersonalSite() {
               and run by one person. No sales team, no board, no hidden fees.
               Just me, solving a problem I care about.
             </p>
+
+            {/* Why thesift */}
+            <div
+              style={{
+                marginTop: "24px",
+                paddingTop: "24px",
+                borderTop: "1px solid rgba(255,255,255,0.06)",
+                fontSize: "0.85rem",
+                color: "#94a3b8",
+                fontStyle: "italic",
+              }}
+            >
+              <p>
+                <strong style={{ fontStyle: "normal", color: "#e2e8f0" }}>
+                  Why thesift?
+                </strong>{" "}
+                Before SiteSafe, I built another tool here, but that’s not the
+                point. I kept the domain because “sift” describes how I work. I
+                sift through ideas, problems, and feedback to find the one thing
+                worth focusing on. SiteSafe came out of that process. Whatever
+                comes next probably will too.
+              </p>
+            </div>
           </div>
         </div>
       </div>

@@ -4,11 +4,11 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Gabriel – Founder of SiteSafe",
   description:
-    "Personal site of Gabriel Freitas, a solo founder building SiteSafe, a smart visitor management platform. No sales calls, flat pricing, mandatory safety acknowledgment.",
+    "Personal site of Gabriel, a solo founder building SiteSafe, a smart visitor management platform. No sales calls, flat pricing, mandatory safety acknowledgment.",
   openGraph: {
     title: "Gabriel – Founder of SiteSafe",
     description:
-      "Personal site of Gabriel, a solo founder building SiteSafe, a smart visitor management platform.",
+      "Personal site of Gabriel Freitas, a solo founder building SiteSafe, a smart visitor management platform.",
     images: [{ url: "/og-image.png", width: 1200, height: 630 }],
   },
 };
@@ -21,6 +21,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
+        <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
         <style>{`
           *, *::before, *::after {
             box-sizing: border-box;
@@ -46,7 +47,6 @@ export default function RootLayout({
           }
         `}</style>
       </head>
-      <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
       <body>{children}</body>
     </html>
   );
