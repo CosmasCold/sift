@@ -1,154 +1,65 @@
 // app/page.tsx (for thesift.space)
-import Link from "next/link";
-
-const blogPosts = [
-  {
-    title: "The Ultimate Guide to Modern Visitor Management",
-    href: "https://sitesafe.thesift.space/blog/ultimate-guide-modern-visitor-management",
-    date: "2026-06-09",
-  },
-  {
-    title: "SiteSafe vs Envoy vs SwipedOn vs Paper Logs",
-    href: "https://sitesafe.thesift.space/blog/sitesafe-vs-envoy-swipedon-paper",
-    date: "2026-06-04",
-  },
-  {
-    title: "How a Small Business Chooses a Visitor Log",
-    href: "https://sitesafe.thesift.space/blog/case-study-small-business",
-    date: "2026-06-06",
-  },
-  {
-    title: "The Real Cost of a Failed Safety Audit",
-    href: "https://sitesafe.thesift.space/blog/cost-of-failed-safety-audit",
-    date: "2026-06-03",
-  },
-];
-
 export default function PersonalSite() {
+  const blogPosts = [
+    {
+      title: "The Ultimate Guide to Modern Visitor Management",
+      href: "https://sitesafe.thesift.space/blog/ultimate-guide-modern-visitor-management",
+      date: "2026-06-09",
+    },
+    {
+      title: "SiteSafe vs Envoy vs SwipedOn vs Paper Logs",
+      href: "https://sitesafe.thesift.space/blog/sitesafe-vs-envoy-swipedon-paper",
+      date: "2026-06-04",
+    },
+    {
+      title: "How a Small Business Chooses a Visitor Log",
+      href: "https://sitesafe.thesift.space/blog/case-study-small-business",
+      date: "2026-06-06",
+    },
+    {
+      title: "The Real Cost of a Failed Safety Audit",
+      href: "https://sitesafe.thesift.space/blog/cost-of-failed-safety-audit",
+      date: "2026-06-03",
+    },
+  ];
+
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        display: "flex",
-        flexDirection: "column",
-      }}
-    >
+    <div className="min-h-screen flex flex-col">
       {/* Hero */}
-      <div
-        style={{
-          maxWidth: "720px",
-          margin: "0 auto",
-          padding: "100px 16px 80px",
-          textAlign: "center",
-        }}
-      >
-        <div
-          style={{
-            background: "rgba(255,255,255,0.05)",
-            backdropFilter: "blur(20px)",
-            border: "1px solid rgba(255,255,255,0.1)",
-            borderRadius: "24px",
-            padding: "48px 32px",
-            boxShadow: "0 2px 8px rgba(0,0,0,0.2), 0 8px 32px rgba(0,0,0,0.1)",
-          }}
-        >
-          {/* Headshot */}
-          <div
-            style={{
-              width: "96px",
-              height: "96px",
-              borderRadius: "50%",
-              border: "2px solid #0ea5e9",
-              margin: "0 auto 24px",
-              overflow: "hidden",
-            }}
-          >
+      <div className="max-w-3xl mx-auto px-4 py-24 sm:py-32 text-center">
+        <div className="bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10 shadow-2xl p-10 sm:p-14">
+          <div className="w-24 h-24 rounded-full border-2 border-sky-400 mx-auto overflow-hidden mb-6">
             <img
               src="/gabriel-headshot.png"
               alt="Gabriel"
-              style={{
-                width: "100%",
-                height: "100%",
-                objectFit: "cover",
-              }}
+              className="w-full h-full object-cover"
             />
           </div>
-          <h1
-            style={{
-              fontSize: "2.8rem",
-              fontWeight: 800,
-              letterSpacing: "-0.02em",
-            }}
-          >
+          <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight text-white">
             Gabriel
           </h1>
-          <p
-            style={{
-              fontSize: "1.2rem",
-              color: "#0ea5e9",
-              fontWeight: 600,
-              marginTop: "8px",
-            }}
-          >
+          <p className="text-xl text-sky-400 font-semibold mt-2">
             Solo founder of SiteSafe
           </p>
-          <p
-            style={{
-              maxWidth: "480px",
-              margin: "16px auto 0",
-              color: "#cbd5e1",
-              fontSize: "1rem",
-            }}
-          >
+          <p className="max-w-md mx-auto text-slate-300 mt-4 leading-relaxed">
             I build simple, honest software for small businesses. No sales
-            calls, flat pricing, and mandatory safety acknowledgment—that’s my
+            calls, flat pricing, and mandatory safety acknowledgment—that&apos;s my
             thing.
           </p>
 
-          <div
-            style={{
-              display: "flex",
-              gap: "16px",
-              justifyContent: "center",
-              flexWrap: "wrap",
-              marginTop: "32px",
-            }}
-          >
+          <div className="flex gap-4 justify-center flex-wrap mt-8">
             <a
               href="https://sitesafe.thesift.space"
               target="_blank"
               rel="noopener noreferrer"
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: "8px",
-                padding: "12px 24px",
-                background: "#fff",
-                color: "#0f172a",
-                fontWeight: 600,
-                borderRadius: "12px",
-                fontSize: "0.95rem",
-                transition: "background 0.2s",
-                textDecoration: "none",
-              }}
+              className="inline-flex items-center gap-2 px-6 py-3 bg-white text-slate-900 font-semibold rounded-xl hover:bg-slate-100 transition-colors"
             >
               Try SiteSafe free
-              <span style={{ fontSize: "1.1rem" }}>↗</span>
+              <span className="text-lg">↗</span>
             </a>
             <a
               href="#writing"
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                padding: "12px 24px",
-                border: "1px solid rgba(255,255,255,0.15)",
-                borderRadius: "12px",
-                color: "#e2e8f0",
-                fontWeight: 500,
-                fontSize: "0.95rem",
-                textDecoration: "none",
-                transition: "background 0.2s",
-              }}
+              className="inline-flex items-center px-6 py-3 border border-white/15 text-white font-medium rounded-xl hover:bg-white/10 transition-colors"
             >
               Read my writing ↓
             </a>
@@ -157,44 +68,10 @@ export default function PersonalSite() {
       </div>
 
       {/* Founder Story */}
-      <div
-        style={{
-          maxWidth: "640px",
-          margin: "0 auto",
-          padding: "0 16px 80px",
-        }}
-      >
-        <div
-          style={{
-            background: "rgba(255,255,255,0.06)",
-            backdropFilter: "blur(12px)",
-            border: "1px solid rgba(255,255,255,0.1)",
-            borderRadius: "16px",
-            padding: "32px",
-          }}
-        >
-          <h2
-            style={{
-              fontSize: "1.5rem",
-              fontWeight: 600,
-              marginBottom: "16px",
-              display: "flex",
-              alignItems: "center",
-              gap: "8px",
-            }}
-          >
-            📖 The story
-          </h2>
-          <div
-            style={{
-              fontSize: "0.9rem",
-              lineHeight: "1.7",
-              color: "#cbd5e1",
-              display: "flex",
-              flexDirection: "column",
-              gap: "12px",
-            }}
-          >
+      <div className="max-w-2xl mx-auto px-4 pb-20">
+        <div className="bg-white/5 backdrop-blur-md rounded-2xl border border-white/10 p-8">
+          <h2 className="text-2xl font-semibold text-white mb-4">The story</h2>
+          <div className="text-sm leading-relaxed text-slate-300 space-y-4">
             <p>
               I wanted to build something useful. I spent a few weeks
               researching common problems in small to medium businesses. One
@@ -214,22 +91,10 @@ export default function PersonalSite() {
               Just me, solving a problem I care about.
             </p>
 
-            {/* Why thesift */}
-            <div
-              style={{
-                marginTop: "24px",
-                paddingTop: "24px",
-                borderTop: "1px solid rgba(255,255,255,0.06)",
-                fontSize: "0.85rem",
-                color: "#94a3b8",
-                fontStyle: "italic",
-              }}
-            >
+            <div className="mt-6 pt-6 border-t border-white/10 text-slate-400 italic text-xs">
               <p>
-                <strong style={{ fontStyle: "normal", color: "#e2e8f0" }}>
-                  Why thesift?
-                </strong>{" "}
-                Before SiteSafe, I built another tool here, but that’s not the
+                <strong className="not-italic text-slate-200">Why thesift?</strong>{" "}
+                Before SiteSafe, I built another tool here, but that&apos;s not the
                 point. I kept the domain because “sift” describes how I work. I
                 sift through ideas, problems, and feedback to find the one thing
                 worth focusing on. SiteSafe came out of that process. Whatever
@@ -240,211 +105,90 @@ export default function PersonalSite() {
         </div>
       </div>
 
-      {/* Writing */}
-      <div
-        id="writing"
-        style={{
-          maxWidth: "640px",
-          margin: "0 auto",
-          padding: "0 16px 80px",
-        }}
-      >
-        <h2
-          style={{
-            fontSize: "1.5rem",
-            fontWeight: 600,
-            marginBottom: "24px",
-            display: "flex",
-            alignItems: "center",
-            gap: "8px",
-          }}
-        >
-          ✍️ Writing
-        </h2>
+      {/* Writing – two‑column */}
+      <div id="writing" className="max-w-5xl mx-auto px-4 pb-20">
+        <h2 className="text-2xl font-semibold text-white mb-6">Writing</h2>
 
-        {/* Featured article – highlighted */}
-        <a
-          href="https://thenextscoop.com/how-i-got-my-first-10-saas-customers-without-a-single-sales-call/"
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{
-            display: "block",
-            background: "linear-gradient(135deg, rgba(14,165,233,0.15), rgba(14,165,233,0.05))",
-            backdropFilter: "blur(12px)",
-            border: "1px solid rgba(14,165,233,0.3)",
-            borderRadius: "16px",
-            padding: "20px",
-            color: "#e2e8f0",
-            textDecoration: "none",
-            marginBottom: "24px",
-            position: "relative",
-          }}
-        >
-          <div
-            style={{
-              display: "inline-block",
-              background: "#0ea5e9",
-              color: "#fff",
-              fontSize: "0.7rem",
-              fontWeight: 600,
-              padding: "2px 8px",
-              borderRadius: "4px",
-              marginBottom: "8px",
-              textTransform: "uppercase",
-              letterSpacing: "0.05em",
-            }}
-          >
-            Featured on The Next Scoop
-          </div>
-          <h3
-            style={{
-              fontSize: "1rem",
-              fontWeight: 500,
-              marginTop: "4px",
-            }}
-          >
-            How I Got My First 10 SaaS Customers (Without a Single Sales Call)
-          </h3>
-          <p
-            style={{
-              fontSize: "0.8rem",
-              color: "#94a3b8",
-              marginTop: "4px",
-            }}
-          >
-            June 12, 2026
-          </p>
-          <p
-            style={{
-              fontSize: "0.8rem",
-              color: "#0ea5e9",
-              marginTop: "8px",
-              display: "flex",
-              alignItems: "center",
-              gap: "4px",
-            }}
-          >
-            Read on The Next Scoop <span>↗</span>
-          </p>
-        </a>
-
-        {/* Other blog posts */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-          {blogPosts.map((post) => (
+        <div className="flex flex-wrap gap-6">
+          {/* Featured article */}
+          <div className="flex-1 min-w-[300px]">
             <a
-              key={post.href}
-              href={post.href}
+              href="https://thenextscoop.com/how-i-got-my-first-10-saas-customers-without-a-single-sales-call/"
               target="_blank"
               rel="noopener noreferrer"
-              style={{
-                display: "block",
-                background: "rgba(255,255,255,0.06)",
-                backdropFilter: "blur(12px)",
-                border: "1px solid rgba(255,255,255,0.1)",
-                borderRadius: "16px",
-                padding: "20px",
-                color: "#e2e8f0",
-                textDecoration: "none",
-                transition: "box-shadow 0.2s",
-              }}
+              className="block bg-gradient-to-br from-sky-500/15 to-sky-500/5 backdrop-blur-md border border-sky-400/30 rounded-2xl p-6 text-white hover:shadow-lg transition-shadow h-full"
             >
-              <p style={{ fontSize: "0.8rem", color: "#94a3b8" }}>
-                {post.date}
-              </p>
-              <h3
-                style={{
-                  fontSize: "1rem",
-                  fontWeight: 500,
-                  marginTop: "4px",
-                }}
-              >
-                {post.title}
+              <span className="inline-block bg-sky-500 text-white text-xs font-semibold px-2.5 py-1 rounded uppercase tracking-wide mb-3">
+                Featured on The Next Scoop
+              </span>
+              <h3 className="text-xl font-semibold leading-snug">
+                How I Got My First 10 SaaS Customers (Without a Single Sales Call)
               </h3>
-              <p
-                style={{
-                  fontSize: "0.8rem",
-                  color: "#0ea5e9",
-                  marginTop: "8px",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "4px",
-                }}
-              >
-                Read on SiteSafe blog <span>↗</span>
+              <p className="text-sm text-slate-400 mt-2">June 12, 2026</p>
+              <p className="text-sm text-slate-300 mt-3 leading-relaxed">
+                I built a simple visitor management tool and spent weeks sending
+                cold emails and posting on social media. Zero replies. Then I
+                stopped selling and started sharing genuinely useful content.
+                That&apos;s when the first sign‑ups started coming in. Here&apos;s
+                exactly what I did.
+              </p>
+              <p className="text-sm text-sky-400 flex items-center gap-1 mt-4">
+                Read on The Next Scoop <span>↗</span>
               </p>
             </a>
-          ))}
+          </div>
+
+          {/* Other posts column */}
+          <div className="flex-1 min-w-[250px] space-y-4">
+            {blogPosts.map((post) => (
+              <a
+                key={post.href}
+                href={post.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl p-5 text-white hover:bg-white/10 transition-colors"
+              >
+                <p className="text-xs text-slate-400">{post.date}</p>
+                <h3 className="text-base font-medium mt-1 leading-snug">{post.title}</h3>
+                <p className="text-xs text-sky-400 flex items-center gap-1 mt-2">
+                  Read on SiteSafe blog <span>↗</span>
+                </p>
+              </a>
+            ))}
+            <p className="text-center text-xs text-slate-500 mt-4">
+              More articles on the{" "}
+              <a
+                href="https://sitesafe.thesift.space/blog"
+                target="_blank"
+                className="text-sky-400 underline"
+              >
+                SiteSafe blog
+              </a>
+            </p>
+          </div>
         </div>
-        <p
-          style={{
-            textAlign: "center",
-            fontSize: "0.85rem",
-            color: "#94a3b8",
-            marginTop: "24px",
-          }}
-        >
-          More articles on the{" "}
-          <a
-            href="https://sitesafe.thesift.space/blog"
-            target="_blank"
-            style={{ color: "#0ea5e9", textDecoration: "underline" }}
-          >
-            SiteSafe blog
-          </a>.
-        </p>
       </div>
 
       {/* Footer */}
-      <div
-        style={{
-          borderTop: "1px solid rgba(255,255,255,0.05)",
-          padding: "32px 16px",
-        }}
-      >
-        <div
-          style={{
-            maxWidth: "720px",
-            margin: "0 auto",
-            display: "flex",
-            justifyContent: "space-between",
-            flexWrap: "wrap",
-            gap: "16px",
-            fontSize: "0.85rem",
-            color: "#94a3b8",
-          }}
-        >
+      <footer className="border-t border-white/5 py-8">
+        <div className="max-w-5xl mx-auto px-4 flex flex-col sm:flex-row justify-between items-center gap-4 text-sm text-slate-400">
           <div>&copy; {new Date().getFullYear()} Gabriel. Built in Brazil.</div>
-          <div style={{ display: "flex", gap: "16px" }}>
-            <a
-              href="https://sitesafe.thesift.space"
-              target="_blank"
-              style={{ color: "#94a3b8", textDecoration: "none" }}
-            >
+          <div className="flex gap-4">
+            <a href="https://sitesafe.thesift.space" target="_blank" className="hover:text-white transition-colors">
               SiteSafe
             </a>
-            <a
-              href="https://linkedin.com/in/yourprofile"
-              target="_blank"
-              style={{ color: "#94a3b8", textDecoration: "none" }}
-            >
+            <a href="https://linkedin.com/in/yourprofile" target="_blank" className="hover:text-white transition-colors">
               LinkedIn
             </a>
-            <a
-              href="https://twitter.com/yourhandle"
-              target="_blank"
-              style={{ color: "#94a3b8", textDecoration: "none" }}
-            >
+            <a href="https://twitter.com/yourhandle" target="_blank" className="hover:text-white transition-colors">
               Twitter
             </a>
-            <a
-              href="mailto:cloudandclipboard@gmail.com"
-              style={{ color: "#94a3b8", textDecoration: "none" }}
-            >
+            <a href="mailto:cloudandclipboard@gmail.com" className="hover:text-white transition-colors">
               Email
             </a>
           </div>
         </div>
-      </div>
+      </footer>
     </div>
   );
 }
