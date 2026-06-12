@@ -1,15 +1,19 @@
 // app/layout.tsx (for thesift.space)
+import "./globals.css";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Gabriel – Founder of SiteSafe",
   description:
-    "Personal site of Gabriel, a solo founder building SiteSafe, a smart visitor management platform. No sales calls, flat pricing, mandatory safety acknowledgment.",
+    "Personal site of Gabriel Freitas, solo founder of SiteSafe, a smart visitor management platform.",
   openGraph: {
     title: "Gabriel – Founder of SiteSafe",
     description:
-      "Personal site of Gabriel Freitas, a solo founder building SiteSafe, a smart visitor management platform.",
+      "Personal site of Gabriel Freitas, solo founder of SiteSafe, a smart visitor management platform.",
     images: [{ url: "/og-image.png", width: 1200, height: 630 }],
+  },
+  icons: {
+    icon: "/favicon.svg",
   },
 };
 
@@ -20,33 +24,6 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <head>
-        <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-        <style>{`
-          *, *::before, *::after {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-          }
-          body {
-            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background-image: linear-gradient(
-                rgba(15, 23, 42, 0.65),
-                rgba(15, 23, 42, 0.65)
-              ),
-              url('https://images.unsplash.com/photo-1449824913935-59a10b8d2000?q=80&w=2070&auto=format&fit=crop');
-            background-size: cover;
-            background-position: center;
-            background-attachment: fixed;
-            color: #e2e8f0;
-            line-height: 1.6;
-          }
-          a {
-            color: inherit;
-            text-decoration: none;
-          }
-        `}</style>
-      </head>
       <body>{children}</body>
     </html>
   );

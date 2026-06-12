@@ -43,7 +43,7 @@ export default function PersonalSite() {
           </p>
           <p className="max-w-md mx-auto text-slate-300 mt-4 leading-relaxed">
             I build simple, honest software for small businesses. No sales
-            calls, flat pricing, and mandatory safety acknowledgment—that&apos;s my
+            calls, flat pricing, and mandatory safety acknowledgment—that's my
             thing.
           </p>
 
@@ -94,7 +94,7 @@ export default function PersonalSite() {
             <div className="mt-6 pt-6 border-t border-white/10 text-slate-400 italic text-xs">
               <p>
                 <strong className="not-italic text-slate-200">Why thesift?</strong>{" "}
-                Before SiteSafe, I built another tool here, but that&apos;s not the
+                Before SiteSafe, I built another tool here, but that's not the
                 point. I kept the domain because “sift” describes how I work. I
                 sift through ideas, problems, and feedback to find the one thing
                 worth focusing on. SiteSafe came out of that process. Whatever
@@ -129,7 +129,7 @@ export default function PersonalSite() {
                 I built a simple visitor management tool and spent weeks sending
                 cold emails and posting on social media. Zero replies. Then I
                 stopped selling and started sharing genuinely useful content.
-                That&apos;s when the first sign‑ups started coming in. Here&apos;s
+                That's when the first sign‑ups started coming in. Here's
                 exactly what I did.
               </p>
               <p className="text-sm text-sky-400 flex items-center gap-1 mt-4">
