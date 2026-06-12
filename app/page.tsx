@@ -101,7 +101,7 @@ export default function PersonalSite() {
             }}
           >
             I build simple, honest software for small businesses. No sales
-            calls, flat pricing—that’s my
+            calls, flat pricing, and mandatory safety acknowledgment—that’s my
             thing.
           </p>
 
@@ -261,6 +261,74 @@ export default function PersonalSite() {
         >
           ✍️ Writing
         </h2>
+
+        {/* Featured article – highlighted */}
+        <a
+          href="https://thenextscoop.com/how-i-got-my-first-10-saas-customers-without-a-single-sales-call/"
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            display: "block",
+            background: "linear-gradient(135deg, rgba(14,165,233,0.15), rgba(14,165,233,0.05))",
+            backdropFilter: "blur(12px)",
+            border: "1px solid rgba(14,165,233,0.3)",
+            borderRadius: "16px",
+            padding: "20px",
+            color: "#e2e8f0",
+            textDecoration: "none",
+            marginBottom: "24px",
+            position: "relative",
+          }}
+        >
+          <div
+            style={{
+              display: "inline-block",
+              background: "#0ea5e9",
+              color: "#fff",
+              fontSize: "0.7rem",
+              fontWeight: 600,
+              padding: "2px 8px",
+              borderRadius: "4px",
+              marginBottom: "8px",
+              textTransform: "uppercase",
+              letterSpacing: "0.05em",
+            }}
+          >
+            Featured on The Next Scoop
+          </div>
+          <h3
+            style={{
+              fontSize: "1rem",
+              fontWeight: 500,
+              marginTop: "4px",
+            }}
+          >
+            How I Got My First 10 SaaS Customers (Without a Single Sales Call)
+          </h3>
+          <p
+            style={{
+              fontSize: "0.8rem",
+              color: "#94a3b8",
+              marginTop: "4px",
+            }}
+          >
+            June 12, 2026
+          </p>
+          <p
+            style={{
+              fontSize: "0.8rem",
+              color: "#0ea5e9",
+              marginTop: "8px",
+              display: "flex",
+              alignItems: "center",
+              gap: "4px",
+            }}
+          >
+            Read on The Next Scoop <span>↗</span>
+          </p>
+        </a>
+
+        {/* Other blog posts */}
         <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
           {blogPosts.map((post) => (
             <a
@@ -345,7 +413,7 @@ export default function PersonalSite() {
             color: "#94a3b8",
           }}
         >
-          <div>&copy; {new Date().getFullYear()} Gabriel Freitas. Built in Brazil.</div>
+          <div>&copy; {new Date().getFullYear()} Gabriel. Built in Brazil.</div>
           <div style={{ display: "flex", gap: "16px" }}>
             <a
               href="https://sitesafe.thesift.space"
@@ -355,21 +423,21 @@ export default function PersonalSite() {
               SiteSafe
             </a>
             <a
-              href="https://linkedin.com/in/benediktfreitas"
+              href="https://linkedin.com/in/yourprofile"
               target="_blank"
               style={{ color: "#94a3b8", textDecoration: "none" }}
             >
               LinkedIn
             </a>
             <a
-              href="https://twitter.com/sitesafehq"
+              href="https://twitter.com/yourhandle"
               target="_blank"
               style={{ color: "#94a3b8", textDecoration: "none" }}
             >
               Twitter
             </a>
             <a
-              href="mailto:hello@thesift.space"
+              href="mailto:cloudandclipboard@gmail.com"
               style={{ color: "#94a3b8", textDecoration: "none" }}
             >
               Email
